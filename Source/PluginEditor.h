@@ -14,6 +14,8 @@
 //==============================================================================
 /**
 */
+using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+
 class AmpModelerAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
@@ -26,7 +28,12 @@ public:
 
 private:
 
-	juce::Slider volumeKnob;
+
+	juce::Slider volumeSlider;
+    std::unique_ptr<SliderAttachment> volumeSliderAttachment;
+
+    juce::TextButton irLoadButton {"Load IR"};
+
 
     AmpModelerAudioProcessor& audioProcessor;
 

@@ -1,9 +1,9 @@
 /*
-  ==============================================================================
+	==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+	This file contains the basic framework code for a JUCE plugin editor.
 
-  ==============================================================================
+	==============================================================================
 */
 
 #include "PluginProcessor.h"
@@ -13,9 +13,15 @@
 AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    
+	volumeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
+	volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
+	addAndMakeVisible(volumeSlider);
+    volumeSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "MASTER_VOLUME", volumeSlider);
+
+    irLoadButton.onClick = [&]() {};
+
+    setSize (600, 400);
 }
 
 AmpModelerAudioProcessorEditor::~AmpModelerAudioProcessorEditor()
@@ -25,16 +31,12 @@ AmpModelerAudioProcessorEditor::~AmpModelerAudioProcessorEditor()
 //==============================================================================
 void AmpModelerAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
+	g.fillAll(juce::Colours::black);
 }
 
 void AmpModelerAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+
+	volumeSlider.setBounds(getWidth()/2 - 200, getHeight()/2 - 100, 400, 200);
+
 }
