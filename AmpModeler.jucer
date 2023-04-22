@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="jRTAIc" name="AmpModeler" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
       <FILE id="dAT7TB" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -10,6 +11,8 @@
             file="Source/PluginProcessor.h"/>
       <FILE id="s5IOLz" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
+      <FILE id="rmxA4w" name="IRLoader.cpp" compile="1" resource="0" file="Source/IRLoader.cpp"/>
+      <FILE id="in1wxm" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
       <FILE id="fZZefG" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
