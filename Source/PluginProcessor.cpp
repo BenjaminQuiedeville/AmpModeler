@@ -101,6 +101,8 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
+
+    irLoader.prepareToPlay(spec);
 }
 
 void AmpModelerAudioProcessor::releaseResources()
@@ -153,20 +155,16 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, numSamples);
     }
 
+    juce::dsp::AudioBlock<float> audioBlock { buffer };
+
     float newGain = *apvts.getRawParameterValue("MASTER_VOLUME");
     masterVolume.setGainDecibels(newGain);
 
-    for (uint32_t channel = 0; channel < totalNumInputChannels; ++channel)
-    { 
-        float* writePointer = buffer.getWritePointer(channel);
-        const float* readPointer = buffer.getReadPointer(channel);
 
-        for (size_t sample = 0; sample < numSamples; sample++) {
-            
-            writePointer[sample] = masterVolume.processSample(readPointer[sample]);
-        }
+    irLoader.performConvolution(audioBlock);
 
-    }
+    masterVolume.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+
 }
 
 //==============================================================================

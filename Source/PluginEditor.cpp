@@ -19,7 +19,8 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 	addAndMakeVisible(volumeSlider);
     volumeSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "MASTER_VOLUME", volumeSlider);
 
-    irLoadButton.onClick = [&]() {};
+    irLoadButton.onClick = [&]() { audioProcessor.irLoader.loadIR(); };
+    addAndMakeVisible(irLoadButton);
 
     setSize (600, 400);
 }
@@ -37,6 +38,7 @@ void AmpModelerAudioProcessorEditor::paint (juce::Graphics& g)
 void AmpModelerAudioProcessorEditor::resized()
 {
 
-	volumeSlider.setBounds(getWidth()/2 - 200, getHeight()/2 - 100, 400, 200);
+	volumeSlider.setBounds(getWidth()/2 - 300, getHeight()/2 - 100, 300, 200);
+    irLoadButton.setBounds(getWidth()/2 + 100, getHeight()/2 - 100, 100, 100);
 
 }

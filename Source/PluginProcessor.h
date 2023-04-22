@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "IRLoader.h"
 
 //==============================================================================
 /**
@@ -58,11 +59,14 @@ public:
 
 	juce::AudioProcessorValueTreeState apvts;
 
+    IRLoader irLoader;
 private:
 
 	juce::dsp::ProcessSpec spec;
 
 	juce::dsp::Gain<float> masterVolume;
+
+
 
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

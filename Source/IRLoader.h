@@ -9,23 +9,28 @@
 */
 
 #pragma once
+
+#define JUCE_MODAL_LOOPS_PERMITTED 1
+
 #include <JuceHeader.h>
 
 class IRLoader {
 
 public:
-  IRLoader() {};
+    IRLoader();
 
-  void prepareToPlay(juce::dsp::ProcessSpec &spec) {
-    samplerate = spec.sampleRate;
-  }
+    void prepareToPlay(juce::dsp::ProcessSpec &spec);
 
-  void performConvolution(juce::AudioBuffer<float>* buffer);
+    void loadIR();
+    void loadDefaultIR();
+    void performConvolution(juce::dsp::AudioBlock<float>& audioBlock);
 
 private:
 
-  float samplerate; 
-  juce::dsp::Convolution irConvolver;
+    const std::string filepath = "D:/Documents/Projets musique/ImpulseResponses/Rainbows/44.1/01 Modern Standard.wav";
 
+    juce::AudioBuffer<float> irBuffer;
+    juce::dsp::Convolution irConvolver;
 
+    juce::dsp::Gain<float> safetyGain;
 };
