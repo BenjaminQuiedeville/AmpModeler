@@ -35,7 +35,7 @@ void ThreeBandEQ::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 void ThreeBandEQ::process(AudioBlock &audioBlock) {
 
     for (size_t channelIndex = 0; channelIndex < audioBlock.getNumChannels(); channelIndex++) {
-        sample_t *bufferPtr = audioBlock.getChannelPointer(channelIndex);
+        float *bufferPtr = audioBlock.getChannelPointer(channelIndex);
 
         for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
             

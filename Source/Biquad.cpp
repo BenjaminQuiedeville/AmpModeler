@@ -64,8 +64,8 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             break;
 
         case PEAK: 
-            A = pow(10, gaindB/40);
-            AInv = 1/A;
+            A = pow(10.0f, gaindB/40.0f);
+            AInv = 1.0f/A;
             a0Inv = 1.0f/(1.0f + alpha * AInv);
 
             b0 = (1.0f + alpha * A) * a0Inv;
@@ -76,7 +76,7 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             break;
 
         case LOWSHELF: 
-            A = pow(10, gaindB/40);
+            A = pow(10.0f, gaindB/40.0f);
             twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
             a0Inv = 1.0f/((A + 1.0f) + (A - 1.0f)*cosw0 + twoSqrtAAlpha); 
             
@@ -88,7 +88,7 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             break;
 
         case HIGHSHELF:
-            A = pow(10, gaindB/40);
+            A = pow(10.0f, gaindB/40.0f);
             twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
             a0Inv = 1.0f/((A + 1.0f) - (A - 1.0f)* cosw0 + twoSqrtAAlpha); 
 
@@ -97,7 +97,6 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             b2 = A*((A + 1.0f) + (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
             a1 = 2.0f * ((A - 1.0f) - (A + 1.0f)*cosw0) * a0Inv;
             a2 = ((A + 1.0f) - (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
-
             break;
 
         default: 
@@ -108,6 +107,11 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             a2 = 0.0f;        
             break;
     }
+
+    x1 = 0.0f;
+    x2 = 0.0f;
+    y1 = 0.0f;
+    y2 = 0.0f;
 
 }
 

@@ -102,6 +102,7 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
 
+    postEQ.prepareToPlay(spec);
     irLoader.prepareToPlay(spec);
 }
 
@@ -145,16 +146,6 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     size_t numSamples = buffer.getNumSamples();
 
-    /*
-    juce::dsp::AudioBlock<float>
-    size_t getNumChannels()
-    size_t getNumSamples()
-    SampleType getSample(int channel, int sampleIndex)
-    void setSample(int channel, int sampleIndex, sampleType value)
-    void addSample(int channel, int sampleIndex, sampleType valueToAdd)
-    
-    */
-
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
     }
@@ -162,12 +153,18 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     AudioBlock audioBlock { buffer };
 
     float newGain = *apvts.getRawParameterValue("MASTER_VOLUME");
+
+    float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
+    float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
+    float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
+    
     masterVolume.setGainDecibels(newGain);
+    postEQ.updateGains(bassEQgain, midEQgian, trebbleEQgian);
 
-
+    postEQ.process(audioBlock);
     irLoader.performConvolution(audioBlock);
-
-    safetyClip(audioBlock);
+    // safetyClip(audioBlock);
+    
 
     masterVolume.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 

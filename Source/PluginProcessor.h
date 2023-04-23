@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "types.h"
 
+#include "ThreeBandEQ.h"
 #include "IRLoader.h"
 
 /*
@@ -61,7 +62,9 @@ public:
 
 	juce::AudioProcessorValueTreeState apvts;
 
+    ThreeBandEQ postEQ;
     IRLoader irLoader;
+
 private:
 
 	juce::dsp::ProcessSpec spec;
