@@ -15,7 +15,6 @@ IRLoader::IRLoader() {
 }
 
 
-
 void IRLoader::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 
     irConvolver.prepare(spec);
@@ -60,7 +59,7 @@ void IRLoader::loadIR() {
     }
 }
 
-void IRLoader::performConvolution(juce::dsp::AudioBlock<float>& audioBlock) {
+void IRLoader::performConvolution(AudioBlock& audioBlock) {
 
     irConvolver.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     safetyGain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));

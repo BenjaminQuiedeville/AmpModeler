@@ -1,19 +1,21 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
+#include "types.h"
+
 #include "IRLoader.h"
 
-//==============================================================================
-/**
+/*
+RESTANT : 
+    input processing 
+    gate
+    pre boost
+    amp {input disto EQ}
+    Compression 
+    re EQ
 */
+
+
 class AmpModelerAudioProcessor  : public juce::AudioProcessor
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
@@ -64,9 +66,10 @@ private:
 
 	juce::dsp::ProcessSpec spec;
 
-	juce::dsp::Gain<float> masterVolume;
+	juce::dsp::Gain<sample_t> masterVolume;
 
 
+    void safetyClip(AudioBlock &audioBlock);
 
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

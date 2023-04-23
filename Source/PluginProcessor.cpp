@@ -159,7 +159,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, numSamples);
     }
 
-    juce::dsp::AudioBlock<float> audioBlock { buffer };
+    AudioBlock audioBlock { buffer };
 
     float newGain = *apvts.getRawParameterValue("MASTER_VOLUME");
     masterVolume.setGainDecibels(newGain);
@@ -167,7 +167,9 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     irLoader.performConvolution(audioBlock);
 
-    masterVolume.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+    safetyClip(audioBlock);
+
+    masterVolume.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
 }
 
@@ -196,14 +198,35 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
     // whose contents will have been created by the getStateInformation() call.
 }
 
+void AmpModelerAudioProcessor::safetyClip(AudioBlock &audioBlock) {
+
+    auto clip = [](sample_t x) {
+        return x > 1.0f ? 1.0f
+             : x < -1.0f ? -1.0f 
+             : x;
+    };
+
+    for (size_t channelIndex = 0; channelIndex < audioBlock.getNumChannels(); channelIndex++) {
+        sample_t *bufferPtr = audioBlock.getChannelPointer(channelIndex);
+
+        for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+            
+            bufferPtr[index] = clip(bufferPtr[index]);
+        }
+    }
+}
+
 juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::createParameterLayout()
 {   
 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "MASTER_VOLUME", "Master Vol", -20.0f, 0.0f, -6.0f)
-    );
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("MASTER_VOLUME", "Master Vol", -20.0f, 0.0f, -6.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_BASS", "Bass", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_MIDDLE", "Mid", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_TREBBLE", "Trebble", -12.0f, 12.0f, 0.0f));
+
+    
 
     return { params.begin(), params.end() };
 }

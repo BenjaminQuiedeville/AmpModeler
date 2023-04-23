@@ -9,10 +9,10 @@
 */
 
 #pragma once
-
 #define JUCE_MODAL_LOOPS_PERMITTED 1
 
 #include <JuceHeader.h>
+#include "types.h"
 
 class IRLoader {
 
@@ -23,14 +23,14 @@ public:
 
     void loadIR();
     void loadDefaultIR();
-    void performConvolution(juce::dsp::AudioBlock<float>& audioBlock);
+    void performConvolution(AudioBlock& audioBlock);
 
 private:
 
     const std::string filepath = "D:/Documents/Projets musique/ImpulseResponses/Rainbows/44.1/01 Modern Standard.wav";
 
-    juce::AudioBuffer<float> irBuffer;
+    juce::AudioBuffer<sample_t> irBuffer;
     juce::dsp::Convolution irConvolver;
 
-    juce::dsp::Gain<float> safetyGain;
+    juce::dsp::Gain<sample_t> safetyGain;
 };
