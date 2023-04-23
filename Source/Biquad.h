@@ -30,6 +30,7 @@ public:
     };
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
+    void reset();
     void setCoefficient(float frequency, float Q, float gaindB);
     float process(float& sample);
 
