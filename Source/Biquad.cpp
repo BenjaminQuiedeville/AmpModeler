@@ -12,7 +12,7 @@
 
 void Biquad::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     samplerate = spec.sampleRate;
-    twoPiOverSampelrate = juce::MathConstants<float>::twoPi / samplerate;
+    twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
     reset();
 }
 
@@ -29,22 +29,22 @@ void Biquad::reset() {
     a2 = 0.0f;   
 }
 
-void Biquad::setCoefficient(float frequency, float Q, float gaindB) {
+void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
 
-    const float w0 = twoPiOverSampelrate * frequency;
-    const float cosw0 = cos(w0);
-    const float sinw0 = sin(w0);
+    const double w0 = twoPiOverSamplerate * frequency;
+    const double cosw0 = cos(w0);
+    const double sinw0 = sin(w0);
 
-    const float alpha = sinw0/(2.0f*Q);
+    const double alpha = sinw0/(2.0f*Q);
 
-    float A = 0.0f;
-    float AInv = 0.0f; 
-    float a0Inv = 0.0f;
-    float twoSqrtAAlpha = 0.0f;
+    double A = 0.0f;
+    double AInv = 0.0f; 
+    double a0Inv = 0.0f;
+    double twoSqrtAAlpha = 0.0f;
 
     switch (filterType) {
         case LOWPASS:
-            a0Inv = 1 + alpha;
+            a0Inv = 1.0f/(1.0f + alpha);
 
             b0 = (1.0f - cosw0) * 0.5f * a0Inv;
             b1 = 2.0f * b0;
@@ -54,7 +54,7 @@ void Biquad::setCoefficient(float frequency, float Q, float gaindB) {
             break;
 
         case HIGHPASS:
-            a0Inv = 1 + alpha;
+            a0Inv = 1.0f/(1.0f + alpha);
 
             b0 = (1.0f + cosw0) * 0.5f * a0Inv;
             b1 = -2.0f * b0;
@@ -78,7 +78,7 @@ void Biquad::setCoefficient(float frequency, float Q, float gaindB) {
         case LOWSHELF: 
             A = pow(10, gaindB/40);
             twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
-            a0Inv = 1.0f/(A + 1.0f) + (A - 1.0f)*cosw0 + twoSqrtAAlpha; 
+            a0Inv = 1.0f/((A + 1.0f) + (A - 1.0f)*cosw0 + twoSqrtAAlpha); 
             
             b0 = A*((A + 1.0f) - (A - 1.0f)*cosw0 + twoSqrtAAlpha)*a0Inv;
             b1 = 2.0f * A*((A - 1.0f) - (A + 1.0f)*cosw0)*a0Inv;
@@ -90,7 +90,7 @@ void Biquad::setCoefficient(float frequency, float Q, float gaindB) {
         case HIGHSHELF:
             A = pow(10, gaindB/40);
             twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
-            a0Inv = 1.0f/(A + 1.0f) - (A - 1.0f)* cosw0 + twoSqrtAAlpha; 
+            a0Inv = 1.0f/((A + 1.0f) - (A - 1.0f)* cosw0 + twoSqrtAAlpha); 
 
             b0 = A*((A + 1.0f) + (A - 1.0f) * cosw0 + twoSqrtAAlpha) * a0Inv;
             b1 = -2.0f * A *((A - 1.0f) + (A + 1.0f) * cosw0) * a0Inv;
@@ -111,9 +111,10 @@ void Biquad::setCoefficient(float frequency, float Q, float gaindB) {
 
 }
 
-float Biquad::process(float& sample) {
-    float outputSample = sample * b0 + x1 * b1 + x2 * b2
-                                     - y1 * a1 - y2 * a2;
+sample_t Biquad::process(sample_t& sample) {
+
+    sample_t outputSample = sample*b0 + x1*b1 + x2*b2
+                                      - y1*a1 - y2*a2;
     
     x2 = x1;
     x1 = sample; 

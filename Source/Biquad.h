@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "types.h"
 
 enum FilterTypes {
     LOWPASS = 0,
@@ -31,17 +32,17 @@ public:
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void reset();
-    void setCoefficient(float frequency, float Q, float gaindB);
-    float process(float& sample);
+    void setCoefficients(float frequency, float Q, float gaindB);
+    sample_t process(sample_t& sample);
 
 private:
 
     FilterTypes filterType;
-    float samplerate;
-    float twoPiOverSampelrate;
-    float b0, b1, b2, a1, a2;
+    double samplerate;
+    double twoPiOverSamplerate;
+    double b0, b1, b2, a1, a2;
 
-    float x1, x2, y1, y2;
+    double x1, x2, y1, y2;
 
 
 };
