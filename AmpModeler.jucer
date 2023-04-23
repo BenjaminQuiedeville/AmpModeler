@@ -13,6 +13,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="rmxA4w" name="IRLoader.cpp" compile="1" resource="0" file="Source/IRLoader.cpp"/>
       <FILE id="in1wxm" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
+      <FILE id="Rr4KD2" name="Biquad.cpp" compile="1" resource="0" file="Source/Biquad.cpp"/>
+      <FILE id="KSl8EG" name="Biquad.h" compile="0" resource="0" file="Source/Biquad.h"/>
       <FILE id="fZZefG" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
@@ -20,7 +22,7 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="AmpModeler"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="AmpModeler" binaryPath="C:\Program Files\Common Files\VST3\JUCE VST\AmpModeler"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="AmpModeler"/>
       </CONFIGURATIONS>
       <MODULEPATHS>

@@ -145,12 +145,16 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     size_t numSamples = buffer.getNumSamples();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+    /*
+    juce::dsp::AudioBlock<float>
+    size_t getNumChannels()
+    size_t getNumSamples()
+    SampleType getSample(int channel, int sampleIndex)
+    void setSample(int channel, int sampleIndex, sampleType value)
+    void addSample(int channel, int sampleIndex, sampleType valueToAdd)
+    
+    */
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
     }
