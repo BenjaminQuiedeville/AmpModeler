@@ -5,6 +5,8 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
+      <FILE id="OYmPa3" name="ThreeBandEQ.cpp" compile="1" resource="0" file="Source/ThreeBandEQ.cpp"/>
+      <FILE id="pcE1DH" name="ThreeBandEQ.h" compile="0" resource="0" file="Source/ThreeBandEQ.h"/>
       <FILE id="gcYSZm" name="types.h" compile="0" resource="0" file="Source/types.h"/>
       <FILE id="dAT7TB" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
