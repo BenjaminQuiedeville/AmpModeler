@@ -12,18 +12,13 @@
 
 ThreeBandEQ::ThreeBandEQ() {
 
-    bassFilter = new Biquad(FilterTypes::PEAK);
-    midFilter = new Biquad(FilterTypes::PEAK);
-    trebbleFilter = new Biquad(FilterTypes::PEAK);
+    bassFilter = std::make_unique<Biquad>(FilterTypes::PEAK);
+    midFilter = std::make_unique<Biquad>(FilterTypes::PEAK);
+    trebbleFilter = std::make_unique<Biquad>(FilterTypes::PEAK);
 
 }
 
-ThreeBandEQ::~ThreeBandEQ() {
-
-    delete bassFilter;
-    delete midFilter;
-    delete trebbleFilter;
-}
+ThreeBandEQ::~ThreeBandEQ() {}
 
 void ThreeBandEQ::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 

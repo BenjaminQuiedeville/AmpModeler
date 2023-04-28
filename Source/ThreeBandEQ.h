@@ -27,9 +27,9 @@ public:
 
 private:
 
-    Biquad *bassFilter;
-    Biquad *midFilter;
-    Biquad *trebbleFilter;
+    std::unique_ptr<Biquad> bassFilter;
+    std::unique_ptr<Biquad> midFilter;
+    std::unique_ptr<Biquad> trebbleFilter;
 
 
     float bassFreq = 120.0f;
