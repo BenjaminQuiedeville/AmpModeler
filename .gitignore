@@ -9,3 +9,4 @@ JuceLibraryCode/*
 *.lock
 *.sqlite
 *.db-wal
+.vs/AmpModeler/v17/.suo
