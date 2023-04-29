@@ -3,3 +3,9 @@
 *.vsidx
 Builds/*
 JuceLibraryCode/*
+*.db
+*.db-shm
+*.opendb
+*.lock
+*.sqlite
+*.db-wal
