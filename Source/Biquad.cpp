@@ -13,6 +13,12 @@
 void Biquad::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     samplerate = spec.sampleRate;
     twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
+
+    b0 = 1.0f;
+    b1 = 0.0f;
+    b2 = 0.0f;
+    a1 = 0.0f;
+    a2 = 0.0f;
     reset();
 }
 
@@ -21,26 +27,20 @@ void Biquad::reset() {
     x2 = 0.0f;
     y1 = 0.0f;
     y2 = 0.0f;
-
-    b0 = 1.0f;
-    b1 = 0.0f; 
-    b2 = 0.0f; 
-    a1 = 0.0f; 
-    a2 = 0.0f;   
 }
 
-void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
+void Biquad::setCoefficients(const float frequency, const float Q, const float gaindB) {
 
-    const double w0 = twoPiOverSamplerate * frequency;
-    const double cosw0 = cos(w0);
-    const double sinw0 = sin(w0);
+    const float w0 = twoPiOverSamplerate * frequency;
+    const float cosw0 = cos(w0);
+    const float sinw0 = sin(w0);
 
-    const double alpha = sinw0/(2.0f*Q);
+    const float alpha = sinw0/(2.0f*Q);
 
-    double A = 0.0f;
-    double AInv = 0.0f; 
-    double a0Inv = 0.0f;
-    double twoSqrtAAlpha = 0.0f;
+    float A = 0.0f;
+    float AInv = 0.0f; 
+    float a0Inv = 0.0f;
+    float twoSqrtAAlpha = 0.0f;
 
     switch (filterType) {
         case LOWPASS:
@@ -108,22 +108,21 @@ void Biquad::setCoefficients(float frequency, float Q, float gaindB) {
             break;
     }
 
-    x1 = 0.0f;
-    x2 = 0.0f;
-    y1 = 0.0f;
-    y2 = 0.0f;
+    // x1 = 0.0f;
+    // x2 = 0.0f;
+    // y1 = 0.0f;
+    // y2 = 0.0f;
 
 }
 
-sample_t Biquad::process(sample_t& sample) {
+void Biquad::process(sample_t *sample) {
 
-    sample_t outputSample = sample*b0 + x1*b1 + x2*b2
+    sample_t outputSample = *sample*b0 + x1*b1 + x2*b2
                                       - y1*a1 - y2*a2;
     
     x2 = x1;
-    x1 = sample; 
+    x1 = *sample; 
     y2 = y1; 
     y1 = outputSample;
-    
-    return outputSample;
+    *sample = outputSample; 
 }

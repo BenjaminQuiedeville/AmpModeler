@@ -26,23 +26,23 @@ class Biquad {
 
 public:
 
-    Biquad(FilterTypes type) {
-        filterType = type;
-    };
+    Biquad() {};
+
+    void setFilterType(FilterTypes type) { filterType = type; }
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void reset();
-    void setCoefficients(float frequency, float Q, float gaindB);
-    sample_t process(sample_t& sample);
+    void setCoefficients(const float frequency, const float Q, const float gaindB);
+    void process(sample_t *sample);
 
 private:
 
     FilterTypes filterType;
     double samplerate;
     double twoPiOverSamplerate;
-    double b0, b1, b2, a1, a2;
+    sample_t b0, b1, b2, a1, a2;
 
-    double x1, x2, y1, y2;
+    sample_t x1, x2, y1, y2;
 
 
 };

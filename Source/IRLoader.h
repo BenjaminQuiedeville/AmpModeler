@@ -30,7 +30,7 @@ private:
     const std::string filepath = "D:/Documents/Projets musique/ImpulseResponses/Rainbows/44.1/01 Modern Standard.wav";
 
     juce::AudioFormatManager irFormarManager;
-    juce::AudioFormatReader irFormatLoader;
+    // juce::AudioFormatReader irFormatLoader;
     juce::AudioBuffer<sample_t> irBuffer;
     juce::dsp::Convolution irConvolver;
 

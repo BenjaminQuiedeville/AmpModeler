@@ -16,5 +16,3 @@ typedef float sample_t;
 using AudioBlock = juce::dsp::AudioBlock<sample_t>;
 
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-
-

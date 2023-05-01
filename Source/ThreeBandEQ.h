@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "Biquad.h"
 #include "types.h"
+#include "array"
 
 
 class ThreeBandEQ {
@@ -23,20 +24,23 @@ public:
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void process(AudioBlock& audioBlock);
-    void updateGains(float bassGain, float midGain, float trebbleGain);
+    void updateGains(const float bassGain, const float midGain, const float trebbleGain);
 
 private:
 
-    std::unique_ptr<Biquad> bassFilter;
-    std::unique_ptr<Biquad> midFilter;
-    std::unique_ptr<Biquad> trebbleFilter;
+    const uint8_t nChans = 2;
+    // const uint8_t nBands = 3;
+
+    std::unique_ptr<Biquad[]> bassFilters;
+    std::unique_ptr<Biquad[]> midFilters;
+    std::unique_ptr<Biquad[]> trebbleFilters;
 
 
-    float bassFreq = 120.0f;
-    float midFreq = 750.0f;
-    float trebbleFreq = 4500.0f;
+    const float bassFreq = 120.0f;
+    const float midFreq = 750.0f;
+    const float trebbleFreq = 4500.0f;
     
-    float bassQ = 0.5;
-    float midQ = 0.5;
-    float trebbleQ = 0.5;
+    const float bassQ = 0.5;
+    const float midQ = 0.5;
+    const float trebbleQ = 0.5;
 };
