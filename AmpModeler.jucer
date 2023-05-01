@@ -17,6 +17,10 @@
       <FILE id="rmxA4w" name="IRLoader.cpp" compile="1" resource="0" file="Source/IRLoader.cpp"/>
       <FILE id="in1wxm" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
       <FILE id="Rr4KD2" name="Biquad.cpp" compile="1" resource="0" file="Source/Biquad.cpp"/>
+      <FILE id="oWjfe4" name="PreampDistorsion.cpp" compile="1" resource="0"
+            file="Source/PreampDistorsion.cpp"/>
+      <FILE id="Kxjl8A" name="PreampDistorsion.h" compile="0" resource="0"
+            file="Source/PreampDistorsion.h"/>
       <FILE id="KSl8EG" name="Biquad.h" compile="0" resource="0" file="Source/Biquad.h"/>
       <FILE id="fZZefG" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
