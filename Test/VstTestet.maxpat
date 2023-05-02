@@ -40,96 +40,63 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
-					"autosave" : 1,
-					"bgmode" : 0,
-					"border" : 0,
-					"clickthrough" : 0,
-					"id" : "obj-30",
-					"maxclass" : "newobj",
+					"id" : "obj-11",
+					"maxclass" : "message",
 					"numinlets" : 2,
-					"numoutlets" : 8,
-					"offset" : [ 0.0, 0.0 ],
-					"outlettype" : [ "signal", "signal", "", "list", "int", "", "", "" ],
-					"patching_rect" : [ 375.0, 240.0, 300.0, 180.0 ],
-					"save" : [ "#N", "vst~", "loaduniqueid", 0, "C74_VST3:/AmpModeler", ";" ],
-					"saved_attribute_attributes" : 					{
-						"valueof" : 						{
-							"parameter_invisible" : 1,
-							"parameter_longname" : "vst~",
-							"parameter_shortname" : "vst~",
-							"parameter_type" : 3
-						}
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 405.0, 180.0, 131.0, 22.0 ],
+					"text" : "plug_vst3 AmpModeler"
+				}
 
-					}
-,
-					"saved_object_attributes" : 					{
-						"parameter_enable" : 1,
-						"parameter_mappable" : 0
-					}
-,
-					"snapshot" : 					{
-						"filetype" : "C74Snapshot",
-						"version" : 2,
-						"minorversion" : 0,
-						"name" : "snapshotlist",
-						"origin" : "vst~",
-						"type" : "list",
-						"subtype" : "Undefined",
-						"embed" : 1,
-						"snapshot" : 						{
-							"pluginname" : "AmpModeler.vst3info",
-							"plugindisplayname" : "AmpModeler",
-							"pluginsavedname" : "C74_VST3:/AmpModeler",
-							"pluginsaveduniqueid" : -380250406,
-							"version" : 1,
-							"isbank" : 0,
-							"isbase64" : 1,
-							"sliderorder" : [  ],
-							"slidervisibility" : [ 1, 1, 1, 1, 1 ],
-							"blob" : "152.VMjLg7H....OVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9.."
-						}
-,
-						"snapshotlist" : 						{
-							"current_snapshot" : 0,
-							"entries" : [ 								{
-									"filetype" : "C74Snapshot",
-									"version" : 2,
-									"minorversion" : 0,
-									"name" : "AmpModeler",
-									"origin" : "AmpModeler.vst3info",
-									"type" : "VST3",
-									"subtype" : "AudioEffect",
-									"embed" : 0,
-									"snapshot" : 									{
-										"pluginname" : "AmpModeler.vst3info",
-										"plugindisplayname" : "AmpModeler",
-										"pluginsavedname" : "C74_VST3:/AmpModeler",
-										"pluginsaveduniqueid" : -380250406,
-										"version" : 1,
-										"isbank" : 0,
-										"isbase64" : 1,
-										"sliderorder" : [  ],
-										"slidervisibility" : [ 1, 1, 1, 1, 1 ],
-										"blob" : "152.VMjLg7H....OVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XCLt3hKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYjKAQjYPQSPWgUdMcjKAQjct3hdA4hKt3hKt3hKtnTUv.UQAslXuk0UXoWUFE0YQcEV77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9.."
-									}
-,
-									"fileref" : 									{
-										"name" : "AmpModeler",
-										"filename" : "AmpModeler.maxsnap",
-										"filepath" : "D:/Documents/Max 8/Snapshots",
-										"filepos" : -1,
-										"snapshotfileid" : "4aa7a32c3c08881d204d7fae6775e8a0"
-									}
-
+			}
+, 			{
+				"box" : 				{
+					"basictuning" : 440,
+					"clipheight" : 36.0,
+					"data" : 					{
+						"clips" : [ 							{
+								"absolutepath" : "SulphurAeon.wav",
+								"filename" : "SulphurAeon.wav",
+								"filekind" : "audiofile",
+								"id" : "u062000368",
+								"selection" : [ 0.0, 1.0 ],
+								"loop" : 1,
+								"content_state" : 								{
+									"loop" : 1
 								}
- ]
-						}
 
+							}
+, 							{
+								"absolutepath" : "Metallica.wav",
+								"filename" : "Metallica.wav",
+								"filekind" : "audiofile",
+								"id" : "u402000367",
+								"selection" : [ 0.0, 1.0 ],
+								"loop" : 1,
+								"content_state" : 								{
+									"loop" : 1
+								}
+
+							}
+ ]
 					}
 ,
-					"text" : "vst~ C74_VST3:/AmpModeler",
-					"varname" : "vst~",
-					"viewvisibility" : 1
+					"followglobaltempo" : 0,
+					"formantcorrection" : 0,
+					"id" : "obj-1",
+					"maxclass" : "playlist~",
+					"mode" : "basic",
+					"numinlets" : 1,
+					"numoutlets" : 5,
+					"originallength" : [ 0.0, "ticks" ],
+					"originaltempo" : 120.0,
+					"outlettype" : [ "signal", "signal", "signal", "", "dictionary" ],
+					"parameter_enable" : 0,
+					"patching_rect" : [ 105.0, 15.0, 255.0, 74.0 ],
+					"pitchcorrection" : 0,
+					"quality" : "basic",
+					"timestretch" : [ 0 ]
 				}
 
 			}
@@ -170,7 +137,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "signal" ],
-					"patching_rect" : [ 420.0, 135.0, 43.0, 22.0 ],
+					"patching_rect" : [ 450.0, 120.0, 43.0, 22.0 ],
 					"text" : "cycle~"
 				}
 
@@ -182,7 +149,7 @@
 					"maxclass" : "scope~",
 					"numinlets" : 2,
 					"numoutlets" : 0,
-					"patching_rect" : [ 750.0, 240.0, 315.0, 150.0 ]
+					"patching_rect" : [ 735.0, 255.0, 315.0, 150.0 ]
 				}
 
 			}
@@ -198,7 +165,7 @@
 					"numoutlets" : 8,
 					"offset" : [ 0.0, 0.0 ],
 					"outlettype" : [ "signal", "signal", "", "list", "int", "", "", "" ],
-					"patching_rect" : [ 45.0, 75.0, 300.0, 100.0 ],
+					"patching_rect" : [ 45.0, 102.0, 300.0, 100.0 ],
 					"save" : [ "#N", "vst~", "loaduniqueid", 0, "C74_VST3:/Archetype Gojira", ";" ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
@@ -290,7 +257,7 @@
 					"numoutlets" : 5,
 					"outlettype" : [ "signal", "signal", "", "float", "list" ],
 					"parameter_enable" : 1,
-					"patching_rect" : [ 60.0, 345.0, 48.0, 136.0 ],
+					"patching_rect" : [ 45.0, 615.0, 48.0, 136.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "live.gain~[1]",
@@ -327,7 +294,7 @@
 					"numoutlets" : 5,
 					"outlettype" : [ "signal", "signal", "", "float", "list" ],
 					"parameter_enable" : 1,
-					"patching_rect" : [ 30.0, 195.0, 48.0, 136.0 ],
+					"patching_rect" : [ 45.0, 262.0, 48.0, 136.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "live.gain~",
@@ -617,6 +584,13 @@
  ],
 		"lines" : [ 			{
 				"patchline" : 				{
+					"destination" : [ "obj-7", 0 ],
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-4", 0 ],
 					"source" : [ "obj-2", 0 ]
 				}
@@ -624,29 +598,8 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-30", 0 ],
-					"source" : [ "obj-28", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-28", 0 ],
 					"source" : [ "obj-29", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-7", 0 ],
-					"source" : [ "obj-3", 1 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-27", 0 ],
-					"source" : [ "obj-30", 0 ]
 				}
 
 			}
@@ -675,7 +628,6 @@
 		"parameters" : 		{
 			"obj-14" : [ "live.gain~[1]", "live.gain~", 0 ],
 			"obj-29" : [ "live.dial", "Freq", 0 ],
-			"obj-30" : [ "vst~", "vst~", 0 ],
 			"obj-4" : [ "mc.live.gain~", "MasterVol", 0 ],
 			"obj-5" : [ "live.gain~", "live.gain~", 0 ],
 			"obj-7" : [ "vst~[1]", "vst~[1]", 0 ],
@@ -692,17 +644,24 @@
 		}
 ,
 		"dependency_cache" : [ 			{
-				"name" : "AmpModeler.maxsnap",
+				"name" : "Archetype Gojira.maxsnap",
 				"bootpath" : "D:/Documents/Max 8/Snapshots",
-				"patcherrelativepath" : "../Snapshots",
+				"patcherrelativepath" : "../../../Max 8/Snapshots",
 				"type" : "mx@s",
 				"implicit" : 1
 			}
 , 			{
-				"name" : "Archetype Gojira.maxsnap",
-				"bootpath" : "D:/Documents/Max 8/Snapshots",
-				"patcherrelativepath" : "../Snapshots",
-				"type" : "mx@s",
+				"name" : "Metallica.wav",
+				"bootpath" : "D:/Documents/C++/AmpModeler/Test",
+				"patcherrelativepath" : ".",
+				"type" : "WAVE",
+				"implicit" : 1
+			}
+, 			{
+				"name" : "SulphurAeon.wav",
+				"bootpath" : "D:/Documents/C++/AmpModeler/Test",
+				"patcherrelativepath" : ".",
+				"type" : "WAVE",
 				"implicit" : 1
 			}
  ],
