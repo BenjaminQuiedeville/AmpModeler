@@ -99,6 +99,8 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
 
+    preamp.prepareToPlay(spec);
+
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
 
@@ -152,15 +154,18 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     AudioBlock audioBlock { buffer };
 
-    float newGain = *apvts.getRawParameterValue("MASTER_VOLUME");
+    preamp.preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
 
     float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
     float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
     float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
-    
-    masterVolume.setGainDecibels(newGain);
     postEQ.updateGains(bassEQgain, midEQgian, trebbleEQgian);
+    
+    masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
 
+    /******PROCESS********/
+
+    preamp.process(audioBlock);
     postEQ.process(audioBlock);
     irLoader.performConvolution(audioBlock);
     // safetyClip(audioBlock);
@@ -223,6 +228,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_MIDDLE", "Mid", -12.0f, 12.0f, 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_TREBBLE", "Trebble", -12.0f, 12.0f, 0.0f));
 
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_GAIN", "Preamp Gain", -30.3f, 30.0f, 0.0f));
     
 
     return { params.begin(), params.end() };

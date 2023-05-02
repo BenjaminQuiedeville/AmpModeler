@@ -14,6 +14,12 @@
 
 #include "types.h"
 
+enum DriveType {
+    APPROX, 
+    TANH,
+    HARDCLIP,
+};
+
 class PreampDistorsion {
 public:
     PreampDistorsion();
@@ -23,6 +29,8 @@ public:
 
     juce::dsp::Gain<sample_t> preGain;
 
+    DriveType driveType;
+
 private:
 
     float m_samplerate;
@@ -30,4 +38,21 @@ private:
 
     juce::dsp::Gain<sample_t> postGain;
     juce::dsp::Oversampling<sample_t> overSampler;
+
+    sample_t processDrive(sample_t &sample, DriveType curveType);
+
+
+    sample_t expappr(sample_t x) { 
+
+        const sample_t x2 = x*x;
+        const sample_t x3 = x2*x;
+        const sample_t x4 = x3*x;
+        const sample_t x5 = x4*x;
+        return 1.0f + x + x2/2.0f + x3/6.0f + x4/24.0f + x5/120.0f; 
+    }
+
+    sample_t tanhApprox(sample_t x) {
+        return (expappr(x) - expappr(-x))/(expappr(x) + expappr(-x)); 
+    }
+
 };

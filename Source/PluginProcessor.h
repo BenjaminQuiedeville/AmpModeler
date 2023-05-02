@@ -5,6 +5,7 @@
 
 #include "ThreeBandEQ.h"
 #include "IRLoader.h"
+#include "PreampDistorsion.h"
 
 /*
 RESTANT : 
@@ -62,6 +63,8 @@ public:
 
 	juce::AudioProcessorValueTreeState apvts;
 
+
+    PreampDistorsion preamp;
     ThreeBandEQ postEQ;
     IRLoader irLoader;
 
