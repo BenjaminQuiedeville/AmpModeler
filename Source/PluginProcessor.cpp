@@ -223,13 +223,24 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("MASTER_VOLUME", "Master Vol", -20.0f, 0.0f, -6.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("GATE_THRESH", "Gate Thresh", -80.0f, -40.0f, -70.0f));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("BITE", "Bite", 0.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("TIGHT", "Tight", 0.0f, 10.0f, 0.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PRE_BOOST", "Boost", 0.0f, 20.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_GAIN", "Pre Gain", -40.0f, 40.0f, 0.0f));
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_BASS", "Bass", -12.0f, 12.0f, 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_MIDDLE", "Mid", -12.0f, 12.0f, 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_TREBBLE", "Trebble", -12.0f, 12.0f, 0.0f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_GAIN", "Preamp Gain", -30.3f, 30.0f, 0.0f));
-    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_VOLUME", "Post Gain", -30.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("RESONANCE", "Reson", 0.0f, 3.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PRESENCE", "Presence", 0.0f, 3.0f, 0.0f));
+
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("MASTER_VOLUME", "Master Vol", -20.0f, 0.0f, -6.0f));
 
     return { params.begin(), params.end() };
 }
