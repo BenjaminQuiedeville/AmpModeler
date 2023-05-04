@@ -2,9 +2,10 @@
 
 <JUCERPROJECT id="jRTAIc" name="AmpModeler" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              defines="JUCE_MODAL_LOOPS_PERMITTED=1">
+              defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
+      <FILE id="YblBs8" name="OnepoleFilter.h" compile="0" resource="0" file="Source/OnepoleFilter.h"/>
       <FILE id="OYmPa3" name="ThreeBandEQ.cpp" compile="1" resource="0" file="Source/ThreeBandEQ.cpp"/>
       <FILE id="pcE1DH" name="ThreeBandEQ.h" compile="0" resource="0" file="Source/ThreeBandEQ.h"/>
       <FILE id="gcYSZm" name="types.h" compile="0" resource="0" file="Source/types.h"/>
@@ -29,7 +30,7 @@
   <EXPORTFORMATS>
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="AmpModeler" binaryPath="C:\Program Files\Common Files\VST3\JUCE VST\AmpModeler"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="AmpModeler"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="AmpModeler"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
