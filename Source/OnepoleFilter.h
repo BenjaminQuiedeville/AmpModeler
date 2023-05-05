@@ -15,6 +15,8 @@
 class OnepoleFilter {
 public:
 
+    enum Type { LOWPASS, HIGHPASS };
+
     void prepareToPlay(juce::dsp::ProcessSpec &spec) {
         piOverSamplerate = juce::MathConstants<float>::pi / spec.sampleRate;
     }
@@ -39,6 +41,30 @@ public:
         float tempSample = *sample * b0 - y1 * a1;
         y1 = tempSample;
         *sample = 1.0f - tempSample;
+    }
+
+    void processBuffer(AudioBlock &audioBlock, Type type) {
+        switch (type) {
+        case LOWPASS:
+            for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
+                float *bufferPtr = audioBlock.getChannelPointer(channel);
+                for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+                    processLowPass(&bufferPtr[index]);
+                }
+            }
+            break;
+
+        case HIGHPASS:
+            for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
+                float *bufferPtr = audioBlock.getChannelPointer(channel);
+                for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+                    processHighPass(&bufferPtr[index]);
+                }
+            }
+            break;
+
+        default: break;
+        }
     }
 
 private:

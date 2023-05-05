@@ -27,6 +27,10 @@ PreampDistorsion::PreampDistorsion() :
 void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec)
 {
     m_samplerate = spec.sampleRate;
+
+    inputFilter.prepareToPlay(spec);
+    inputFilter.setCoefficients(inputFilterFrequency);
+    
     overSampler.initProcessing(spec.maximumBlockSize);
 
 }
@@ -34,6 +38,8 @@ void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec)
 void PreampDistorsion::process(AudioBlock &audioBlock)
 {
     // d'abord sans upsampling pour voir si la courbe fonctionne bien.
+
+    inputFilter.processBuffer(audioBlock, OnepoleFilter::Type::LOWPASS);
 
     for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
         

@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 
 #include "types.h"
+#include "OnepoleFilter.h"
 
 enum DriveType {
     APPROX, 
@@ -35,12 +36,13 @@ private:
 
     float m_samplerate;
     float stageGain;
+    const float inputFilterFrequency = 900.0f;
 
+    OnepoleFilter inputFilter;
     juce::dsp::Gain<sample_t> postGain;
     juce::dsp::Oversampling<sample_t> overSampler;
 
     sample_t processDrive(sample_t &sample, DriveType curveType);
-
 
     sample_t expappr(sample_t x) { 
 
