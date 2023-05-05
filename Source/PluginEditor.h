@@ -1,19 +1,8 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-//==============================================================================
-/**
-*/
 
 class AmpModelerAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
@@ -55,7 +44,10 @@ private:
 
     AmpModelerAudioProcessor& audioProcessor;
 
-    void createKnob(juce::Slider &slider, juce::Label &label);
+    void createKnob(juce::Slider &slider, 
+					juce::Label &label, 
+					std::unique_ptr<SliderAttachment> &sliderAttchmnt, 
+					const std::string paramID);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmpModelerAudioProcessorEditor)
 };

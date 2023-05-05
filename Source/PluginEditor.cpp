@@ -1,11 +1,3 @@
-/*
-	==============================================================================
-
-	This file contains the basic framework code for a JUCE plugin editor.
-
-	==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -14,17 +6,11 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
 
-    createKnob(bassEQSlider, bassEQSliderLabel);
-    bassEQSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "3_BAND_EQ_BASS", bassEQSlider);
+    createKnob(bassEQSlider, bassEQSliderLabel, bassEQSliderAttachment, "3_BAND_EQ_BASS");
+    createKnob(midEQSlider, midEQSliderLabel, midEQSliderAttachment, "3_BAND_EQ_MIDDLE");
+    createKnob(trebbleEQSlider, trebbleEQSliderLabel, trebbleEQSliderAttachment, "3_BAND_EQ_TREBBLE");
 
-    createKnob(midEQSlider, midEQSliderLabel);
-    midEQSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "3_BAND_EQ_MIDDLE", midEQSlider);
-
-    createKnob(trebbleEQSlider, trebbleEQSliderLabel);
-    trebbleEQSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "3_BAND_EQ_TREBBLE", trebbleEQSlider);
-
-    createKnob(gainSlider, gainSliderLabel);
-    gainSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "PREAMP_GAIN", gainSlider);
+    createKnob(gainSlider, gainSliderLabel, gainSliderAttachment, "PREAMP_GAIN");
 
 
 	volumeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -71,7 +57,11 @@ void AmpModelerAudioProcessorEditor::resized() {
 }
 
 
-void AmpModelerAudioProcessorEditor::createKnob(juce::Slider &slider, juce::Label &label) {
+void AmpModelerAudioProcessorEditor::createKnob(juce::Slider &slider, 
+                                                juce::Label &label, 
+                                                std::unique_ptr<SliderAttachment> &sliderAttachmnt, 
+                                                const std::string paramID)
+{
     slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
     addAndMakeVisible(slider);
