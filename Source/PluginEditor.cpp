@@ -70,4 +70,6 @@ void AmpModelerAudioProcessorEditor::createKnob(juce::Slider &slider,
     label.setJustificationType(juce::Justification::centred);
     label.setFont(15.0f);
     addAndMakeVisible(label);
+
+    sliderAttachmnt = std::make_unique<SliderAttachment>(audioProcessor.apvts, paramID, slider);
 }
