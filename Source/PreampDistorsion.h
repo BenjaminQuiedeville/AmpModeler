@@ -14,6 +14,7 @@
 
 #include "types.h"
 #include "OnepoleFilter.h"
+#include <array>
 
 enum DriveType {
     APPROX, 
@@ -38,7 +39,7 @@ private:
     float stageGain;
     const float inputFilterFrequency = 900.0f;
 
-    OnepoleFilter inputFilter;
+    std::array<OnepoleFilter, 2> inputFilters;
     juce::dsp::Gain<sample_t> postGain;
     juce::dsp::Oversampling<sample_t> overSampler;
 

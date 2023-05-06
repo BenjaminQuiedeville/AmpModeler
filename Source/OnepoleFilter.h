@@ -15,7 +15,7 @@
 class OnepoleFilter {
 public:
 
-    enum Type { LOWPASS, HIGHPASS };
+    OnepoleFilter() {}
 
     void prepareToPlay(juce::dsp::ProcessSpec &spec) {
         piOverSamplerate = juce::MathConstants<float>::pi / spec.sampleRate;
@@ -26,46 +26,34 @@ public:
         a1 = b0 - 1.0f;
     }
 
-    void init() {
-        b0 = 1.0f;
-        a1 = 0.0f;
-        y1 = 0.0f;
+    sample_t processLowPass(sample_t sample) {
+        sample = sample * b0 - a1 * y1;
+        y1 = sample;
+        return sample;
     }
 
-    void processLowPass(sample_t *sample) {
-        *sample = *sample * b0 - a1 * y1;
-        y1 = *sample;
+    sample_t processHighPass(sample_t sample) {
+        sample_t lpSample = sample * b0 - a1 * y1;
+        y1 = lpSample;
+        return sample - lpSample;
     }
 
-    void processHighPass(sample_t *sample) {
-        float tempSample = *sample * b0 - y1 * a1;
-        y1 = tempSample;
-        *sample = 1.0f - tempSample;
-    }
-
-    void processBuffer(AudioBlock &audioBlock, Type type) {
-        switch (type) {
-        case LOWPASS:
-            for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
-                float *bufferPtr = audioBlock.getChannelPointer(channel);
-                for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-                    processLowPass(&bufferPtr[index]);
-                }
+    void processBufferLowpass(AudioBlock &audioBlock) {
+        for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
+            float *bufferPtr = audioBlock.getChannelPointer(channel);
+            for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+                bufferPtr[index] = processLowPass(bufferPtr[index]);
             }
-            break;
-
-        case HIGHPASS:
-            for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
-                float *bufferPtr = audioBlock.getChannelPointer(channel);
-                for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-                    processHighPass(&bufferPtr[index]);
-                }
-            }
-            break;
-
-        default: break;
         }
     }
+
+    void processBufferHighpass(float *bufferPtr, size_t numSamples) {
+        for (size_t index = 0; index < numSamples; index++) {
+            bufferPtr[index] = processHighPass(bufferPtr[index]);
+        }
+    }
+    
+    
 
 private:
 
