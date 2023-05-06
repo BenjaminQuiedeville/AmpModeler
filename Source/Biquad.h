@@ -17,7 +17,7 @@
 class Biquad {
 public:
 
-    enum FilterTypes {
+    enum FilterType {
         LOWPASS = 0,
         HIGHPASS,
         PEAK,
@@ -25,10 +25,10 @@ public:
         HIGHSHELF,
         NFILTERTYPES,
     };
-    
-    Biquad() {};
 
-    void setFilterType(FilterTypes type) { filterType = type; }
+    Biquad(FilterType type) { filterType = type; }
+
+    void setFilterType(FilterType type) { filterType = type; }
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void reset();
@@ -37,7 +37,7 @@ public:
 
 private:
 
-    FilterTypes filterType;
+    FilterType filterType;
     double samplerate;
     double twoPiOverSamplerate;
     sample_t b0, b1, b2, a1, a2;

@@ -13,7 +13,6 @@
 #include <JuceHeader.h>
 #include "Biquad.h"
 #include "types.h"
-#include <array>
 
 
 class ThreeBandEQ {
@@ -31,9 +30,9 @@ private:
     static const uint8_t nChans = 2;
     // const uint8_t nBands = 3;
 
-    std::array<std::unique_ptr<Biquad>, nChans> bassFilters;
-    std::array<std::unique_ptr<Biquad>, nChans> midFilters;
-    std::array<std::unique_ptr<Biquad>, nChans> trebbleFilters;
+    std::vector<std::unique_ptr<Biquad>> bassFilters;
+    std::vector<std::unique_ptr<Biquad>> midFilters;
+    std::vector<std::unique_ptr<Biquad>> trebbleFilters;
 
 
     const float bassFreq = 120.0f;

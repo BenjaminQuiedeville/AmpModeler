@@ -12,10 +12,11 @@
 
 ThreeBandEQ::ThreeBandEQ() {
 
+
     for (uint8_t i = 0; i < nChans; i ++) {
-        bassFilters[i]->setFilterType(Biquad::FilterTypes::PEAK);
-        midFilters[i]->setFilterType(Biquad::FilterTypes::PEAK);
-        trebbleFilters[i]->setFilterType(Biquad::FilterTypes::PEAK);
+        bassFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
+        midFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
+        trebbleFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
     }
 
 }
