@@ -93,6 +93,10 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     preamp.prepareToPlay(spec);
 
+    staticInputGain.prepare(spec);
+    staticInputGain.setRampDurationSeconds(0.02f);
+    staticInputGain.setGainDecibels(24.0f);
+
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
 

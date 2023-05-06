@@ -72,6 +72,7 @@ private:
 
 	juce::dsp::ProcessSpec spec;
 
+    juce::dsp::Gain<sample_t> staticInputGain;
 	juce::dsp::Gain<sample_t> masterVolume;
 
 
