@@ -13,19 +13,19 @@
 #include <JuceHeader.h>
 #include "types.h"
 
-enum FilterTypes {
-    LOWPASS = 0,
-    HIGHPASS,
-    PEAK,
-    LOWSHELF,
-    HIGHSHELF,
-    NFILTERTYPES,
-};
 
 class Biquad {
-
 public:
 
+    enum FilterTypes {
+        LOWPASS = 0,
+        HIGHPASS,
+        PEAK,
+        LOWSHELF,
+        HIGHSHELF,
+        NFILTERTYPES,
+    };
+    
     Biquad() {};
 
     void setFilterType(FilterTypes type) { filterType = type; }
