@@ -30,6 +30,7 @@ public:
     void process(AudioBlock &audioblock);
 
     juce::dsp::Gain<sample_t> preGain;
+    juce::dsp::Gain<sample_t> postGain;
 
     DriveType driveType;
 
@@ -40,8 +41,7 @@ private:
     const float inputFilterFrequency = 900.0f;
 
     std::array<OnepoleFilter, 2> inputFilters;
-    juce::dsp::Gain<sample_t> postGain;
-    juce::dsp::Oversampling<sample_t> overSampler;
+    std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
 
     sample_t processDrive(sample_t &sample, DriveType curveType);
 

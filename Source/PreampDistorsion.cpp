@@ -10,9 +10,11 @@
 
 #include "PreampDistorsion.h"
 
-PreampDistorsion::PreampDistorsion() : 
-    overSampler(2, 2, juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR)
-{
+PreampDistorsion::PreampDistorsion()  {
+    overSampler = std::make_unique<juce::dsp::Oversampling<sample_t>>(
+        2, 2, 
+        juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
+    );
 
     preGain.setGainDecibels(0.0f);
     postGain.setGainDecibels(-12.0f);
@@ -28,13 +30,15 @@ void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec)
 {
     m_samplerate = spec.sampleRate;
 
+    preGain.prepare(spec);
+    postGain.prepare(spec);
+
     inputFilters[0].prepareToPlay(spec);
     inputFilters[1].prepareToPlay(spec);
     inputFilters[0].setCoefficients(inputFilterFrequency);
     inputFilters[1].setCoefficients(inputFilterFrequency);
     
-    overSampler.initProcessing(spec.maximumBlockSize);
-
+    overSampler->initProcessing(spec.maximumBlockSize);
 }
 
 void PreampDistorsion::process(AudioBlock &audioBlock)
