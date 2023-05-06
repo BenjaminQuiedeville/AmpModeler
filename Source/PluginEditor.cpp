@@ -12,11 +12,7 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 
     createKnob(gainSlider, gainSliderLabel, gainSliderAttachment, "PREAMP_GAIN");
 
-
-	volumeSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	volumeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
-	addAndMakeVisible(volumeSlider);
-    volumeSliderAttachment = std::make_unique<SliderAttachment>(audioProcessor.apvts, "MASTER_VOLUME", volumeSlider);
+    createKnob(volumeSlider, volumeSliderLabel, volumeSliderAttachment, "MASTER_VOLUME");
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader.loadIR(); };
     addAndMakeVisible(irLoadButton);
@@ -35,24 +31,37 @@ void AmpModelerAudioProcessorEditor::paint (juce::Graphics& g)
 }
 
 void AmpModelerAudioProcessorEditor::resized() {
+    
+    const int knobSize = 100;
+    const int horizontalMargin = 25;
+    const int verticalMargin = 50;
 
-    int knobSize = 100;
-    int horizontalMargin = 25;
-    int verticalMargin = 50;
+    const int HEIGHT = getHeight() - 2*verticalMargin;
+    const int WIDTH = getWidth() - 2*horizontalMargin;
 
-    bassEQSlider.setBounds(getWidth()/2 - knobSize/2*3, getHeight()/2 - knobSize/2, knobSize, knobSize);
+    const int nRows = 4;
+    const int nCols = 6;
+
+    auto computeXcoord = [&](int col){ return horizontalMargin + WIDTH/nCols * col; };
+    auto computeYcoord = [&](int row){ return verticalMargin + HEIGHT/nRows * row; };
+
+
+    gainSlider.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
+    gainSliderLabel.setBounds(gainSlider.getX(), gainSlider.getY() - 20, gainSlider.getWidth(), 20);
+    
+    bassEQSlider.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
     bassEQSliderLabel.setBounds(bassEQSlider.getX(), bassEQSlider.getY() - 20, bassEQSlider.getWidth(), 20);
 
-    midEQSlider.setBounds(getWidth()/2 - knobSize/2, getHeight()/2 - knobSize/2, knobSize, knobSize);
+    midEQSlider.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
     midEQSliderLabel.setBounds(midEQSlider.getX(), midEQSlider.getY() - 20, midEQSlider.getWidth(), 20);
     
-    trebbleEQSlider.setBounds(getWidth()/2 + knobSize/2, getHeight()/2 - knobSize/2, knobSize, knobSize);
+    trebbleEQSlider.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
     trebbleEQSliderLabel.setBounds(trebbleEQSlider.getX(), trebbleEQSlider.getY() - 20, trebbleEQSlider.getWidth(), 20);
 
-    gainSlider.setBounds(0, bassEQSlider.getY(), knobSize, knobSize);
+	volumeSlider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    volumeSliderLabel.setBounds(volumeSlider.getX(), volumeSlider.getY() - 20, volumeSlider.getWidth(), 20);
 
-	volumeSlider.setBounds(getWidth()/12 * 11 - horizontalMargin, getHeight()/2 + 2*knobSize, knobSize, knobSize);
-    irLoadButton.setBounds(getWidth()/12* 11 - horizontalMargin, getHeight()/2 - 100, 100, 50);
+    irLoadButton.setBounds(computeXcoord(5), computeYcoord(0), 100, 50);
 
 }
 

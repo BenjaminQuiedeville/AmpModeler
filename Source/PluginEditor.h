@@ -35,7 +35,7 @@ private:
     std::unique_ptr<SliderAttachment> gainSliderAttachment;
 
 	juce::Slider volumeSlider;
-    juce::Label volumeSliderLabel;
+    juce::Label volumeSliderLabel {"MASTER_VOLUME_SLIDER_LABEL", "Output"};
     std::unique_ptr<SliderAttachment> volumeSliderAttachment;
 
 
