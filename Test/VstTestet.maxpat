@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 41.0, 84.0, 1165.0, 585.0 ],
+		"rect" : [ 42.0, 85.0, 1263.0, 844.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -203,7 +203,7 @@
 					"maxclass" : "scope~",
 					"numinlets" : 2,
 					"numoutlets" : 0,
-					"patching_rect" : [ 585.0, 555.0, 315.0, 150.0 ]
+					"patching_rect" : [ 127.5, 615.0, 315.0, 150.0 ]
 				}
 
 			}
@@ -287,7 +287,7 @@
 					"maxclass" : "mc.ezdac~",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 840.0, 360.0, 60.0, 60.0 ]
+					"patching_rect" : [ 735.0, 625.0, 60.0, 60.0 ]
 				}
 
 			}
@@ -299,7 +299,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 840.0, 285.0, 60.0, 60.0 ]
+					"patching_rect" : [ 735.0, 550.0, 60.0, 60.0 ]
 				}
 
 			}
@@ -313,7 +313,7 @@
 					"numoutlets" : 4,
 					"outlettype" : [ "multichannelsignal", "", "float", "list" ],
 					"parameter_enable" : 1,
-					"patching_rect" : [ 782.5, 285.0, 48.0, 136.0 ],
+					"patching_rect" : [ 677.5, 550.0, 48.0, 136.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_longname" : "mc.live.gain~",
@@ -528,7 +528,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 782.5, 255.0, 66.0, 22.0 ],
+					"patching_rect" : [ 677.5, 520.0, 66.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -620,14 +620,14 @@
 ,
 		"dependency_cache" : [ 			{
 				"name" : "Metallica.wav",
-				"bootpath" : "~/Dev/Github/AmpModeler/Test",
+				"bootpath" : "D:/Dev/Github/AmpModeler/Test",
 				"patcherrelativepath" : ".",
 				"type" : "WAVE",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "SulphurAeon.wav",
-				"bootpath" : "~/Dev/Github/AmpModeler/Test",
+				"bootpath" : "D:/Dev/Github/AmpModeler/Test",
 				"patcherrelativepath" : ".",
 				"type" : "WAVE",
 				"implicit" : 1
