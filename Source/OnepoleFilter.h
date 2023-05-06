@@ -53,8 +53,6 @@ public:
         }
     }
     
-    
-
 private:
 
     float piOverSamplerate;
