@@ -16,10 +16,33 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
         apvts(*this, nullptr, "Params", createParameterLayout())
 #endif
 {
+    apvts.addParameterListener("GATE_THRESH", this);
+    apvts.addParameterListener("BITE", this);
+    apvts.addParameterListener("TIGHT", this);
+    apvts.addParameterListener("PRE_BOOST", this);
+    apvts.addParameterListener("PREAMP_GAIN", this);
+    apvts.addParameterListener("3_BAND_EQ_BASS", this);
+    apvts.addParameterListener("3_BAND_EQ_MIDDLE", this);
+    apvts.addParameterListener("3_BAND_EQ_TREBBLE", this);
+    apvts.addParameterListener("PREAMP_VOLUME", this);
+    apvts.addParameterListener("RESONANCE", this);
+    apvts.addParameterListener("PRESENCE", this);
+    apvts.addParameterListener("MASTER_VOLUME", this);
 }
 
-AmpModelerAudioProcessor::~AmpModelerAudioProcessor()
-{
+AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
+    apvts.removeParameterListener("GATE_THRESH", this);
+    apvts.removeParameterListener("BITE", this);
+    apvts.removeParameterListener("TIGHT", this);
+    apvts.removeParameterListener("PRE_BOOST", this);
+    apvts.removeParameterListener("PREAMP_GAIN", this);
+    apvts.removeParameterListener("3_BAND_EQ_BASS", this);
+    apvts.removeParameterListener("3_BAND_EQ_MIDDLE", this);
+    apvts.removeParameterListener("3_BAND_EQ_TREBBLE", this);
+    apvts.removeParameterListener("PREAMP_VOLUME", this);
+    apvts.removeParameterListener("RESONANCE", this);
+    apvts.removeParameterListener("PRESENCE", this);
+    apvts.removeParameterListener("MASTER_VOLUME", this);
 }
 
 //==============================================================================
@@ -95,10 +118,11 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     staticInputGain.prepare(spec);
     staticInputGain.setRampDurationSeconds(0.02f);
-    staticInputGain.setGainDecibels(24.0f);
+    staticInputGain.setGainDecibels(48.0f);
 
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
+    masterVolume.setGainDecibels(-6.0f);
 
     postEQ.prepareToPlay(spec);
     irLoader.prepareToPlay(spec);
@@ -150,16 +174,9 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     AudioBlock audioBlock { buffer };
 
-    preamp.preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
-
-    float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
-    float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
-    float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
-    postEQ.updateGains(bassEQgain, midEQgian, trebbleEQgian);
-    
-    masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
-
     /******PROCESS********/
+
+    staticInputGain.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
     preamp.process(audioBlock);
     postEQ.process(audioBlock);
@@ -214,6 +231,60 @@ void AmpModelerAudioProcessor::safetyClip(AudioBlock &audioBlock) {
     }
 }
 
+
+void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
+    if (parameterID == "GATE_THRESH") {
+
+    }
+
+    if (parameterID == "BITE") {
+
+    }
+
+    if (parameterID == "TIGHT") {
+
+    }
+
+    if (parameterID == "PRE_BOOST") {
+
+    }
+
+    if (parameterID == "PREAMP_GAIN") {
+        preamp.preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
+    }
+
+    if (parameterID == "3_BAND_EQ_BASS"
+        || parameterID == "3_BAND_EQ_MIDDLE"
+        || parameterID == "3_BAND_EQ_TREBBLE")
+    {
+        float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
+        float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
+        float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
+        postEQ.updateGains(bassEQgain, midEQgian, trebbleEQgian);
+    }
+
+    if (parameterID == "PREAMP_VOLUME") {
+        float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
+
+        preamp.postGain.setGainDecibels(preampVolume);
+    }
+
+    if (parameterID == "RESONANCE") {
+
+    }
+
+    if (parameterID == "PRESENCE") {
+
+    }
+
+    if (parameterID == "MASTER_VOLUME") {
+        masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
+    }
+
+
+}
+
+
 juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::createParameterLayout()
 {   
 
@@ -231,7 +302,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_MIDDLE", "Mid", -12.0f, 12.0f, 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_TREBBLE", "Trebble", -12.0f, 12.0f, 0.0f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_VOLUME", "Post Gain", -30.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_VOLUME", "Post Gain", -30.0f, 10.0f, -12.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("RESONANCE", "Reson", 0.0f, 3.0f, 0.0f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>("PRESENCE", "Presence", 0.0f, 3.0f, 0.0f));
 

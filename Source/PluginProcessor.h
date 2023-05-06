@@ -18,10 +18,11 @@ RESTANT :
 */
 
 
-class AmpModelerAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class AmpModelerAudioProcessor  : public juce::AudioProcessor, 
+                                juce::AudioProcessorValueTreeState::Listener
+                                #if JucePlugin_Enable_ARA
+                                , public juce::AudioProcessorARAExtension
+                                #endif
 {
 public:
 	//==============================================================================
@@ -69,7 +70,7 @@ public:
     IRLoader irLoader;
 
 private:
-
+    
 	juce::dsp::ProcessSpec spec;
 
     juce::dsp::Gain<sample_t> staticInputGain;
@@ -78,6 +79,8 @@ private:
 
     void safetyClip(AudioBlock &audioBlock);
 
+
+    void parameterChanged(const juce::String &parameterID, float newValue) override;
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
