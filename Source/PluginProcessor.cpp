@@ -114,6 +114,8 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
 
+    noiseGate.prepareToPlay(spec);
+
     preamp.prepareToPlay(spec);
 
     staticInputGain.prepare(spec);
@@ -175,6 +177,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     AudioBlock audioBlock { buffer };
 
     /******PROCESS********/
+    noiseGate.process(audioBlock);
 
     staticInputGain.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
@@ -200,22 +203,26 @@ juce::AudioProcessorEditor* AmpModelerAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void AmpModelerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
-{
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-}
+void AmpModelerAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {
+    // save params
+    juce::MemoryOutputStream stream(destData, false);
+    apvts.state.writeToStream(stream);
+}   
 
-void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
-{
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {
+    // Recall params
+    juce::ValueTree importedTree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
+
+    if (importedTree.isValid()) {
+        apvts.state = importedTree;
+        initParameters();
+    }
+
 }
 
 void AmpModelerAudioProcessor::safetyClip(AudioBlock &audioBlock) {
 
-    auto clip = [](sample_t x) {
+    auto clip = [](sample_t x) { 
         return x > 1.0f ? 1.0f
              : x < -1.0f ? -1.0f 
              : x;
@@ -231,10 +238,26 @@ void AmpModelerAudioProcessor::safetyClip(AudioBlock &audioBlock) {
     }
 }
 
+void AmpModelerAudioProcessor::initParameters() {
+
+    noiseGate.threshold = *apvts.getRawParameterValue("GATE_THRESH");
+
+    preamp.preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
+
+    float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
+    float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
+    float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
+    postEQ.updateGains(bassEQgain, midEQgian, trebbleEQgian);
+
+    float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
+    preamp.postGain.setGainDecibels(preampVolume);
+    
+    masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
+}
 
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
     if (parameterID == "GATE_THRESH") {
-
+        noiseGate.threshold = *apvts.getRawParameterValue("GATE_THRESH");
     }
 
     if (parameterID == "BITE") {
@@ -265,7 +288,6 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
     if (parameterID == "PREAMP_VOLUME") {
         float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
-
         preamp.postGain.setGainDecibels(preampVolume);
     }
 
@@ -283,7 +305,6 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
 
 }
-
 
 juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::createParameterLayout()
 {   
@@ -311,9 +332,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 
     return { params.begin(), params.end() };
 }
-
-
-
 
 //==============================================================================
 // This creates new instances of the plugin..

@@ -3,9 +3,10 @@
 #include <JuceHeader.h>
 #include "types.h"
 
+#include "NoiseGate.h"
+#include "PreampDistorsion.h"
 #include "ThreeBandEQ.h"
 #include "IRLoader.h"
-#include "PreampDistorsion.h"
 
 /*
 RESTANT : 
@@ -64,13 +65,13 @@ public:
 
 	juce::AudioProcessorValueTreeState apvts;
 
-
+    NoiseGate noiseGate;
     PreampDistorsion preamp;
     ThreeBandEQ postEQ;
     IRLoader irLoader;
 
 private:
-    
+
 	juce::dsp::ProcessSpec spec;
 
     juce::dsp::Gain<sample_t> staticInputGain;
@@ -79,7 +80,7 @@ private:
 
     void safetyClip(AudioBlock &audioBlock);
 
-
+    void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
