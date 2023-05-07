@@ -16,6 +16,13 @@ public:
 
 private:
 
+    juce::Slider gateSlider;
+    juce::Label gateSliderLabel {"GATE_SLIDER_LABEL", "Gate Thresh"};
+    std::unique_ptr<SliderAttachment> gateSliderAttachment; 
+
+    juce::Slider gainSlider;
+    juce::Label gainSliderLabel {"GAIN_SLIDER_LABEL", "Pre Gain"};
+    std::unique_ptr<SliderAttachment> gainSliderAttachment;
 
     juce::Slider bassEQSlider;
     juce::Label bassEQSliderLabel {"BASS_EQ_SLIDER_LABEL", "Bass"};
@@ -29,13 +36,13 @@ private:
     juce::Label trebbleEQSliderLabel {"TREBBLE_EQ_SLIDER_LABEL", "Trebble"};
     std::unique_ptr<SliderAttachment> trebbleEQSliderAttachment;
 
+    juce::Slider preampVolumeSlider;
+    juce::Label preampVolumeSliderLabel {"PREMP_VOLUME_SLIDER_LABEL", "Post Gain"};
+    std::unique_ptr<SliderAttachment> preampVolumeSliderAttachment;
 
-    juce::Slider gainSlider;
-    juce::Label gainSliderLabel {"GAIN_SLIDER_LABEL", "Pre Gain"};
-    std::unique_ptr<SliderAttachment> gainSliderAttachment;
 
 	juce::Slider volumeSlider;
-    juce::Label volumeSliderLabel {"MASTER_VOLUME_SLIDER_LABEL", "Output"};
+    juce::Label volumeSliderLabel {"MASTER_VOLUME_SLIDER_LABEL", "Output Level"};
     std::unique_ptr<SliderAttachment> volumeSliderAttachment;
 
 
