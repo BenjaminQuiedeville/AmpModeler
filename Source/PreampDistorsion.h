@@ -37,11 +37,13 @@ public:
 private:
 
     float m_samplerate;
-    float stageGain;
+    juce::dsp::Gain<float> stageGain;
     const float inputFilterFrequency = 900.0f;
 
     std::array<OnepoleFilter, 2> inputFilters;
     std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
+
+    AudioBlock overSampledBlock;
 
     sample_t processDrive(sample_t &sample, DriveType curveType);
 
