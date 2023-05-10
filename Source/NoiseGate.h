@@ -36,8 +36,7 @@ private:
     float releaseSeconds = 10.0f * 0.001;
 
     bool isOpen;
-    juce::dsp::Gain<sample_t> gateGainLeft;
-    juce::dsp::Gain<sample_t> gateGainRight;
+    juce::dsp::Gain<sample_t> gateGain;
 
     float computeRampIncrement(float currentValue, float targetValue, float nSamples);
     float rampStep(float currentValue, float targetValue, float increment);

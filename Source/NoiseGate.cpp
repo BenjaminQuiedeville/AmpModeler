@@ -23,24 +23,19 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGainLeft.prepare(spec);
-    gateGainLeft.setRampDurationSeconds(attackSeconds);
-    gateGainLeft.setGainLinear(0.0f);
-
-    gateGainRight.prepare(spec);
-    gateGainRight.setRampDurationSeconds(attackSeconds);
-    gateGainRight.setGainLinear(0.0f);
+    gateGain.prepare(spec);
+    gateGain.setRampDurationSeconds(attackSeconds);
+    gateGain.setGainLinear(0.0f);
 }
 
 
 void NoiseGate::process(AudioBlock &audioBlock) {
 
-    float *audioBlockPtrLeft = audioBlock.getChannelPointer(0);
-    float *audioBlockPtrRight = audioBlock.getChannelPointer(1);
+    float *audioBlockPtr = audioBlock.getChannelPointer(0);
 
     for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
 
-        rmsBufferPtr[rmsBufferIndex] = (audioBlockPtrLeft[index] + audioBlockPtrRight[index]);
+        rmsBufferPtr[rmsBufferIndex] = (audioBlockPtr[index]);
         rmsBufferIndex++;
 
         if (rmsBufferIndex == rmsBuffer.getNumSamples()) {
@@ -52,15 +47,11 @@ void NoiseGate::process(AudioBlock &audioBlock) {
             
             float rampTime = isOpen ? attackSeconds : releaseSeconds;
             float newGain = isOpen ? 1.0f : 0.0f;
-            gateGainLeft.setRampDurationSeconds(rampTime);
-            gateGainLeft.setGainLinear(newGain);
-
-            gateGainRight.setRampDurationSeconds(rampTime);
-            gateGainRight.setGainLinear(newGain);
+            gateGain.setRampDurationSeconds(rampTime);
+            gateGain.setGainLinear(newGain);
         }
 
-       audioBlockPtrLeft[index] = gateGainLeft.processSample(audioBlockPtrLeft[index]);
-       audioBlockPtrRight[index] = gateGainRight.processSample(audioBlockPtrRight[index]);
+       audioBlockPtr[index] = gateGain.processSample(audioBlockPtr[index]);
     }    
 }
 

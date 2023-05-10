@@ -175,18 +175,18 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
 
     AudioBlock audioBlock { buffer };
+    audioBlock = audioBlock.getSingleChannelBlock(0);
 
     /******PROCESS********/
     noiseGate.process(audioBlock);
 
-    staticInputGain.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
+    // staticInputGain.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
     preamp.process(audioBlock);
     postEQ.process(audioBlock);
     irLoader.performConvolution(audioBlock);
     // safetyClip(audioBlock);
     
-
     masterVolume.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
 }
