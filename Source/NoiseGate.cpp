@@ -60,8 +60,7 @@ float NoiseGate::computeRampIncrement(float currentValue, float targetValue, flo
 }
 
 float NoiseGate::rampStep(float currentValue, float targetValue, float increment) {
-    if (fabs(targetValue - currentValue) < fabs(increment)) {
-        return targetValue;
-    }
-    return currentValue + increment;
+    return fabs(targetValue - currentValue) < fabs(increment) 
+        ? targetValue
+        : currentValue + increment;
 }

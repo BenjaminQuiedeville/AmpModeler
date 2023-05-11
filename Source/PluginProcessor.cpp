@@ -175,6 +175,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
 
     AudioBlock audioBlock { buffer };
+    // isolate left channel 
     audioBlock = audioBlock.getSingleChannelBlock(0);
 
     /******PROCESS********/
@@ -188,6 +189,9 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // safetyClip(audioBlock);
     
     masterVolume.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
+
+    // copy left channel into right channel
+    buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
 
 }
 

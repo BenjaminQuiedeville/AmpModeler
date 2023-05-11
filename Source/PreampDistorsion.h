@@ -19,7 +19,9 @@
 enum DriveType {
     APPROX, 
     TANH,
+    CUBIC,
     HARDCLIP,
+    NTYPES,
 };
 
 class PreampDistorsion {
@@ -40,12 +42,12 @@ private:
     juce::dsp::Gain<float> stageGain;
     const float inputFilterFrequency = 900.0f;
 
-    std::array<OnepoleFilter, 2> inputFilters;
+    OnepoleFilter inputFilter;
     std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
 
     AudioBlock overSampledBlock;
 
-    sample_t processDrive(sample_t &sample, DriveType curveType);
+    sample_t processDrive(sample_t sample, DriveType curveType);
 
     sample_t expappr(sample_t x) { 
 

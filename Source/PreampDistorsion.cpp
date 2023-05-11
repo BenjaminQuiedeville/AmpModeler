@@ -13,7 +13,7 @@
 PreampDistorsion::PreampDistorsion() {
     
     overSampler = std::make_unique<juce::dsp::Oversampling<sample_t>>(
-        2, 2, 
+        1, 2, 
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
 
@@ -36,49 +36,44 @@ void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     stageGain.prepare(spec);
     postGain.prepare(spec);
 
-    inputFilters[0].prepareToPlay(spec);
-    inputFilters[1].prepareToPlay(spec);
-    inputFilters[0].setCoefficients(inputFilterFrequency);
-    inputFilters[1].setCoefficients(inputFilterFrequency);
+    inputFilter.prepareToPlay(spec);
+    inputFilter.setCoefficients(inputFilterFrequency);
     
     overSampler->initProcessing(spec.maximumBlockSize);
 }
 
 void PreampDistorsion::process(AudioBlock &audioBlock) {
 
-    for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
-        float *bufferPtr = audioBlock.getChannelPointer(channel);
-        inputFilters[channel].processBufferHighpass(bufferPtr, audioBlock.getNumSamples());
-    }
+    float *bufferPtr = audioBlock.getChannelPointer(0);
+    inputFilter.processBufferHighpass(bufferPtr, audioBlock.getNumSamples());
+    
 
     overSampledBlock = overSampler->processSamplesUp(audioBlock);
 
     // d'abord sans upsampling pour voir si la courbe fonctionne bien.
-    for (uint8_t channel = 0; channel < overSampledBlock.getNumChannels(); channel++) {
         
-        float *bufferPtr = overSampledBlock.getChannelPointer(channel);
-        for (size_t index = 0; index < overSampledBlock.getNumSamples(); index++) {
-            
+    bufferPtr = overSampledBlock.getChannelPointer(0);
+    for (size_t index = 0; index < overSampledBlock.getNumSamples(); index++) {
+        
 
-            bufferPtr[index] = preGain.processSample(bufferPtr[index]);
+        bufferPtr[index] = preGain.processSample(bufferPtr[index]);
 
-            bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
-            bufferPtr[index] = processDrive(bufferPtr[index], driveType);
-            bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
-            bufferPtr[index] = processDrive(bufferPtr[index], driveType);
-            bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
-            bufferPtr[index] = processDrive(bufferPtr[index], driveType);
-            bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
-            bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
+        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
+        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
+        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        bufferPtr[index] = stageGain.processSample(bufferPtr[index]);
+        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
 
-            bufferPtr[index] = postGain.processSample(bufferPtr[index]);
-        }
+        bufferPtr[index] = postGain.processSample(bufferPtr[index]);
     }
 
     overSampler->processSamplesDown(audioBlock);
 }
 
-sample_t PreampDistorsion::processDrive(sample_t &sample, DriveType curveType) {
+sample_t PreampDistorsion::processDrive(sample_t sample, DriveType curveType) {
     
     switch (curveType) {
         case APPROX:

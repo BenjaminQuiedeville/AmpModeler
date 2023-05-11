@@ -12,12 +12,9 @@
 
 ThreeBandEQ::ThreeBandEQ() {
 
-
-    for (uint8_t i = 0; i < nChans; i ++) {
-        bassFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
-        midFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
-        trebbleFilters.push_back(std::make_unique<Biquad>(Biquad::FilterType::PEAK));
-    }
+    bassFilters = std::make_unique<Biquad>(Biquad::FilterType::PEAK);
+    midFilters = std::make_unique<Biquad>(Biquad::FilterType::PEAK);
+    trebbleFilters = std::make_unique<Biquad>(Biquad::FilterType::PEAK);
 
 }
 
@@ -25,33 +22,25 @@ ThreeBandEQ::~ThreeBandEQ() {}
 
 void ThreeBandEQ::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 
-    for (uint8_t i = 0; i < nChans; i ++) {
-        bassFilters[i]->prepareToPlay(spec);
-        midFilters[i]->prepareToPlay(spec);
-        trebbleFilters[i]->prepareToPlay(spec);
-    }
+    bassFilters->prepareToPlay(spec);
+    midFilters->prepareToPlay(spec);
+    trebbleFilters->prepareToPlay(spec);
 }
 
 void ThreeBandEQ::process(AudioBlock &audioBlock) {
 
-
-    for (uint8_t channel = 0; channel < nChans; channel++) {
+    float *bufferPtr = audioBlock.getChannelPointer(0);
+    for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
         
-        float *bufferPtr = audioBlock.getChannelPointer(channel);
-        for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-            
-            bassFilters[channel]->process(&bufferPtr[index]);
-            midFilters[channel]->process(&bufferPtr[index]);
-            trebbleFilters[channel]->process(&bufferPtr[index]);
-        }
+        bassFilters->process(&bufferPtr[index]);
+        midFilters->process(&bufferPtr[index]);
+        trebbleFilters->process(&bufferPtr[index]);
     }
 }
 
 void ThreeBandEQ::updateGains(const float bassGain, const float midGain, const float trebbleGain) {
 
-    for (uint8_t i = 0; i < nChans; i ++) {
-        bassFilters[i]->setCoefficients(bassFreq, bassQ, bassGain);
-        midFilters[i]->setCoefficients(midFreq, midQ, midGain);
-        trebbleFilters[i]->setCoefficients(trebbleFreq, trebbleQ, trebbleGain);
-    }
+    bassFilters->setCoefficients(bassFreq, bassQ, bassGain);
+    midFilters->setCoefficients(midFreq, midQ, midGain);
+    trebbleFilters->setCoefficients(trebbleFreq, trebbleQ, trebbleGain);
 }

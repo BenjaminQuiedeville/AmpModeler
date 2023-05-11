@@ -23,16 +23,15 @@ public:
 
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void process(AudioBlock& audioBlock);
-    void updateGains(const float bassGain, const float midGain, const float trebbleGain);
+    void updateGains(const float bassGain, 
+                     const float midGain, 
+                     const float trebbleGain);
 
 private:
 
-    static const uint8_t nChans = 2;
-    // const uint8_t nBands = 3;
-
-    std::vector<std::unique_ptr<Biquad>> bassFilters;
-    std::vector<std::unique_ptr<Biquad>> midFilters;
-    std::vector<std::unique_ptr<Biquad>> trebbleFilters;
+    std::unique_ptr<Biquad> bassFilters;
+    std::unique_ptr<Biquad> midFilters;
+    std::unique_ptr<Biquad> trebbleFilters;
 
 
     const float bassFreq = 120.0f;
