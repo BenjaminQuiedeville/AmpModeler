@@ -4,6 +4,7 @@
 #include "types.h"
 
 #include "NoiseGate.h"
+#include "PreBoost.h"
 #include "PreampDistorsion.h"
 #include "ThreeBandEQ.h"
 #include "IRLoader.h"
@@ -66,6 +67,7 @@ public:
 	juce::AudioProcessorValueTreeState apvts;
 
     NoiseGate noiseGate;
+    PreBoost preBoost;
     PreampDistorsion preamp;
     ThreeBandEQ postEQ;
     IRLoader irLoader;

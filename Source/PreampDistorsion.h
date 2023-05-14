@@ -14,6 +14,7 @@
 
 #include "types.h"
 #include "OnepoleFilter.h"
+#include "Biquad.h"
 #include <array>
 
 enum DriveType {
@@ -41,11 +42,11 @@ private:
     float m_samplerate;
     juce::dsp::Gain<float> stageGain;
     const float inputFilterFrequency = 900.0f;
-
     OnepoleFilter inputFilter;
-    std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
 
+    std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
     AudioBlock overSampledBlock;
+
 
     sample_t processDrive(sample_t sample, DriveType curveType);
 

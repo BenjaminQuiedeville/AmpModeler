@@ -27,7 +27,7 @@ public:
 
 private:
 
-    const std::string filepath = "C:/Users/Benjamin/Dev/Github/AmpModeler/Test/01 Modern Standard.wav";
+    const std::string filepath = "D:/Dev/Github/AmpModeler/Test/01 Modern Standard.wav";
 
     juce::AudioFormatManager irFormarManager;
     // juce::AudioFormatReader irFormatLoader;

@@ -36,7 +36,7 @@ private:
 
     const float bassFreq = 120.0f;
     const float midFreq = 750.0f;
-    const float trebbleFreq = 4500.0f;
+    const float trebbleFreq = 3500.0f;
     
     const float bassQ = 0.5;
     const float midQ = 0.5;

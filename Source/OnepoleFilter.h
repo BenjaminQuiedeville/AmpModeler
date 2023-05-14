@@ -38,12 +38,9 @@ public:
         return sample - lpSample;
     }
 
-    void processBufferLowpass(AudioBlock &audioBlock) {
-        for (uint8_t channel = 0; channel < audioBlock.getNumChannels(); channel++) {
-            float *bufferPtr = audioBlock.getChannelPointer(channel);
-            for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-                bufferPtr[index] = processLowPass(bufferPtr[index]);
-            }
+    void processBufferLowpass(float *bufferPtr, size_t numSamples) {
+        for (size_t index = 0; index < numSamples; index++) {
+            bufferPtr[index] = processLowPass(bufferPtr[index]);
         }
     }
 

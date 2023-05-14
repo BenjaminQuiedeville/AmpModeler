@@ -24,7 +24,7 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 
     isOpen = false;
     gateGain.prepare(spec);
-    gateGain.setRampDurationSeconds(attackSeconds);
+    gateGain.setRampDurationSeconds(attackTimeSeconds);
     gateGain.setGainLinear(0.0f);
 }
 
@@ -32,7 +32,6 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 void NoiseGate::process(AudioBlock &audioBlock) {
 
     float *audioBlockPtr = audioBlock.getChannelPointer(0);
-
     for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
 
         rmsBufferPtr[rmsBufferIndex] = (audioBlockPtr[index]);
@@ -45,22 +44,12 @@ void NoiseGate::process(AudioBlock &audioBlock) {
             isOpen = juce::Decibels::gainToDecibels(currentRms) > threshold;
             // DBG("current RMS : " << juce::Decibels::gainToDecibels(currentRms));
             
-            float rampTime = isOpen ? attackSeconds : releaseSeconds;
-            float newGain = isOpen ? 1.0f : 0.0f;
-            gateGain.setRampDurationSeconds(rampTime);
-            gateGain.setGainLinear(newGain);
+            // float rampTime = isOpen ? attackTimeSeconds : releaseTimeSeconds;
+            // float newGain = isOpen ? 1.0f : 0.0f;
+            gateGain.setRampDurationSeconds(isOpen ? attackTimeSeconds : releaseTimeSeconds);
+            gateGain.setGainLinear(isOpen ? 1.0f : 0.0f);
         }
 
        audioBlockPtr[index] = gateGain.processSample(audioBlockPtr[index]);
     }    
-}
-
-float NoiseGate::computeRampIncrement(float currentValue, float targetValue, float nSamples) {
-    return (targetValue - currentValue)/(nSamples);
-}
-
-float NoiseGate::rampStep(float currentValue, float targetValue, float increment) {
-    return fabs(targetValue - currentValue) < fabs(increment) 
-        ? targetValue
-        : currentValue + increment;
 }

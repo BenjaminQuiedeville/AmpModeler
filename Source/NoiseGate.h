@@ -32,13 +32,9 @@ private:
     float *rmsBufferPtr;
     size_t rmsBufferIndex;
 
-    float attackSeconds = 1.0f * 0.001;
-    float releaseSeconds = 10.0f * 0.001;
+    float attackTimeSeconds = 0.1f * 0.001;
+    float releaseTimeSeconds = 15.0f * 0.001;
 
     bool isOpen;
     juce::dsp::Gain<sample_t> gateGain;
-
-    float computeRampIncrement(float currentValue, float targetValue, float nSamples);
-    float rampStep(float currentValue, float targetValue, float increment);
-
 };

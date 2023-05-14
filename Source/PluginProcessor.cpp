@@ -118,10 +118,6 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     preamp.prepareToPlay(spec);
 
-    staticInputGain.prepare(spec);
-    staticInputGain.setRampDurationSeconds(0.02f);
-    staticInputGain.setGainDecibels(48.0f);
-
     masterVolume.prepare(spec);
     masterVolume.setRampDurationSeconds(0.02f);
     masterVolume.setGainDecibels(-6.0f);
@@ -180,8 +176,6 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     /******PROCESS********/
     noiseGate.process(audioBlock);
-
-    // staticInputGain.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
 
     preamp.process(audioBlock);
     postEQ.process(audioBlock);
