@@ -1,8 +1,6 @@
 
 *.json
 *.vsidx
-Builds/*
-JuceLibraryCode/*
 *.db
 *.db-shm
 *.opendb
@@ -10,3 +8,6 @@ JuceLibraryCode/*
 *.sqlite
 *.db-wal
 .vs/AmpModeler/v17/.suo
+
+Builds/VisualStudio2022/x64
+Builds/VisualStudio2022/.vs
