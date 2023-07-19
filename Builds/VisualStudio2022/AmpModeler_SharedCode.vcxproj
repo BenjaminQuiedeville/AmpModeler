@@ -139,7 +139,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\PreBoost.cpp"/>
+    <ClCompile Include="..\..\Source\preBoost.cpp"/>
     <ClCompile Include="..\..\Source\NoiseGate.cpp"/>
     <ClCompile Include="..\..\Source\ThreeBandEQ.cpp"/>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp"/>
@@ -2428,7 +2428,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\PreBoost.h"/>
+    <ClInclude Include="..\..\Source\preBoost.h"/>
     <ClInclude Include="..\..\Source\NoiseGate.h"/>
     <ClInclude Include="..\..\Source\OnepoleFilter.h"/>
     <ClInclude Include="..\..\Source\ThreeBandEQ.h"/>

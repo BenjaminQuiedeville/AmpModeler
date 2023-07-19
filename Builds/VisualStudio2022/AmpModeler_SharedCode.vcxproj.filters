@@ -601,7 +601,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\PreBoost.cpp">
+    <ClCompile Include="..\..\Source\preBoost.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\NoiseGate.cpp">
@@ -3063,7 +3063,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\PreBoost.h">
+    <ClInclude Include="..\..\Source\preBoost.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\NoiseGate.h">
