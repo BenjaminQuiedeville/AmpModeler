@@ -15,8 +15,7 @@
 #include "types.h"
 
 
-class ThreeBandEQ {
-public:
+struct ThreeBandEQ {
 
     ThreeBandEQ();
     ~ThreeBandEQ();
@@ -27,12 +26,10 @@ public:
                      const float midGain, 
                      const float trebbleGain);
 
-private:
 
-    std::unique_ptr<Biquad> bassFilters;
-    std::unique_ptr<Biquad> midFilters;
-    std::unique_ptr<Biquad> trebbleFilters;
-
+    Biquad *bassFilters;
+    Biquad *midFilters;
+    Biquad *trebbleFilters;
 
     const float bassFreq = 120.0f;
     const float midFreq = 750.0f;

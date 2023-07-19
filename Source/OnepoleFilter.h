@@ -12,8 +12,7 @@
 
 #pragma once
 
-class OnepoleFilter {
-public:
+struct OnepoleFilter {
 
     OnepoleFilter() {}
 
@@ -50,7 +49,6 @@ public:
         }
     }
     
-private:
 
     float piOverSamplerate;
 

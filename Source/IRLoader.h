@@ -14,9 +14,8 @@
 #include <JuceHeader.h>
 #include "types.h"
 
-class IRLoader {
+struct IRLoader {
 
-public:
     IRLoader();
 
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
@@ -25,7 +24,6 @@ public:
     void loadDefaultIR();
     void performConvolution(AudioBlock& audioBlock);
 
-private:
 
     const std::string filepath = "D:/Dev/Github/AmpModeler/Test/01 Modern Standard.wav";
 

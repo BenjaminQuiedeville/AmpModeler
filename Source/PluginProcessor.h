@@ -66,11 +66,11 @@ public:
 
 	juce::AudioProcessorValueTreeState apvts;
 
-    NoiseGate noiseGate;
-    PreBoost preBoost;
-    PreampDistorsion preamp;
-    ThreeBandEQ postEQ;
-    IRLoader irLoader;
+    NoiseGate *noiseGate;
+    PreBoost *preBoost;
+    PreampDistorsion *preamp;
+    ThreeBandEQ *postEQ;
+    IRLoader *irLoader;
 
 private:
 

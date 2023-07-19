@@ -11,8 +11,14 @@
 #include "PreBoost.h"
 
 PreBoost::PreBoost() {
-    tightFilter = std::make_unique<Biquad>(Biquad::FilterType::LOWPASS);
-    biteFilter = std::make_unique<Biquad>(Biquad::FilterType::PEAK);
+    tightFilter = new Biquad(Biquad::FilterType::LOWPASS);
+    biteFilter = new Biquad(Biquad::FilterType::PEAK);
+}
+
+PreBoost::~PreBoost() {
+    delete tightFilter;
+    delete biteFilter;
+
 }
 
 void PreBoost::prepareToPlay(juce::dsp::ProcessSpec &spec) {

@@ -14,19 +14,16 @@
 #include "types.h"
 #include "Biquad.h"
 
-class PreBoost {
-public:
+struct PreBoost {
 
     PreBoost();
+    ~PreBoost();
 
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
     void updateTight(const float newFrequency);
     void updateBite(const float newGain);
     void process(AudioBlock &audioBlock);
 
-
-
-private:
 
     float tightFrequency;
     const float biteFrequency = 1700.0f;
@@ -36,7 +33,7 @@ private:
 
     float biteGain;
 
-    std::unique_ptr<Biquad> tightFilter;
-    std::unique_ptr<Biquad> biteFilter;
+    Biquad *tightFilter;
+    Biquad *biteFilter;
 
 };

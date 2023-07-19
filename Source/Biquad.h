@@ -14,8 +14,7 @@
 #include "types.h"
 
 
-class Biquad {
-public:
+struct Biquad {
 
     enum FilterType {
         LOWPASS = 0,
@@ -28,14 +27,10 @@ public:
 
     Biquad(FilterType type) { filterType = type; }
 
-    void setFilterType(FilterType type) { filterType = type; }
-
     void prepareToPlay(juce::dsp::ProcessSpec& spec);
     void reset();
     void setCoefficients(const float frequency, const float Q, const float gaindB);
     void process(sample_t *sample);
-
-private:
 
     FilterType filterType;
     double samplerate;

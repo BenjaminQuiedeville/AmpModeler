@@ -13,16 +13,13 @@
 #include <JuceHeader.h>
 #include "types.h"
 
-class NoiseGate {
-public:
-
+struct NoiseGate {
     NoiseGate() {};
 
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
     void process(AudioBlock &audioBlock);
 
     float threshold;
-private:
 
     float samplerate;
     size_t windowSize; //10ms

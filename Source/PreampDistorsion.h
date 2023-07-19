@@ -25,10 +25,10 @@ enum DriveType {
     NTYPES,
 };
 
-class PreampDistorsion {
-public:
+struct PreampDistorsion {
     PreampDistorsion();
-
+    ~PreampDistorsion();
+    
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
     void process(AudioBlock &audioblock);
 
@@ -37,14 +37,12 @@ public:
 
     DriveType driveType;
 
-private:
-
     float m_samplerate;
     juce::dsp::Gain<float> stageGain;
     const float inputFilterFrequency = 900.0f;
     OnepoleFilter inputFilter;
 
-    std::unique_ptr<juce::dsp::Oversampling<sample_t>> overSampler;
+    juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
 
 

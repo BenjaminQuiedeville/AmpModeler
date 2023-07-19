@@ -12,12 +12,16 @@
 
 PreampDistorsion::PreampDistorsion() {
     
-    overSampler = std::make_unique<juce::dsp::Oversampling<sample_t>>(
+    overSampler = new juce::dsp::Oversampling<sample_t>(
         1, 1, 
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
 
     driveType = CUBIC;
+}
+
+PreampDistorsion::~PreampDistorsion() {
+    delete overSampler;
 }
 
 void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec) {
