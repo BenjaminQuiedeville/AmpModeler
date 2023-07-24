@@ -5,8 +5,8 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
-      <FILE id="R7uu3P" name="preBoost.cpp" compile="1" resource="0" file="Source/preBoost.cpp"/>
-      <FILE id="jWYbtP" name="preBoost.h" compile="0" resource="0" file="Source/preBoost.h"/>
+      <FILE id="lXkePf" name="PreBoost.cpp" compile="1" resource="0" file="Source/PreBoost.cpp"/>
+      <FILE id="elEYj0" name="PreBoost.h" compile="0" resource="0" file="Source/PreBoost.h"/>
       <FILE id="inaQln" name="NoiseGate.cpp" compile="1" resource="0" file="Source/NoiseGate.cpp"/>
       <FILE id="HEpT1R" name="NoiseGate.h" compile="0" resource="0" file="Source/NoiseGate.h"/>
       <FILE id="YblBs8" name="OnepoleFilter.h" compile="0" resource="0" file="Source/OnepoleFilter.h"/>
@@ -55,8 +55,8 @@
     </VS2022>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" recommendedWarnings="GCC"/>
-        <CONFIGURATION isDebug="0" name="Release"/>
+        <CONFIGURATION isDebug="1" name="Debug" recommendedWarnings="GCC" linuxArchitecture="-march=native"/>
+        <CONFIGURATION isDebug="0" name="Release" recommendedWarnings="GCC" linuxArchitecture="-march=native"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="D:\Dev\Libraries\JUCE\modules"/>

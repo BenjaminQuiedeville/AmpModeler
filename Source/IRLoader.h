@@ -30,7 +30,7 @@ struct IRLoader {
     juce::AudioFormatManager irFormarManager;
     // juce::AudioFormatReader irFormatLoader;
     juce::AudioBuffer<sample_t> irBuffer;
-    juce::dsp::Convolution irConvolver;
+    juce::dsp::Convolution *irConvolver;
 
     juce::dsp::Gain<sample_t> safetyGain;
 };
