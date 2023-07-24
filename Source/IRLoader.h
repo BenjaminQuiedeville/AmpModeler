@@ -24,8 +24,7 @@ struct IRLoader {
     void loadDefaultIR();
     void performConvolution(AudioBlock& audioBlock);
 
-
-    const std::string filepath = "D:/Dev/Github/AmpModeler/Test/01 Modern Standard.wav";
+    double samplerate;
 
     juce::AudioFormatManager irFormarManager;
     // juce::AudioFormatReader irFormatLoader;

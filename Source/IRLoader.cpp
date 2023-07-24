@@ -9,6 +9,7 @@
 */
 
 #include "IRLoader.h"
+#include "baseIR.inc"
 
 IRLoader::IRLoader() {
 
@@ -16,6 +17,8 @@ IRLoader::IRLoader() {
 
 
 void IRLoader::prepareToPlay(juce::dsp::ProcessSpec &spec) {
+
+    samplerate = spec.sampleRate;
 
     irConvolver->prepare(spec);
 
@@ -28,13 +31,15 @@ void IRLoader::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 
 void IRLoader::loadDefaultIR() {
 
-    const juce::File irFile = juce::File(filepath);
+    // juce::AudioBuffer<sample_t> baseIRBuffer(()baseIR, 1, 0, BASE_IR_SIZE);
 
     irConvolver->loadImpulseResponse(
-        irFile, 
-        juce::dsp::Convolution::Stereo::no, 
-        juce::dsp::Convolution::Trim::no, 
-        0
+        (void *)baseIR,
+        BASE_IR_SIZE * sizeof(sample_t), 
+        juce::dsp::Convolution::Stereo::no,
+        juce::dsp::Convolution::Trim::no,
+        BASE_IR_SIZE,
+        juce::dsp::Convolution::Normalise::no
     );
 
     irConvolver->reset();
