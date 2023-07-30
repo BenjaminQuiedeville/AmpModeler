@@ -12,7 +12,7 @@
 #define JUCE_MODAL_LOOPS_PERMITTED 1
 
 #include <JuceHeader.h>
-#include "types.h"
+#include "common.h"
 
 struct IRLoader {
 

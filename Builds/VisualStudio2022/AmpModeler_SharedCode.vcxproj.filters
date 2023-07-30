@@ -3063,6 +3063,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\ParamSmoother.h">
+      <Filter>AmpModeler\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\PreBoost.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "types.h"
+#include "common.h"
+#include "SmoothParam.h"
 
 #include "NoiseGate.h"
 #include "PreBoost.h"
@@ -77,7 +78,7 @@ private:
 	juce::dsp::ProcessSpec spec;
 
     juce::dsp::Gain<sample_t> staticInputGain;
-	juce::dsp::Gain<sample_t> masterVolume;
+	SmoothParam masterVolume;
 
 
     void safetyClip(AudioBlock &audioBlock);

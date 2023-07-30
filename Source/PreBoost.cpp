@@ -21,9 +21,9 @@ PreBoost::~PreBoost() {
 
 }
 
-void PreBoost::prepareToPlay(juce::dsp::ProcessSpec &spec) {
-    tightFilter->prepareToPlay(spec);
-    biteFilter->prepareToPlay(spec);
+void PreBoost::prepareToPlay(double _samplerate) {
+    tightFilter->prepareToPlay(_samplerate);
+    biteFilter->prepareToPlay(_samplerate);
 }
 
 void PreBoost::updateTight(const float newFrequency) {

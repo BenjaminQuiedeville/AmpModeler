@@ -12,7 +12,6 @@
 
 #include <JuceHeader.h>
 #include "Biquad.h"
-#include "types.h"
 
 
 struct ThreeBandEQ {
@@ -20,7 +19,7 @@ struct ThreeBandEQ {
     ThreeBandEQ();
     ~ThreeBandEQ();
 
-    void prepareToPlay(juce::dsp::ProcessSpec& spec);
+    void prepareToPlay(double _samplerate²);
     void process(AudioBlock& audioBlock);
     void updateGains(const float bassGain, 
                      const float midGain, 

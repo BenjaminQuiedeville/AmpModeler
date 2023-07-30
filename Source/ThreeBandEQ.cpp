@@ -23,11 +23,11 @@ ThreeBandEQ::~ThreeBandEQ() {
     delete trebbleFilters;
 }
 
-void ThreeBandEQ::prepareToPlay(juce::dsp::ProcessSpec &spec) {
+void ThreeBandEQ::prepareToPlay(double _samplerate) {
 
-    bassFilters->prepareToPlay(spec);
-    midFilters->prepareToPlay(spec);
-    trebbleFilters->prepareToPlay(spec);
+    bassFilters->prepareToPlay(_samplerate);
+    midFilters->prepareToPlay(_samplerate);
+    trebbleFilters->prepareToPlay(_samplerate);
 }
 
 void ThreeBandEQ::process(AudioBlock &audioBlock) {

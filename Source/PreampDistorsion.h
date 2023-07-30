@@ -12,16 +12,24 @@
 
 #include <JuceHeader.h>
 
-#include "types.h"
+#include "common.h"
 #include "OnepoleFilter.h"
 #include "Biquad.h"
-#include <array>
+#include "SmoothParam.h"
+
+/*
+
+    faire mon propre algo d'oversampling avec la sincTable
+    changer l'algo de distorsion pour une courbe asymétrique haute headroom
+*/
+
 
 enum DriveType {
     APPROX, 
     TANH,
     CUBIC,
     HARDCLIP,
+    ASYMETRIC,
     NTYPES,
 };
 
@@ -32,14 +40,15 @@ struct PreampDistorsion {
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
     void process(AudioBlock &audioblock);
 
-    juce::dsp::Gain<sample_t> preGain;
-    juce::dsp::Gain<sample_t> postGain;
+    SmoothParam preGain;
+    SmoothParam postGain;
+    double stageGain;
 
     DriveType driveType;
 
-    float m_samplerate;
-    juce::dsp::Gain<float> stageGain;
-    const float inputFilterFrequency = 900.0f;
+    double samplerate;
+
+    const double inputFilterFrequency = 900.0;
     OnepoleFilter inputFilter;
 
     juce::dsp::Oversampling<sample_t> *overSampler;

@@ -2428,6 +2428,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\ParamSmoother.h"/>
     <ClInclude Include="..\..\Source\PreBoost.h"/>
     <ClInclude Include="..\..\Source\NoiseGate.h"/>
     <ClInclude Include="..\..\Source\OnepoleFilter.h"/>

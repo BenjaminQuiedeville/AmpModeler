@@ -125,18 +125,17 @@ void AmpModelerAudioProcessor::changeProgramName (int index, const juce::String&
 void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
+    spec.maximumBlockSize = (uint32_t)samplesPerBlock;
+    spec.numChannels = (uint32_t)getTotalNumOutputChannels();
 
     noiseGate->prepareToPlay(spec);
 
     preamp->prepareToPlay(spec);
 
-    masterVolume.prepare(spec);
-    masterVolume.setRampDurationSeconds(0.02f);
-    masterVolume.setGainDecibels(-6.0f);
+    masterVolume.init(spec.sampleRate, 0.02, 1.0);
+    masterVolume.newTarget(DB_TO_GAIN(-6.0f));
 
-    postEQ->prepareToPlay(spec);
+    postEQ->prepareToPlay(sampleRate);
     irLoader->prepareToPlay(spec);
 }
 
@@ -178,7 +177,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    size_t numSamples = buffer.getNumSamples();
+    size_t numSamples = (size_t)buffer.getNumSamples();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
@@ -187,6 +186,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     AudioBlock audioBlock { buffer };
     // isolate left channel 
     audioBlock = audioBlock.getSingleChannelBlock(0);
+    sample_t *audioBlockPtr = audioBlock.getChannelPointer(0);
 
     /******PROCESS********/
     noiseGate->process(audioBlock);
@@ -196,7 +196,9 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     irLoader->performConvolution(audioBlock);
     // safetyClip(audioBlock);
     
-    masterVolume.process(juce::dsp::ProcessContextReplacing<sample_t>(audioBlock));
+    for (size_t i = 0; i < audioBlock.getNumSamples(); i++) {
+        audioBlockPtr[i] *= masterVolume.nextValue();
+    }
 
     // copy left channel into right channel
     buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
@@ -254,7 +256,7 @@ void AmpModelerAudioProcessor::initParameters() {
 
     noiseGate->threshold = *apvts.getRawParameterValue("GATE_THRESH");
 
-    preamp->preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
+    preamp->preGain.newTarget(*apvts.getRawParameterValue("PREAMP_GAIN"));
 
     float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
     float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
@@ -262,9 +264,9 @@ void AmpModelerAudioProcessor::initParameters() {
     postEQ->updateGains(bassEQgain, midEQgian, trebbleEQgian);
 
     float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
-    preamp->postGain.setGainDecibels(preampVolume);
+    preamp->postGain.newTarget(preampVolume);
     
-    masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
+    masterVolume.newTarget(*apvts.getRawParameterValue("MASTER_VOLUME"));
 }
 
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
@@ -285,7 +287,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == "PREAMP_GAIN") {
-        preamp->preGain.setGainDecibels(*apvts.getRawParameterValue("PREAMP_GAIN"));
+        preamp->preGain.newTarget(*apvts.getRawParameterValue("PREAMP_GAIN"));
     }
 
     if (parameterID == "3_BAND_EQ_BASS"
@@ -300,7 +302,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
     if (parameterID == "PREAMP_VOLUME") {
         float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
-        preamp->postGain.setGainDecibels(preampVolume);
+        preamp->postGain.newTarget(preampVolume);
     }
 
     if (parameterID == "RESONANCE") {
@@ -312,7 +314,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == "MASTER_VOLUME") {
-        masterVolume.setGainDecibels(*apvts.getRawParameterValue("MASTER_VOLUME"));
+        masterVolume.newTarget(DB_TO_GAIN(*apvts.getRawParameterValue("MASTER_VOLUME")));
     }
 
 

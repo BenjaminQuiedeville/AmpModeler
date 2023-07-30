@@ -8,7 +8,7 @@
   ==============================================================================
 */
 #include <JuceHeader.h>
-#include "types.h"
+#include "common.h"
 
 #pragma once
 
@@ -16,8 +16,8 @@ struct OnepoleFilter {
 
     OnepoleFilter() {}
 
-    void prepareToPlay(juce::dsp::ProcessSpec &spec) {
-        piOverSamplerate = juce::MathConstants<float>::pi / spec.sampleRate;
+    void prepareToPlay(double _samplerate) {
+        piOverSamplerate = juce::MathConstants<float>::pi / _samplerate;
     }
 
     void setCoefficients(const float frequency) {

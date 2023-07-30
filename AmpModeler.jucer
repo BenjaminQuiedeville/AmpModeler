@@ -5,6 +5,7 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
+      <FILE id="Z8OTdg" name="ParamSmoother.h" compile="0" resource="0" file="Source/ParamSmoother.h"/>
       <FILE id="lXkePf" name="PreBoost.cpp" compile="1" resource="0" file="Source/PreBoost.cpp"/>
       <FILE id="elEYj0" name="PreBoost.h" compile="0" resource="0" file="Source/PreBoost.h"/>
       <FILE id="inaQln" name="NoiseGate.cpp" compile="1" resource="0" file="Source/NoiseGate.cpp"/>

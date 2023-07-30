@@ -37,7 +37,7 @@ void NoiseGate::process(AudioBlock &audioBlock) {
         rmsBufferPtr[rmsBufferIndex] = (audioBlockPtr[index]);
         rmsBufferIndex++;
 
-        if (rmsBufferIndex == rmsBuffer.getNumSamples()) {
+        if (rmsBufferIndex == (size_t)rmsBuffer.getNumSamples()) {
             currentRms = rmsBuffer.getRMSLevel(0, 0, rmsBuffer.getNumSamples());
             rmsBufferIndex = 0;
 

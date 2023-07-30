@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "types.h"
+#include "common.h"
 #include "Biquad.h"
 
 struct PreBoost {
@@ -19,7 +19,7 @@ struct PreBoost {
     PreBoost();
     ~PreBoost();
 
-    void prepareToPlay(juce::dsp::ProcessSpec &spec);
+    void prepareToPlay(double _samplerate);
     void updateTight(const float newFrequency);
     void updateBite(const float newGain);
     void process(AudioBlock &audioBlock);

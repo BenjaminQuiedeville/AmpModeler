@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "types.h"
+#include "common.h"
 
 
 struct Biquad {
@@ -27,7 +27,7 @@ struct Biquad {
 
     Biquad(FilterType type) { filterType = type; }
 
-    void prepareToPlay(juce::dsp::ProcessSpec& spec);
+    void prepareToPlay(double _samplerate);
     void reset();
     void setCoefficients(const float frequency, const float Q, const float gaindB);
     void process(sample_t *sample);

@@ -10,8 +10,8 @@
 
 #include "Biquad.h"
 
-void Biquad::prepareToPlay(juce::dsp::ProcessSpec &spec) {
-    samplerate = spec.sampleRate;
+void Biquad::prepareToPlay(double _samplerate) {
+    samplerate = _samplerate;
     twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
 
     b0 = 1.0f;
