@@ -2428,12 +2428,12 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\ParamSmoother.h"/>
+    <ClInclude Include="..\..\Source\SmoothParam.h"/>
     <ClInclude Include="..\..\Source\PreBoost.h"/>
     <ClInclude Include="..\..\Source\NoiseGate.h"/>
     <ClInclude Include="..\..\Source\OnepoleFilter.h"/>
     <ClInclude Include="..\..\Source\ThreeBandEQ.h"/>
-    <ClInclude Include="..\..\Source\types.h"/>
+    <ClInclude Include="..\..\Source\common.h"/>
     <ClInclude Include="..\..\Source\PluginProcessor.h"/>
     <ClInclude Include="..\..\Source\IRLoader.h"/>
     <ClInclude Include="..\..\Source\PreampDistorsion.h"/>

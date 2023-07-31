@@ -5,7 +5,7 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
-      <FILE id="Z8OTdg" name="ParamSmoother.h" compile="0" resource="0" file="Source/ParamSmoother.h"/>
+      <FILE id="Z8OTdg" name="SmoothParam.h" compile="0" resource="0" file="Source/SmoothParam.h"/>
       <FILE id="lXkePf" name="PreBoost.cpp" compile="1" resource="0" file="Source/PreBoost.cpp"/>
       <FILE id="elEYj0" name="PreBoost.h" compile="0" resource="0" file="Source/PreBoost.h"/>
       <FILE id="inaQln" name="NoiseGate.cpp" compile="1" resource="0" file="Source/NoiseGate.cpp"/>
@@ -13,7 +13,7 @@
       <FILE id="YblBs8" name="OnepoleFilter.h" compile="0" resource="0" file="Source/OnepoleFilter.h"/>
       <FILE id="OYmPa3" name="ThreeBandEQ.cpp" compile="1" resource="0" file="Source/ThreeBandEQ.cpp"/>
       <FILE id="pcE1DH" name="ThreeBandEQ.h" compile="0" resource="0" file="Source/ThreeBandEQ.h"/>
-      <FILE id="gcYSZm" name="types.h" compile="0" resource="0" file="Source/types.h"/>
+      <FILE id="gcYSZm" name="common.h" compile="0" resource="0" file="Source/common.h"/>
       <FILE id="dAT7TB" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="ACR4as" name="PluginProcessor.h" compile="0" resource="0"

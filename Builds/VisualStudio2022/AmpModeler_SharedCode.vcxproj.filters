@@ -3063,7 +3063,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\ParamSmoother.h">
+    <ClInclude Include="..\..\Source\SmoothParam.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PreBoost.h">
@@ -3078,7 +3078,7 @@
     <ClInclude Include="..\..\Source\ThreeBandEQ.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\types.h">
+    <ClInclude Include="..\..\Source\common.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
