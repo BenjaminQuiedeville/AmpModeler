@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "common.h"
+#include "SmoothParam.h"
 
 struct NoiseGate {
     NoiseGate() {};
@@ -29,9 +30,9 @@ struct NoiseGate {
     float *rmsBufferPtr;
     size_t rmsBufferIndex;
 
-    float attackTimeSeconds = 0.1f * 0.001;
-    float releaseTimeSeconds = 15.0f * 0.001;
+    double attackTimeMs  = 0.1;
+    double releaseTimeMs = 15.0;
 
     bool isOpen;
-    juce::dsp::Gain<sample_t> gateGain;
+    SmoothParam gateGain;
 };

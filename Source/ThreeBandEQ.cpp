@@ -41,7 +41,7 @@ void ThreeBandEQ::process(AudioBlock &audioBlock) {
     }
 }
 
-void ThreeBandEQ::updateGains(const float bassGain, const float midGain, const float trebbleGain) {
+void ThreeBandEQ::updateGains(double bassGain, double midGain, double trebbleGain) {
 
     bassFilters->setCoefficients(bassFreq, bassQ, bassGain);
     midFilters->setCoefficients(midFreq, midQ, midGain);

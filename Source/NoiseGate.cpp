@@ -1,11 +1,11 @@
 /*
-  ==============================================================================
+==============================================================================
 
     NoiseGate.cpp
     Created: 6 May 2023 11:42:39pm
     Author:  Benjamin
 
-  ==============================================================================
+==============================================================================
 */
 
 #include "NoiseGate.h"
@@ -23,9 +23,7 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGain.prepare(spec);
-    gateGain.setRampDurationSeconds(attackTimeSeconds);
-    gateGain.setGainLinear(0.0f);
+    gateGain.init(spec.sampleRate, attackTimeMs, 0.0, SmoothParam::CurveType::LIN);
 }
 
 
@@ -46,10 +44,10 @@ void NoiseGate::process(AudioBlock &audioBlock) {
             
             // float rampTime = isOpen ? attackTimeSeconds : releaseTimeSeconds;
             // float newGain = isOpen ? 1.0f : 0.0f;
-            gateGain.setRampDurationSeconds(isOpen ? attackTimeSeconds : releaseTimeSeconds);
-            gateGain.setGainLinear(isOpen ? 1.0f : 0.0f);
+            gateGain.rampTimeMs = isOpen ? attackTimeMs : releaseTimeMs;
+            gateGain.newTarget(isOpen ? 1.0 : 0.0);
         }
 
-       audioBlockPtr[index] = gateGain.processSample(audioBlockPtr[index]);
+        audioBlockPtr[index] = gateGain.nextValue() * audioBlockPtr[index];
     }    
 }

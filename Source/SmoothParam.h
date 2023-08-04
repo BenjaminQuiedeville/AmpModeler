@@ -15,14 +15,21 @@
 
 struct SmoothParam {
 
+    enum CurveType {
+        LIN,
+        TANH,
+        ALGEBRAIC,
+    };
+
     SmoothParam() {}
     ~SmoothParam() {}
 
-    void init(double _samplerate, double _rampTime, double initValue) {
+    void init(double _samplerate, double _rampTimeMs, double initValue, uint8_t _curveType) {
         samplerate = _samplerate;
-        rampTimeMs = _rampTime;
+        rampTimeMs = _rampTimeMs;
 
         currentValue = initValue;
+        curveType = _curveType;
     }
 
     void newTarget(double _target) {
@@ -31,10 +38,19 @@ struct SmoothParam {
     }
     
     double nextValue() {
-        currentValue = currentValue + stepHeight > target
-                     ? target
-                     : currentValue + stepHeight;
-        return currentValue; 
+
+        switch (curveType) {
+        case LIN:
+                currentValue = currentValue + stepHeight > target
+                             ? target
+                             : currentValue + stepHeight;
+                break;
+
+        case TANH:      break;
+        case ALGEBRAIC: break;
+
+        }
+        return currentValue;
     }
 
     double samplerate;
@@ -42,6 +58,8 @@ struct SmoothParam {
     double currentValue;
     double target;
     double rampTimeMs;
+
+    uint8_t curveType;
 };
 
 #endif // _PARAM_SMOOTHER

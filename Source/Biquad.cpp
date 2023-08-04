@@ -99,23 +99,17 @@ void Biquad::setCoefficients(const float frequency, const float Q, const float g
             a2 = ((A + 1.0f) - (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
             break;
 
-        default: 
+        default:
             b0 = 1.0f;
-            b1 = 0.0f; 
-            b2 = 0.0f; 
-            a1 = 0.0f; 
-            a2 = 0.0f;        
+            b1 = 0.0f;
+            b2 = 0.0f;
+            a1 = 0.0f;
+            a2 = 0.0f;
             break;
     }
-
-    // x1 = 0.0f;
-    // x2 = 0.0f;
-    // y1 = 0.0f;
-    // y2 = 0.0f;
-
 }
 
-void Biquad::process(sample_t *sample) {
+inline void Biquad::process(sample_t *sample) {
 
     sample_t outputSample = *sample*b0 + x1*b1 + x2*b2
                                       - y1*a1 - y2*a2;
