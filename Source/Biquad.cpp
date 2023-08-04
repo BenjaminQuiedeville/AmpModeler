@@ -108,15 +108,3 @@ void Biquad::setCoefficients(const float frequency, const float Q, const float g
             break;
     }
 }
-
-inline void Biquad::process(sample_t *sample) {
-
-    sample_t outputSample = *sample*b0 + x1*b1 + x2*b2
-                                      - y1*a1 - y2*a2;
-    
-    x2 = x1;
-    x1 = *sample; 
-    y2 = y1; 
-    y1 = outputSample;
-    *sample = outputSample; 
-}

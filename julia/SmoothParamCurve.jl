@@ -27,14 +27,14 @@ function main()
     X = LinRange(0, 1, 500)
 
     SGN = sign.(X)
-    Y1 = algebraic.(3 * inputAdapt.(X)) |> norm
+    Y1 = algebraic.(2 * inputAdapt.(X)) |> norm
     Y2 = tanhCurve.(3 * inputAdapt.(X)) |> norm
     Y3 = cosCurve.(X) |> norm
 
     p1 = plot()
     plot!(X, Y1, label = "algebraic")
-#     plot!(X, Y2, label = "tanh")
-#     plot!(X, Y3, label = "cos")
+    plot!(X, Y2, label = "tanh")
+    plot!(X, Y3, label = "cos")
 
 #     plot!(X, X, label = "linear", linestyle = :dash)
 #     plot!(X, SGN)

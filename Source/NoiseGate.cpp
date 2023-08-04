@@ -23,7 +23,7 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGain.init(spec.sampleRate, attackTimeMs, 0.0, SmoothParam::CurveType::LIN);
+    gateGain.init(spec.sampleRate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
 }
 
 

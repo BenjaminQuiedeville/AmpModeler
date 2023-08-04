@@ -132,7 +132,7 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     preamp->prepareToPlay(spec);
 
-    masterVolume.init(spec.sampleRate, 0.02, 1.0, SmoothParam::CurveType::LIN);
+    masterVolume.init(spec.sampleRate, 0.02, 1.0, SMOOTH_PARAM_LIN);
     masterVolume.newTarget(DB_TO_GAIN(-6.0f));
 
     postEQ->prepareToPlay(sampleRate);

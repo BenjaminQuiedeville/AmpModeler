@@ -27,8 +27,8 @@ PreampDistorsion::~PreampDistorsion() {
 void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     samplerate = spec.sampleRate;
 
-    preGain.init(samplerate, 0.02, 0.0, SmoothParam::CurveType::LIN);
-    postGain.init(samplerate, 0.02, 0.0, SmoothParam::CurveType::LIN);
+    preGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
+    postGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
 
     inputFilter.prepareToPlay(spec.sampleRate);
     inputFilter.setCoefficients(inputFilterFrequency);
