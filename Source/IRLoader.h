@@ -17,6 +17,7 @@
 struct IRLoader {
 
     IRLoader();
+    ~IRLoader();
 
     void prepareToPlay(juce::dsp::ProcessSpec &spec);
 

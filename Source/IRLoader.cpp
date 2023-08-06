@@ -12,9 +12,15 @@
 #include "baseIR.inc"
 
 IRLoader::IRLoader() {
+    irConvolver = new juce::dsp::Convolution();
 
 }
 
+IRLoader::~IRLoader() {
+
+    delete irConvolver;
+
+}
 
 void IRLoader::prepareToPlay(juce::dsp::ProcessSpec &spec) {
 
