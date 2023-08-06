@@ -14,11 +14,11 @@ void Biquad::prepareToPlay(double _samplerate) {
     samplerate = _samplerate;
     twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
 
-    b0 = 1.0f;
-    b1 = 0.0f;
-    b2 = 0.0f;
-    a1 = 0.0f;
-    a2 = 0.0f;
+    b0 = 1.0;
+    b1 = 0.0;
+    b2 = 0.0;
+    a1 = 0.0;
+    a2 = 0.0;
     reset();
 }
 
@@ -29,82 +29,82 @@ void Biquad::reset() {
     y2 = 0.0f;
 }
 
-void Biquad::setCoefficients(const float frequency, const float Q, const float gaindB) {
+void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
 
-    const float w0 = twoPiOverSamplerate * frequency;
-    const float cosw0 = cos(w0);
-    const float sinw0 = sin(w0);
+    double w0 = twoPiOverSamplerate * frequency;
+    double cosw0 = cos(w0);
+    double sinw0 = sin(w0);
 
-    const float alpha = sinw0/(2.0f*Q);
+    double alpha = sinw0/(2.0f*Q);
 
-    float A = 0.0f;
-    float AInv = 0.0f; 
-    float a0Inv = 0.0f;
-    float twoSqrtAAlpha = 0.0f;
+    double A = 0.0;
+    double AInv = 0.0; 
+    double a0Inv = 0.0;
+    double twoSqrtAAlpha = 0.0;
 
     switch (filterType) {
         case LOWPASS:
-            a0Inv = 1.0f/(1.0f + alpha);
+            a0Inv = 1.0/(1.0 + alpha);
 
-            b0 = (1.0f - cosw0) * 0.5f * a0Inv;
-            b1 = 2.0f * b0;
+            b0 = (1.0 - cosw0) * 0.5 * a0Inv;
+            b1 = 2.0 * b0;
             b2 = b0;
-            a1 = -2.0f * cosw0 * a0Inv;
-            a2 = (1.0f - alpha) * a0Inv;
+            a1 = -2.0 * cosw0 * a0Inv;
+            a2 = (1.0 - alpha) * a0Inv;
             break;
 
         case HIGHPASS:
-            a0Inv = 1.0f/(1.0f + alpha);
+            a0Inv = 1.0/(1.0 + alpha);
 
-            b0 = (1.0f + cosw0) * 0.5f * a0Inv;
-            b1 = -2.0f * b0;
+            b0 = (1.0 + cosw0) * 0.5 * a0Inv;
+            b1 = -2.0 * b0;
             b2 = b0;
-            a1 = -2.0f * cosw0 * a0Inv;
-            a2 = (1.0f - alpha) * a0Inv;
+            a1 = -2.0 * cosw0 * a0Inv;
+            a2 = (1.0 - alpha) * a0Inv;
             break;
 
         case PEAK: 
-            A = pow(10.0f, gaindB/40.0f);
-            AInv = 1.0f/A;
-            a0Inv = 1.0f/(1.0f + alpha * AInv);
+            A = pow(10.0, gaindB/40.0);
+            AInv = 1.0/A;
+            a0Inv = 1.0/(1.0 + alpha * AInv);
 
-            b0 = (1.0f + alpha * A) * a0Inv;
-            b1 = -2.0f * cosw0 * a0Inv; 
-            b2 = (1.0f - alpha * A) * a0Inv; 
+            b0 = (1.0 + alpha * A) * a0Inv;
+            b1 = -2.0 * cosw0 * a0Inv; 
+            b2 = (1.0 - alpha * A) * a0Inv; 
             a1 = b1; 
-            a2 = (1.0f - alpha * AInv) * a0Inv;
+            a2 = (1.0 - alpha * AInv) * a0Inv;
             break;
 
         case LOWSHELF: 
-            A = pow(10.0f, gaindB/40.0f);
-            twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
-            a0Inv = 1.0f/((A + 1.0f) + (A - 1.0f)*cosw0 + twoSqrtAAlpha); 
+            A = pow(10.0, gaindB/40.0);
+            twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
+            a0Inv = 1.0/((A + 1.0) + (A - 1.0)*cosw0 + twoSqrtAAlpha); 
             
-            b0 = A*((A + 1.0f) - (A - 1.0f)*cosw0 + twoSqrtAAlpha)*a0Inv;
-            b1 = 2.0f * A*((A - 1.0f) - (A + 1.0f)*cosw0)*a0Inv;
-            b2 = A*((A + 1.0f) - (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
-            a1 = -2.0f * ((A - 1.0f) + (A + 1.0f)*cosw0)*a0Inv;
-            a2 = ((A + 1.0f) + (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            b0 = A*((A + 1.0) - (A - 1.0)*cosw0 + twoSqrtAAlpha)*a0Inv;
+            b1 = 2.0 * A*((A - 1.0) - (A + 1.0)*cosw0)*a0Inv;
+            b2 = A*((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            a1 = -2.0 * ((A - 1.0) + (A + 1.0)*cosw0)*a0Inv;
+            a2 = ((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
             break;
 
         case HIGHSHELF:
-            A = pow(10.0f, gaindB/40.0f);
-            twoSqrtAAlpha = 2.0f * sqrt(A)* alpha;
-            a0Inv = 1.0f/((A + 1.0f) - (A - 1.0f)* cosw0 + twoSqrtAAlpha); 
+            A = pow(10.0, gaindB/40.0);
+            twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
+            a0Inv = 1.0/((A + 1.0) - (A - 1.0)* cosw0 + twoSqrtAAlpha); 
 
-            b0 = A*((A + 1.0f) + (A - 1.0f) * cosw0 + twoSqrtAAlpha) * a0Inv;
-            b1 = -2.0f * A *((A - 1.0f) + (A + 1.0f) * cosw0) * a0Inv;
-            b2 = A*((A + 1.0f) + (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
-            a1 = 2.0f * ((A - 1.0f) - (A + 1.0f)*cosw0) * a0Inv;
-            a2 = ((A + 1.0f) - (A - 1.0f)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            b0 = A*((A + 1.0) + (A - 1.0) * cosw0 + twoSqrtAAlpha) * a0Inv;
+            b1 = -2.0 * A *((A - 1.0) + (A + 1.0) * cosw0) * a0Inv;
+            b2 = A*((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            a1 = 2.0 * ((A - 1.0) - (A + 1.0)*cosw0) * a0Inv;
+            a2 = ((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
             break;
 
         default:
-            b0 = 1.0f;
-            b1 = 0.0f;
-            b2 = 0.0f;
-            a1 = 0.0f;
-            a2 = 0.0f;
+            b0 = 1.0;
+            b1 = 0.0;
+            b2 = 0.0;
+            a1 = 0.0;
+            a2 = 0.0;
             break;
     }
 }

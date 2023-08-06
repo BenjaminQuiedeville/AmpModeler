@@ -32,13 +32,12 @@ void ThreeBandEQ::prepareToPlay(double _samplerate) {
 
 void ThreeBandEQ::process(AudioBlock &audioBlock) {
 
-    float *bufferPtr = audioBlock.getChannelPointer(0);
-    for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-        
-        bassFilters->process(&bufferPtr[index]);
-        midFilters->process(&bufferPtr[index]);
-        trebbleFilters->process(&bufferPtr[index]);
-    }
+    sample_t *bufferPtr = audioBlock.getChannelPointer(0);
+    size_t nSamples = audioBlock.getNumSamples();
+
+    bassFilters->process(bufferPtr, nSamples);
+    midFilters->process(bufferPtr, nSamples);
+    trebbleFilters->process(bufferPtr, nSamples);
 }
 
 void ThreeBandEQ::updateGains(double bassGain, double midGain, double trebbleGain) {

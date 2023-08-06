@@ -37,11 +37,9 @@ void PreBoost::updateBite(const float newGain) {
 void PreBoost::process(AudioBlock &audioBlock) {
 
     float *bufferPtr = audioBlock.getChannelPointer(0);
-    for (size_t i = 0; i < audioBlock.getNumSamples(); i++) {
+    size_t nSamples = audioBlock.getNumSamples();
 
-        tightFilter->process(&bufferPtr[i]);
-        biteFilter->process(&bufferPtr[i]);
-
-    }
+    tightFilter->process(bufferPtr, nSamples);
+    biteFilter->process(bufferPtr, nSamples);
 
 }
