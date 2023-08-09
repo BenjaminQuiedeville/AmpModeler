@@ -12,13 +12,15 @@
 #define _PARAM_SMOOTHER
 
 #include <math.h>
-#include <cassert>
+#include <cstdint>
 
 enum CurveType {
     SMOOTH_PARAM_LIN,
     SMOOTH_PARAM_TANH,
     SMOOTH_PARAM_ALGEBRAIC,
 };
+
+// formula for exp curve : f(x, start, stop, tau) = (start - stop) * exp(-x/tau) + start
 
 struct SmoothParam {
 
