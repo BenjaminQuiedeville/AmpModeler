@@ -10,9 +10,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AmpModeler - VST3", "AmpModeler_VST3.vcxproj", "{841B5CD6-5CF3-5238-F2DC-50EF090D6E4B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{71DE1A39-1646-C264-BCAC-13FBE72FDCB9} = {71DE1A39-1646-C264-BCAC-13FBE72FDCB9}
+		{43850C68-A84C-B174-21D5-8BC9356D80DF} = {43850C68-A84C-B174-21D5-8BC9356D80DF}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AmpModeler - Shared Code", "AmpModeler_SharedCode.vcxproj", "{71DE1A39-1646-C264-BCAC-13FBE72FDCB9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AmpModeler - VST3 Manifest Helper", "AmpModeler_VST3ManifestHelper.vcxproj", "{43850C68-A84C-B174-21D5-8BC9356D80DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +35,10 @@ Global
 		{71DE1A39-1646-C264-BCAC-13FBE72FDCB9}.Debug|x64.Build.0 = Debug|x64
 		{71DE1A39-1646-C264-BCAC-13FBE72FDCB9}.Release|x64.ActiveCfg = Release|x64
 		{71DE1A39-1646-C264-BCAC-13FBE72FDCB9}.Release|x64.Build.0 = Release|x64
+		{43850C68-A84C-B174-21D5-8BC9356D80DF}.Debug|x64.ActiveCfg = Debug|x64
+		{43850C68-A84C-B174-21D5-8BC9356D80DF}.Debug|x64.Build.0 = Debug|x64
+		{43850C68-A84C-B174-21D5-8BC9356D80DF}.Release|x64.ActiveCfg = Release|x64
+		{43850C68-A84C-B174-21D5-8BC9356D80DF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
