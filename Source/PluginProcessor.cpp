@@ -124,19 +124,15 @@ void AmpModelerAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = (uint32_t)samplesPerBlock;
-    spec.numChannels = (uint32_t)getTotalNumOutputChannels();
+    noiseGate->prepareToPlay(sampleRate);
 
-    noiseGate->prepareToPlay(spec);
+    preamp->prepareToPlay(sampleRate, samplesPerBlock);
 
-    preamp->prepareToPlay(spec);
-
-    masterVolume.init(spec.sampleRate, 0.02, 1.0, SMOOTH_PARAM_LIN);
+    masterVolume.init(sampleRate, 0.02, 1.0, SMOOTH_PARAM_LIN);
     masterVolume.newTarget(DB_TO_GAIN(-6.0f));
 
     postEQ->prepareToPlay(sampleRate);
-    irLoader->prepareToPlay(spec);
+    irLoader->init(sampleRate, samplesPerBlock);
 }
 
 void AmpModelerAudioProcessor::releaseResources()
@@ -183,21 +179,19 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         buffer.clear (i, 0, numSamples);
     }
 
-    AudioBlock audioBlock { buffer };
-    // isolate left channel 
-    audioBlock = audioBlock.getSingleChannelBlock(0);
-    sample_t *audioBlockPtr = audioBlock.getChannelPointer(0);
+
+    float *audioPtr = buffer.getWritePointer(0);
 
     /******PROCESS********/
-    noiseGate->process(audioBlock);
+    noiseGate->process(audioPtr, numSamples);
 
-    preamp->process(audioBlock);
-    postEQ->process(audioBlock);
-    irLoader->performConvolution(audioBlock);
-    // safetyClip(audioBlock);
+    preamp->process(audioPtr, numSamples);
+    postEQ->process(audioPtr, numSamples);
+    irLoader->process(audioPtr, numSamples);
+    // safetyClip(audioPtr);
     
-    for (size_t i = 0; i < audioBlock.getNumSamples(); i++) {
-        audioBlockPtr[i] *= masterVolume.nextValue();
+    for (size_t i = 0; i < numSamples; i++) {
+        audioPtr[i] *= masterVolume.nextValue();
     }
 
     // copy left channel into right channel
@@ -232,24 +226,6 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
         initParameters();
     }
 
-}
-
-void AmpModelerAudioProcessor::safetyClip(AudioBlock &audioBlock) {
-
-    auto clip = [](sample_t x) { 
-        return x > 1.0f ? 1.0f
-             : x < -1.0f ? -1.0f 
-             : x;
-    };
-
-    for (size_t channelIndex = 0; channelIndex < audioBlock.getNumChannels(); channelIndex++) {
-        sample_t *bufferPtr = audioBlock.getChannelPointer(channelIndex);
-
-        for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
-            
-            bufferPtr[index] = clip(bufferPtr[index]);
-        }
-    }
 }
 
 void AmpModelerAudioProcessor::initParameters() {

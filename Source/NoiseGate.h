@@ -17,8 +17,8 @@
 struct NoiseGate {
     NoiseGate() {};
 
-    void prepareToPlay(juce::dsp::ProcessSpec &spec);
-    void process(AudioBlock &audioBlock);
+    void prepareToPlay(double samplerate);
+    void process(float *input, size_t nSamples);
 
     float threshold;
 

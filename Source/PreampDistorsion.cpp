@@ -24,16 +24,16 @@ PreampDistorsion::~PreampDistorsion() {
     delete overSampler;
 }
 
-void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec) {
-    samplerate = spec.sampleRate;
+void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
+    samplerate = _samplerate;
 
     preGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
     postGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
 
-    inputFilter.prepareToPlay(spec.sampleRate);
+    inputFilter.prepareToPlay(samplerate);
     inputFilter.setCoefficients(inputFilterFrequency);
 
-    overSampler->initProcessing(spec.maximumBlockSize);
+    overSampler->initProcessing(blockSize);
 
     preGain.newTarget(DB_TO_GAIN(0.0));
     postGain.newTarget(DB_TO_GAIN(-12.0));
@@ -41,32 +41,24 @@ void PreampDistorsion::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     stageGain = DB_TO_GAIN(20.0);
 }
 
-void PreampDistorsion::process(AudioBlock &audioBlock) {
+void PreampDistorsion::process(float *input, size_t nSamples) {
 
-    float *bufferPtr = audioBlock.getChannelPointer(0);
-    inputFilter.processBufferHighpass(bufferPtr, audioBlock.getNumSamples());
+    inputFilter.processBufferHighpass(input, nSamples);
     
-    // const AudioBlock& audioBlockToUpSample = audioBlock;
-
-    // overSampledBlock = overSampler->processSamplesUp(audioBlockToUpSample);
-
     // d'abord sans upsampling pour voir si la courbe fonctionne bien.
         
-    bufferPtr = audioBlock.getChannelPointer(0);
-    for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+    for (size_t index = 0; index < nSamples; index++) {
         
-        bufferPtr[index] = preGain.nextValue() * bufferPtr[index];
+        input[index] = preGain.nextValue() * input[index];
 
-        bufferPtr[index] = stageGain * bufferPtr[index];
-        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        input[index] = stageGain * input[index];
+        input[index] = processDrive(input[index], driveType);
 
-        bufferPtr[index] = stageGain * bufferPtr[index];
-        bufferPtr[index] = processDrive(bufferPtr[index], driveType);
+        input[index] = stageGain * input[index];
+        input[index] = processDrive(input[index], driveType);
 
-        bufferPtr[index] = postGain.nextValue() * bufferPtr[index];
+        input[index] = postGain.nextValue() * input[index];
     }
-
-    // overSampler->processSamplesDown(audioBlock);
 }
 
 sample_t PreampDistorsion::processDrive(sample_t sample, DriveType curveType) {

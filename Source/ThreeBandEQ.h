@@ -20,7 +20,7 @@ struct ThreeBandEQ {
     ~ThreeBandEQ();
 
     void prepareToPlay(double _samplerate);
-    void process(AudioBlock& audioBlock);
+    void process(float *input, size_t nSamples);
     void updateGains(double bassGain,
                      double midGain,
                      double trebbleGain);

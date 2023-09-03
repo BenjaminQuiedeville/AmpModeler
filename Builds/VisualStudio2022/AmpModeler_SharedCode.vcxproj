@@ -139,6 +139,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\pffft\pffft.c"/>
     <ClCompile Include="..\..\Source\PreBoost.cpp"/>
     <ClCompile Include="..\..\Source\NoiseGate.cpp"/>
     <ClCompile Include="..\..\Source\ThreeBandEQ.cpp"/>
@@ -2499,6 +2500,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\pffft\pffft.h"/>
     <ClInclude Include="..\..\Source\SmoothParam.h"/>
     <ClInclude Include="..\..\Source\PreBoost.h"/>
     <ClInclude Include="..\..\Source\NoiseGate.h"/>

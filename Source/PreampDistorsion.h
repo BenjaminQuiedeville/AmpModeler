@@ -37,8 +37,8 @@ struct PreampDistorsion {
     PreampDistorsion();
     ~PreampDistorsion();
     
-    void prepareToPlay(juce::dsp::ProcessSpec &spec);
-    void process(AudioBlock &audioblock);
+    void prepareToPlay(double samplerate, int blockSize);
+    void process(float *input, size_t nSamples);
 
     SmoothParam preGain;
     SmoothParam postGain;

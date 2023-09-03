@@ -10,9 +10,9 @@
 
 #include "NoiseGate.h"
 
-void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
+void NoiseGate::prepareToPlay(double samplerate) {
 
-    samplerate = spec.sampleRate;
+    samplerate = samplerate;
     windowSize = floor(samplerate*0.001f);
 
     rmsBuffer.setSize(1, windowSize);
@@ -23,16 +23,15 @@ void NoiseGate::prepareToPlay(juce::dsp::ProcessSpec &spec) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGain.init(spec.sampleRate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
+    gateGain.init(samplerate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
 }
 
 
-void NoiseGate::process(AudioBlock &audioBlock) {
+void NoiseGate::process(float *input, size_t nSamples) {
 
-    float *audioBlockPtr = audioBlock.getChannelPointer(0);
-    for (size_t index = 0; index < audioBlock.getNumSamples(); index++) {
+    for (size_t index = 0; index < nSamples; index++) {
 
-        rmsBufferPtr[rmsBufferIndex] = (audioBlockPtr[index]);
+        rmsBufferPtr[rmsBufferIndex] = (input[index]);
         rmsBufferIndex++;
 
         if (rmsBufferIndex == (size_t)rmsBuffer.getNumSamples()) {
@@ -48,6 +47,6 @@ void NoiseGate::process(AudioBlock &audioBlock) {
             gateGain.newTarget(isOpen ? 1.0 : 0.0);
         }
 
-        audioBlockPtr[index] = gateGain.nextValue() * audioBlockPtr[index];
+        input[index] = gateGain.nextValue() * input[index];
     }    
 }

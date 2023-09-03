@@ -3,11 +3,14 @@ using DelimitedFiles
 
 function main()
 
-    filepath :: String = "01 Modern Standard.wav"
+    filepath :: String = "SinMix_Hesu412.wav"
 
-    (IR, _, _, _) = WAV.wavread(filepath)
+    (IR, _, _, _) = WAV.wavread(filepath, format = "single")
 
-    print(size(IR))
+
+    IR = Float32.(IR)
+    @show size(IR)
+    @show typeof(IR)
     writedlm("baseIR.txt", IR', ',')
 
 end 

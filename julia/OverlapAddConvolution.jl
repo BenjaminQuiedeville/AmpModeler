@@ -95,6 +95,8 @@ function process(inputBlock :: Vector, state :: ConvolutionState, ir :: ImpulseR
     end
     
     state.bufferIndex += length(inputBlock)
+    state.bufferIndex %= stateBufferLength
+    state.bufferIndex += 1
 
     return outputBlock
 end 
