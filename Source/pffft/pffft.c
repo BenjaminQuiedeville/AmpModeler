@@ -58,18 +58,10 @@
 */
 
 #include "pffft.h"
-#include "stdlib.h"
-#include "stdio.h"
-#include "math.h"
-#include "assert.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#ifndef M_SQRT2
-#define M_SQRT2    1.41421356237309504880   // sqrt(2)
-#endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <assert.h>
 
 /* detect compiler flavour */
 #if defined(_MSC_VER)
@@ -89,6 +81,7 @@
 #  define RESTRICT __restrict
 #  define VLA_ARRAY_ON_STACK(type__, varname__, size__) type__ *varname__ = (type__*)_alloca(size__ * sizeof(type__))
 #endif
+
 
 /* 
    vector support macros: the rest of the code is independant of

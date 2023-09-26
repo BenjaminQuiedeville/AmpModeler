@@ -2,9 +2,6 @@
 
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="AmpModeler\Source\pffft">
-      <UniqueIdentifier>{E97A2994-D5E6-3AC0-1149-67FE61E929B6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="AmpModeler\Source">
       <UniqueIdentifier>{D81E736C-ACA4-EE5E-233B-7844CCB281EE}</UniqueIdentifier>
     </Filter>
@@ -619,8 +616,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\pffft\pffft.c">
-      <Filter>AmpModeler\Source\pffft</Filter>
+    <ClCompile Include="..\..\Source\IRLoader.cpp">
+      <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PreBoost.cpp">
       <Filter>AmpModeler\Source</Filter>
@@ -635,9 +632,6 @@
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginEditor.cpp">
-      <Filter>AmpModeler\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\IRLoader.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Biquad.cpp">
@@ -3165,8 +3159,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\pffft\pffft.h">
-      <Filter>AmpModeler\Source\pffft</Filter>
+    <ClInclude Include="..\..\Source\IRLoader.h">
+      <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\SmoothParam.h">
       <Filter>AmpModeler\Source</Filter>
@@ -3189,7 +3183,10 @@
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\IRLoader.h">
+    <ClInclude Include="..\..\Source\pffft.h">
+      <Filter>AmpModeler\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\pffft.hpp">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PreampDistorsion.h">

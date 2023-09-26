@@ -139,13 +139,12 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\pffft\pffft.c"/>
+    <ClCompile Include="..\..\Source\IRLoader.cpp"/>
     <ClCompile Include="..\..\Source\PreBoost.cpp"/>
     <ClCompile Include="..\..\Source\NoiseGate.cpp"/>
     <ClCompile Include="..\..\Source\ThreeBandEQ.cpp"/>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp"/>
     <ClCompile Include="..\..\Source\PluginEditor.cpp"/>
-    <ClCompile Include="..\..\Source\IRLoader.cpp"/>
     <ClCompile Include="..\..\Source\Biquad.cpp"/>
     <ClCompile Include="..\..\Source\PreampDistorsion.cpp"/>
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.cpp">
@@ -2500,7 +2499,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\pffft\pffft.h"/>
+    <ClInclude Include="..\..\Source\IRLoader.h"/>
     <ClInclude Include="..\..\Source\SmoothParam.h"/>
     <ClInclude Include="..\..\Source\PreBoost.h"/>
     <ClInclude Include="..\..\Source\NoiseGate.h"/>
@@ -2508,7 +2507,8 @@
     <ClInclude Include="..\..\Source\ThreeBandEQ.h"/>
     <ClInclude Include="..\..\Source\common.h"/>
     <ClInclude Include="..\..\Source\PluginProcessor.h"/>
-    <ClInclude Include="..\..\Source\IRLoader.h"/>
+    <ClInclude Include="..\..\Source\pffft.h"/>
+    <ClInclude Include="..\..\Source\pffft.hpp"/>
     <ClInclude Include="..\..\Source\PreampDistorsion.h"/>
     <ClInclude Include="..\..\Source\Biquad.h"/>
     <ClInclude Include="..\..\Source\PluginEditor.h"/>

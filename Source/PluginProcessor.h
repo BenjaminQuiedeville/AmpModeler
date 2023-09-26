@@ -71,17 +71,14 @@ public:
     PreBoost *preBoost;
     PreampDistorsion *preamp;
     ThreeBandEQ *postEQ;
-    IRLoader *irLoader;
+    IRLoader irLoader;
 
 private:
 
-	juce::dsp::ProcessSpec spec;
+	// juce::dsp::ProcessSpec spec;
 
-    juce::dsp::Gain<sample_t> staticInputGain;
+    // juce::dsp::Gain<sample_t> staticInputGain;
 	SmoothParam masterVolume;
-
-
-    void safetyClip(AudioBlock &audioBlock);
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

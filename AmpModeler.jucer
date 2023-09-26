@@ -5,10 +5,8 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
-      <GROUP id="{F058AC9C-23D7-71D3-FAD2-0FE7254423E8}" name="pffft">
-        <FILE id="u86L8X" name="pffft.c" compile="1" resource="0" file="Source/pffft/pffft.c"/>
-        <FILE id="lQwnga" name="pffft.h" compile="0" resource="0" file="Source/pffft/pffft.h"/>
-      </GROUP>
+      <FILE id="hbN9vO" name="IRLoader.cpp" compile="1" resource="0" file="Source/IRLoader.cpp"/>
+      <FILE id="Ga6TFI" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
       <FILE id="Z8OTdg" name="SmoothParam.h" compile="0" resource="0" file="Source/SmoothParam.h"/>
       <FILE id="lXkePf" name="PreBoost.cpp" compile="1" resource="0" file="Source/PreBoost.cpp"/>
       <FILE id="elEYj0" name="PreBoost.h" compile="0" resource="0" file="Source/PreBoost.h"/>
@@ -24,8 +22,8 @@
             file="Source/PluginProcessor.h"/>
       <FILE id="s5IOLz" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
-      <FILE id="rmxA4w" name="IRLoader.cpp" compile="1" resource="0" file="Source/IRLoader.cpp"/>
-      <FILE id="in1wxm" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
+      <FILE id="q4g4Tj" name="pffft.h" compile="0" resource="0" file="Source/pffft.h"/>
+      <FILE id="suqWsG" name="pffft.hpp" compile="0" resource="0" file="Source/pffft.hpp"/>
       <FILE id="Rr4KD2" name="Biquad.cpp" compile="1" resource="0" file="Source/Biquad.cpp"/>
       <FILE id="oWjfe4" name="PreampDistorsion.cpp" compile="1" resource="0"
             file="Source/PreampDistorsion.cpp"/>
@@ -37,10 +35,11 @@
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <VS2022 targetFolder="Builds/VisualStudio2022" extraDefs="JUCE_MODAL_LOOP_PERMITTED=1">
+    <VS2022 targetFolder="Builds/VisualStudio2022" extraDefs="JUCE_MODAL_LOOP_PERMITTED=1"
+            externalLibraries="pffft">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug"/>
-        <CONFIGURATION isDebug="0" name="Release"/>
+        <CONFIGURATION isDebug="1" name="Debug" libraryPath="libs/pffft"/>
+        <CONFIGURATION isDebug="0" name="Release" libraryPath="libs/pffft"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_data_structures" path="JuceLibraryCode\modules"/>

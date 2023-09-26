@@ -9,12 +9,12 @@
 */
 
 #pragma once
-#define JUCE_MODAL_LOOPS_PERMITTED 1
+
 
 #include <JuceHeader.h>
 #include "common.h"
 #include "SmoothParam.h"
-#include "pffft/pffft.h"
+#include "pffft.h"
 
 /*
 
@@ -51,7 +51,7 @@ struct IRLoader {
     float *convolutionResultBuffer;
     float *overlapAddBuffer;
 
-    PFFFT_Setup *fftSetup;
+    // PFFFT_Setup *fftSetup;
     
     bool initIR;
 
