@@ -24,12 +24,18 @@ IRLoader::IRLoader() {
 
     overlapAddIndex = 0;
 
+    fftEngine = new FFT(true);
+    timeVector = fftEngine->createTimeVector();
+    freqVector = fftEngine->createFreqVector();
+
 }
 
 IRLoader::~IRLoader() {
 
+    delete fftEngine;
+
     // if (fftSetup != nullptr) { pffft_destroy_setup(fftSetup); }
-    // pffft_aligned_free(irDftBuffer);
+    // // pffft_aligned_free(irDftBuffer);
     // pffft_aligned_free(inputBufferPadded);
     // pffft_aligned_free(inputDftBuffer);
     // pffft_aligned_free(convolutionResultBuffer);
@@ -40,7 +46,13 @@ void IRLoader::init(double _samplerate, int _blockSize) {
 
     blockSize = _blockSize;
 
-    loadIR();
+    int fftSize = 1024;
+
+    // fftSetup = pffft_new_setup(fftSize, PFFFT_REAL);
+    // inputBufferPadded = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    // inputDftBuffer = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
+
+    //loadIR();
 }
 
 void IRLoader::prepareConvolution(const float *irPtr, int irSize) {
@@ -137,37 +149,46 @@ void IRLoader::loadIR() {
 
 void IRLoader::process(float *input, size_t nSamples) {
 
-    for (size_t i = 0; i < nSamples; i++) {
-        inputBufferPadded[i] = input[i];
-    }
+    // for (size_t i = 0; i < nSamples; i++) {
+    //     inputBufferPadded[i] = input[i];
+    // }
 
+    fftEngine->forward(timeVector, freqVector);
+
+    // pffft_transform(fftSetup, inputDftBuffer, inputBufferPadded, nullptr, PFFFT_BACKWARD);
+    // pffft_transform(fftSetup, inputBufferPadded, inputDftBuffer, nullptr, PFFFT_FORWARD);
 
     // pffft_transform(fftSetup, inputBufferPadded, inputDftBuffer, nullptr, PFFFT_FORWARD);
-    //
-    // pffft_zconvolve_accumulate(fftSetup, inputDftBuffer, irDftBuffer, convolutionResultBuffer, 1/fftSize);
-    //
-    // pffft_transform(fftSetup, convolutionResultBuffer, inputBufferPadded, nullptr, PFFFT_BACKWARD);
+    // pffft_zconvolve_accumulate(fftSetup, inputDftBuffer, irDftBuffer, convolutionResultBuffer, 1/fftSize);    
+    // pffft_transform(fftSetup, inputDftBuffer, inputBufferPadded, nullptr, PFFFT_BACKWARD);
 
-    // clear les samples précédents pour éviter le recouvrement avec des samples passés
-    for (size_t i = 0; i < nSamples; i++) {
-        int index = overlapAddIndex - i - 1;
-        if (index < 0) { index += nSamples; }
-        index %= nSamples;
-        overlapAddBuffer[i] = 0.0f;
-    }
+    // // clear les samples précédents pour éviter le recouvrement avec des samples passés
+    // for (size_t i = 0; i < nSamples; i++) {
+    //     int index = overlapAddIndex - i - 1;
+    //     if (index < 0) { index += nSamples; }
+    //     index %= nSamples;
+    //     overlapAddBuffer[i] = 0.0f;
+    // }
 
 
-    // mettre les samples dans l'overlap add
-    for (size_t i = 0; i < convolutionResultSize; i++) {
-        int index = (overlapAddIndex + i) % convolutionResultSize;
-        overlapAddBuffer[index] += convolutionResultBuffer[i];
-    }
+    // // mettre les samples dans l'overlap add
+    // for (size_t i = 0; i < convolutionResultSize; i++) {
+    //     int index = (overlapAddIndex + i) % convolutionResultSize;
+    //     overlapAddBuffer[index] += convolutionResultBuffer[i];
+    // }
 
-    // mettre les samples dans le buffer de sortie
-    for (int i = 0; i < nSamples; i++) {
-        int index = (overlapAddIndex + i) % convolutionResultSize;
-        input[i] = overlapAddBuffer[index];
-    }
+    // // mettre les samples dans le buffer de sortie
+    // for (int i = 0; i < nSamples; i++) {
+    //     int index = (overlapAddIndex + i) % convolutionResultSize;
+    //     input[i] = overlapAddBuffer[index];
+    // }
 
-    overlapAddIndex = (overlapAddIndex + nSamples) % (fftSize);
+
+
+
+    // for (int i = 0; i < nSamples; i++) {
+    //     input[i] = inputBufferPadded[i]/1024;
+    // }
+
+    // overlapAddIndex = (overlapAddIndex + nSamples) % (fftSize);
 }

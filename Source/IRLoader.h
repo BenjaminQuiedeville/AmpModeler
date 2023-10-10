@@ -14,7 +14,9 @@
 #include <JuceHeader.h>
 #include "common.h"
 #include "SmoothParam.h"
-#include "pffft.h"
+#include "pffft/pffft.hpp"
+
+using FFT = pffft::FFT<float, 1024>;
 
 /*
 
@@ -51,7 +53,9 @@ struct IRLoader {
     float *convolutionResultBuffer;
     float *overlapAddBuffer;
 
-    // PFFFT_Setup *fftSetup;
+    FFT *fftEngine;
+    FFT::TimeVector timeVector;
+    FFT::FreqVector freqVector;
     
     bool initIR;
 
