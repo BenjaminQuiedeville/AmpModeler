@@ -16,6 +16,7 @@ mutable struct Filter
     B2 :: Float64 
     B3 :: Float64
 
+    A0 :: Float64
     A1 :: Float64
     A2 :: Float64
     A3 :: Float64
@@ -29,7 +30,7 @@ mutable struct Filter
     y3 :: Float64
 
     Filter(B0, B1, B2, B3, A0, A1, A2, A3) = 
-        new(B0/A0, B1/A0, B2/A0, B3/A0, A1/A0, A2/A0, A3/A0,
+        new(B0, B1, B2, B3, A0, A1, A2, A3,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 end 
@@ -72,58 +73,58 @@ function filter!(signal :: Array, filter :: Filter) :: Array
     return output
 end
 
-function toneStackRational(comp::Components, t::Number, m::Number, l::Number, samplerate::Number)::Filter
+function toneStackRational(cp::Components, t::Number, m::Number, l::Number, samplerate::Number)::Filter
 
     L = exp((l-1)*3.4)
 
-    b1 = t*comp.C1*comp.R1 
-        + m*comp.C3*comp.R3 
-        + L*(comp.C1*comp.R2 + comp.C2*comp.R2) 
-        + (comp.C1*comp.R3 + comp.C2*comp.R3);
+    b1 = t*cp.C1*cp.R1 
+        + m*cp.C3*cp.R3 
+        + L*(cp.C1*cp.R2 + cp.C2*cp.R2) 
+        + (cp.C1*cp.R3 + cp.C2*cp.R3);
 
-    b2 = t*(comp.C1*comp.C2*comp.R1*comp.R4 + comp.C1*comp.C3*comp.R1*comp.R4) 
-        - m*m*(comp.C1*comp.C3*comp.R3*comp.R3 + comp.C2*comp.C3*comp.R3*comp.R3)
-        + m*(comp.C1*comp.C3*comp.R1*comp.R3 + comp.C1*comp.C3*comp.R3*comp.R3 + comp.C2*comp.C3*comp.R3*comp.R3)
-        + L*(comp.C1*comp.C2*comp.R1*comp.R2 + comp.C1*comp.C2*comp.R2*comp.R4 + comp.C1*comp.C3*comp.R2*comp.R4)
-        + L*m*(comp.C1*comp.C3*comp.R2*comp.R3 + comp.C2*comp.C3*comp.R2*comp.R3)
-        + (comp.C1*comp.C2*comp.R1*comp.R3 + comp.C1*comp.C2*comp.R3*comp.R4 + comp.C1*comp.C3*comp.R3*comp.R4);
+    b2 = t*(cp.C1*cp.C2*cp.R1*cp.R4 + cp.C1*cp.C3*cp.R1*cp.R4) 
+        - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+        + m*(cp.C1*cp.C3*cp.R1*cp.R3 + cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+        + L*(cp.C1*cp.C2*cp.R1*cp.R2 + cp.C1*cp.C2*cp.R2*cp.R4 + cp.C1*cp.C3*cp.R2*cp.R4)
+        + L*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
+        + (cp.C1*cp.C2*cp.R1*cp.R3 + cp.C1*cp.C2*cp.R3*cp.R4 + cp.C1*cp.C3*cp.R3*cp.R4);
 
-    b3 = L*m*(comp.C1*comp.C2*comp.C3*comp.R1*comp.R2*comp.R3 + comp.C1*comp.C2*comp.C3*comp.R2*comp.R3*comp.R4)
-         - m*m*(comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R3 + comp.C1*comp.C2*comp.C3*comp.R3*comp.R3*comp.R4)
-         + m*(comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R3 + comp.C1*comp.C2*comp.C3*comp.R3*comp.R3*comp.R4)
-         + t*comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R4 
-         - t*m*comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R4
-         + t*L*comp.C1*comp.C2*comp.C3*comp.R1*comp.R2*comp.R4;
+    b3 = L*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
+         - m*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
+         + m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
+         + t*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4 
+         - t*m*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4
+         + t*L*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4;
 
     a0 = 1;
 
-    a1 = (comp.C1*comp.R1 + comp.C1*comp.R3 + comp.C2*comp.R3 + comp.C2*comp.R4 + comp.C3*comp.R4)
-         + m*comp.C3*comp.R3 + L*(comp.C1*comp.R2 + comp.C2*comp.R2);
+    a1 = (cp.C1*cp.R1 + cp.C1*cp.R3 + cp.C2*cp.R3 + cp.C2*cp.R4 + cp.C3*cp.R4)
+         + m*cp.C3*cp.R3 + L*(cp.C1*cp.R2 + cp.C2*cp.R2);
 
-    a2 = m*(comp.C1*comp.C3*comp.R1*comp.R3 
-            - comp.C2*comp.C3*comp.R3*comp.R4 
-            + comp.C1*comp.C3*comp.R3*comp.R3 
-            + comp.C2*comp.C3*comp.R3*comp.R3)
-        + L*m*(comp.C1*comp.C3*comp.R2*comp.R3 + comp.C2*comp.C3*comp.R2*comp.R3)
-        - m*m*(comp.C1*comp.C3*comp.R3*comp.R3 + comp.C2*comp.C3*comp.R3*comp.R3)
-        + L*(comp.C1*comp.C2*comp.R2*comp.R4 
-            + comp.C1*comp.C2*comp.R1*comp.R2 
-            + comp.C1*comp.C3*comp.R2*comp.R4 
-            + comp.C2*comp.C3*comp.R2*comp.R4)
-        + (comp.C1*comp.C2*comp.R1*comp.R4 
-            + comp.C1*comp.C3*comp.R1*comp.R4 
-            + comp.C1*comp.C2*comp.R3*comp.R4 
-            + comp.C1*comp.C2*comp.R1*comp.R3 
-            + comp.C1*comp.C3*comp.R3*comp.R4 
-            + comp.C2*comp.C3*comp.R3*comp.R4);
+    a2 = m*(cp.C1*cp.C3*cp.R1*cp.R3 
+            - cp.C2*cp.C3*cp.R3*cp.R4 
+            + cp.C1*cp.C3*cp.R3*cp.R3 
+            + cp.C2*cp.C3*cp.R3*cp.R3)
+        + L*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
+        - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+        + L*(cp.C1*cp.C2*cp.R2*cp.R4 
+            + cp.C1*cp.C2*cp.R1*cp.R2 
+            + cp.C1*cp.C3*cp.R2*cp.R4 
+            + cp.C2*cp.C3*cp.R2*cp.R4)
+        + (cp.C1*cp.C2*cp.R1*cp.R4 
+            + cp.C1*cp.C3*cp.R1*cp.R4 
+            + cp.C1*cp.C2*cp.R3*cp.R4 
+            + cp.C1*cp.C2*cp.R1*cp.R3 
+            + cp.C1*cp.C3*cp.R3*cp.R4 
+            + cp.C2*cp.C3*cp.R3*cp.R4);
 
-    a3 = L*m*(comp.C1*comp.C2*comp.C3*comp.R1*comp.R2*comp.R3 + comp.C1*comp.C2*comp.C3*comp.R2*comp.R3*comp.R4)
-         - m*m*(comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R3 + comp.C1*comp.C2*comp.C3*comp.R3*comp.R3*comp.R4)
-         + m*(comp.C1*comp.C2*comp.C3*comp.R3*comp.R3*comp.R4 
-            + comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R3 
-            - comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R4)
-         + L*comp.C1*comp.C2*comp.C3*comp.R1*comp.R2*comp.R4
-         + comp.C1*comp.C2*comp.C3*comp.R1*comp.R3*comp.R4;
+    a3 = L*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
+         - m*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
+         + m*(cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4 
+            + cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 
+            - cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4)
+         + L*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4
+         + cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4;
 
     c = 2*samplerate;
 
@@ -198,9 +199,11 @@ function main() :: Nothing
     toneFilter = toneStackRational(toneStackBassman, 0.5, 0.5, 0.5, samplerate)
 
     filterCoeffs = PolynomialRatio([toneFilter.B0, toneFilter.B1, toneFilter.B2, toneFilter.B3], 
-                                   [1,             toneFilter.A1, toneFilter.A2, toneFilter.A3])
+                                   [toneFilter.A0, toneFilter.A1, toneFilter.A2, toneFilter.A3])
 
     H, w = DSP.freqresp(filterCoeffs)
+
+    # revoir le freqresp
 
     H = 20 * log10.(abs.(H))
     w *= samplerate/(2π)
