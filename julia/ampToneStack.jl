@@ -9,50 +9,74 @@ using Statistics
 using FFTW 
 
 
-mutable struct Filter
+abstract type Filter end
 
-    B0 :: Float64
-    B1 :: Float64
-    B2 :: Float64 
-    B3 :: Float64
+mutable struct Filter3{T <: Number} <: Filter
 
-    A0 :: Float64
-    A1 :: Float64
-    A2 :: Float64
-    A3 :: Float64
+    B0 :: T
+    B1 :: T
+    B2 :: T 
+    B3 :: T
 
-    x1 :: Float64
-    x2 :: Float64
-    x3 :: Float64
+    A1 :: T
+    A2 :: T
+    A3 :: T
 
-    y1 :: Float64
-    y2 :: Float64
-    y3 :: Float64
+    x1 :: T
+    x2 :: T
+    x3 :: T
 
-    Filter(B0, B1, B2, B3, A0, A1, A2, A3) = 
-        new(B0, B1, B2, B3, A0, A1, A2, A3,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    y1 :: T
+    y2 :: T
+    y3 :: T
 
 end 
 
+mutable struct Onepole <: Filter
 
-struct Components
+    B0 :: Number
+    A1 :: Number 
 
-    R1 :: Float64
-    R2 :: Float64
-    R3 :: Float64
-    R4 :: Float64
+    Y1 :: Number
+end
 
-    C1 :: Float64
-    C2 :: Float64
-    C3 :: Float64
+Onepole(freq :: Number, samplerate :: Number) = Onepole(sin(π/samplerate * freq), sin(π/samplerate * freq) - 1, 0.0)
+
+Filter3{T}(B0, B1, B2, B3, A0, A1, A2, A3) where {T <: Number} = 
+    Filter3{T}(B0/A0, B1/A0, B2/A0, B3/A0, A1/A0, A2/A0, A3/A0,
+              0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+num(filter :: Filter3) :: Vector{Number} = [filter.B0, filter.B1, filter.B2, filter.B3]
+denum(filter :: Filter3) :: Vector{Number} = [1.0, filter.A1, filter.A2, filter.A3]
+
+
+struct Components{T <: Number}
+
+    R1 :: T
+    R2 :: T
+    R3 :: T
+    R4 :: T
+
+    C1 :: T
+    C2 :: T
+    C3 :: T
 end 
 
-function filter!(signal :: Array, filter :: Filter) :: Array
+function filter!(signal :: Array, filter :: Onepole) :: Array
+    output = zeros(size(signal))
+
+    for i in 1:size(signal)[1]
+        output[i] = filter.B0 * signal[i] - filter.A1 * filter.Y1
+        filter.Y1 = output[i]
+    end 
+    return output
+end 
+
+function filter!(signal :: Array, filter :: Filter3) :: Array
 
     output = zeros(size(signal))
 
-    for i in size(signal)[1]
+    for i in 1:size(signal)[1]
         output[i] = filter.B0 * signal[i]
                   + filter.B1 * filter.x1
                   + filter.B2 * filter.x2
@@ -73,72 +97,111 @@ function filter!(signal :: Array, filter :: Filter) :: Array
     return output
 end
 
-function toneStackRational(cp::Components, t::Number, m::Number, l::Number, samplerate::Number)::Filter
+function printConstants(cp::Components)::Nothing
 
-    L = exp((l-1)*3.4)
+    b1coeffs = [cp.C1*cp.R1, cp.C3*cp.R3, (cp.C1*cp.R2 + cp.C2*cp.R2), (cp.C1*cp.R3 + cp.C2*cp.R3)]
+    b2coeffs = [(cp.C1*cp.C2*cp.R1*cp.R4 + cp.C1*cp.C3*cp.R1*cp.R4),
+                (cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3),
+                (cp.C1*cp.C3*cp.R1*cp.R3 + cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3),
+                (cp.C1*cp.C2*cp.R1*cp.R2 + cp.C1*cp.C2*cp.R2*cp.R4 + cp.C1*cp.C3*cp.R2*cp.R4),
+                (cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3),
+                (cp.C1*cp.C2*cp.R1*cp.R3 + cp.C1*cp.C2*cp.R3*cp.R4 + cp.C1*cp.C3*cp.R3*cp.R4)]
+    b3coeffs = [(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4),
+                (cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4), 
+                (cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4), 
+                cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4, 
+                cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4, 
+                cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4]
+    a1coeffs = [(cp.C1*cp.R1 + cp.C1*cp.R3 + cp.C2*cp.R3 + cp.C2*cp.R4 + cp.C3*cp.R4), 
+                cp.C3*cp.R3, 
+                (cp.C1*cp.R2 + cp.C2*cp.R2)]
+    a2coeffs = [(cp.C1*cp.C3*cp.R1*cp.R3 - cp.C2*cp.C3*cp.R3*cp.R4 
+                    + cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3), 
+                (cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3), 
+                (cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3), 
+                (cp.C1*cp.C2*cp.R2*cp.R4 + cp.C1*cp.C2*cp.R1*cp.R2 
+                    + cp.C1*cp.C3*cp.R2*cp.R4 + cp.C2*cp.C3*cp.R2*cp.R4),
+                (cp.C1*cp.C2*cp.R1*cp.R4 + cp.C1*cp.C3*cp.R1*cp.R4 
+                    + cp.C1*cp.C2*cp.R3*cp.R4 + cp.C1*cp.C2*cp.R1*cp.R3 
+                    + cp.C1*cp.C3*cp.R3*cp.R4 + cp.C2*cp.C3*cp.R3*cp.R4)]
+    a3coeffs = [(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4), 
+                (cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4), 
+                (cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4 + cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 
+                    - cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4), 
+                cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4, 
+                cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4]
 
-    b1 = t*cp.C1*cp.R1 
-        + m*cp.C3*cp.R3 
-        + L*(cp.C1*cp.R2 + cp.C2*cp.R2) 
-        + (cp.C1*cp.R3 + cp.C2*cp.R3);
+    @show b1coeffs
+    @show b2coeffs
+    @show b3coeffs
+    @show a1coeffs
+    @show a2coeffs
+    @show a3coeffs
 
-    b2 = t*(cp.C1*cp.C2*cp.R1*cp.R4 + cp.C1*cp.C3*cp.R1*cp.R4) 
-        - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
-        + m*(cp.C1*cp.C3*cp.R1*cp.R3 + cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
-        + L*(cp.C1*cp.C2*cp.R1*cp.R2 + cp.C1*cp.C2*cp.R2*cp.R4 + cp.C1*cp.C3*cp.R2*cp.R4)
-        + L*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
-        + (cp.C1*cp.C2*cp.R1*cp.R3 + cp.C1*cp.C2*cp.R3*cp.R4 + cp.C1*cp.C3*cp.R3*cp.R4);
+    return nothing
+end 
 
-    b3 = L*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
+function toneStackRational(cp::Components, t::Number, m::Number, L::Number, samplerate::Number, T::Type = Float64)::Filter
+
+    l = exp((L-1)*3.4)
+
+    b1::T = t*cp.C1*cp.R1 + m*cp.C3*cp.R3 + l*(cp.C1*cp.R2 + cp.C2*cp.R2) + (cp.C1*cp.R3 + cp.C2*cp.R3);
+
+    b2::T = t*(cp.C1*cp.C2*cp.R1*cp.R4 + cp.C1*cp.C3*cp.R1*cp.R4) 
+       - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+       + m*(cp.C1*cp.C3*cp.R1*cp.R3 + cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+       + l*(cp.C1*cp.C2*cp.R1*cp.R2 + cp.C1*cp.C2*cp.R2*cp.R4 + cp.C1*cp.C3*cp.R2*cp.R4)
+       + l*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
+       + (cp.C1*cp.C2*cp.R1*cp.R3 + cp.C1*cp.C2*cp.R3*cp.R4 + cp.C1*cp.C3*cp.R3*cp.R4);
+
+    b3::T = l*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
          - m*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
          + m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
-         + t*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4 
-         - t*m*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4
-         + t*L*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4;
+         + t*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4 - t*m*cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4
+         + t*l*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4;
 
-    a0 = 1;
+    a0::T = 1;
 
-    a1 = (cp.C1*cp.R1 + cp.C1*cp.R3 + cp.C2*cp.R3 + cp.C2*cp.R4 + cp.C3*cp.R4)
-         + m*cp.C3*cp.R3 + L*(cp.C1*cp.R2 + cp.C2*cp.R2);
+    a1::T = (cp.C1*cp.R1 + cp.C1*cp.R3 + cp.C2*cp.R3 + cp.C2*cp.R4 + cp.C3*cp.R4)
+         + m*cp.C3*cp.R3 + l*(cp.C1*cp.R2 + cp.C2*cp.R2);
 
-    a2 = m*(cp.C1*cp.C3*cp.R1*cp.R3 
+    a2::T = m*(cp.C1*cp.C3*cp.R1*cp.R3 
             - cp.C2*cp.C3*cp.R3*cp.R4 
             + cp.C1*cp.C3*cp.R3*cp.R3 
             + cp.C2*cp.C3*cp.R3*cp.R3)
-        + L*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
-        - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
-        + L*(cp.C1*cp.C2*cp.R2*cp.R4 
+         + l*m*(cp.C1*cp.C3*cp.R2*cp.R3 + cp.C2*cp.C3*cp.R2*cp.R3)
+         - m*m*(cp.C1*cp.C3*cp.R3*cp.R3 + cp.C2*cp.C3*cp.R3*cp.R3)
+         + l*(cp.C1*cp.C2*cp.R2*cp.R4 
             + cp.C1*cp.C2*cp.R1*cp.R2 
             + cp.C1*cp.C3*cp.R2*cp.R4 
             + cp.C2*cp.C3*cp.R2*cp.R4)
-        + (cp.C1*cp.C2*cp.R1*cp.R4 
+         + (cp.C1*cp.C2*cp.R1*cp.R4 
             + cp.C1*cp.C3*cp.R1*cp.R4 
             + cp.C1*cp.C2*cp.R3*cp.R4 
             + cp.C1*cp.C2*cp.R1*cp.R3 
             + cp.C1*cp.C3*cp.R3*cp.R4 
             + cp.C2*cp.C3*cp.R3*cp.R4);
 
-    a3 = L*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
+    a3::T = l*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R2*cp.R3*cp.R4)
          - m*m*(cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 + cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4)
          + m*(cp.C1*cp.C2*cp.C3*cp.R3*cp.R3*cp.R4 
             + cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R3 
             - cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4)
-         + L*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4
+         + l*cp.C1*cp.C2*cp.C3*cp.R1*cp.R2*cp.R4
          + cp.C1*cp.C2*cp.C3*cp.R1*cp.R3*cp.R4;
 
     c = 2*samplerate;
 
-    B0 = -b1*c - b2*c^2 - b3*c^3
-    B1 = -b1*c + b2*c^2 + 3*b3*c^3
-    B2 = b1*c + b2*c^2 - 3*b3*c^3
-    B3 = b1*c - b2*c^2 + b3*c^3
+    B0::T = -b1*c - b2*c^2 - b3*c^3;
+    B1::T = -b1*c + b2*c^2 + 3*b3*c^3;
+    B2::T = b1*c + b2*c^2 - 3*b3*c^3;
+    B3::T = b1*c - b2*c^2 + b3*c^3;
+    A0::T = -a0 - a1*c - a2*c^2 - a3*c^3;
+    A1::T = -3*a0 - a1*c + a2*c^2 + 3*a3*c^3;
+    A2::T = -3*a0 + a1*c + a2*c^2 - 3*a3*c^3;
+    A3::T = -a0 + a1*c - a2*c^2 + a3*c^3;
 
-    A0 = -a0 - a1*c - a2*c^2 - a3*c^3
-    A1 = -3*a0 - a1*c + a2*c^2 + 3*a3*c^3
-    A2 = -3*a0 + a1*c + a2*c^2 - 3*a3*c^3
-    A3 = -a0 + a1*c - a2*c^2 + a3*c^3
-
-    return Filter(B0, B1, B2, B3, A0, A1, A2, A3)
+    return Filter3{T}(B0, B1, B2, B3, A0, A1, A2, A3)
 end 
 
 
@@ -146,7 +209,7 @@ R1val :: Number = 150e3
 R2val :: Number = 150e3
 R3val :: Number = 10e3
 
-function toneStack(l = 0.5, m = 0.5, t = 0.5)
+function toneStack(t = 0.5, m = 0.5, l = 0.5)
     circ = @circuit begin
         Vi = voltagesource()
         R11 = resistor((1 - t)*R1val)
@@ -181,11 +244,15 @@ end
 
 function main() :: Nothing
     
+    t :: Float64 = 0.5
+    m :: Float64 = 0.5
+    l :: Float64 = 0.5 
+
     samplerate :: Float64 = 48000.0
-    model = DiscreteModel(toneStack(0.5, 0.5, 0.5), 1/samplerate)
+    model = DiscreteModel(toneStack(t, m, l), 1/samplerate)
     
     nFreq = 8192
-    signal = u = [1; zeros(nFreq - 1)]'
+    signal = [1; zeros(nFreq - 1)]'
     y = run!(model, signal)[1, :]
 
     ySpectre = 20 * log10.((y |> rfft .|> abs).^2)
@@ -193,33 +260,34 @@ function main() :: Nothing
 
     ###
 
-    toneStackJCM800  = Components(220e3, 1e6, 22e3, 33e3, 470e-12, 22e-9, 22e-9)
-    toneStackBassman = Components(250e3, 1e6, 25e3, 56e3, 250e-12, 20e-9, 20e-9)
+    toneStackJCM800  = Components{Float64}(220e3, 1e6, 22e3, 33e3, 470e-12, 22e-9, 22e-9)
+    toneStackBassman = Components{Float64}(250e3, 1e6, 25e3, 56e3, 250e-12, 20e-9, 20e-9)
+    toneStackSoldano = Components{Float64}(250e3, 1e6, 25e3, 47e3, 470e-12, 20e-9, 20e-9)
 
-    toneFilter = toneStackRational(toneStackBassman, 0.5, 0.5, 0.5, samplerate)
+    printConstants(toneStackBassman)
 
-    filterCoeffs = PolynomialRatio([toneFilter.B0, toneFilter.B1, toneFilter.B2, toneFilter.B3], 
-                                   [toneFilter.A0, toneFilter.A1, toneFilter.A2, toneFilter.A3])
+    toneFilter = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
+    testFilter = Onepole(1/(0.3), samplerate)
 
-    H, w = DSP.freqresp(filterCoeffs)
+    signal = randn(nFreq)
+    signal[begin] = 1
+    y2 = filter!(signal, toneFilter)
 
-    # revoir le freqresp
+    y2Spectre = 20 * log10.((y2 |> rfft .|> abs).^2)
 
-    H = 20 * log10.(abs.(H))
-    w *= samplerate/(2π)
+
 
     p1 = begin
         plot()
-        plot!(yFreqs .+ 1, ySpectre, xaxis = :log)
+        plot!(yFreqs .+ 1, ySpectre, xaxis = :log, ylims = [-60, -10])
     end
 
     p2 = begin
         plot()
-        plot!(w .+ 1, H, xaxis = :log)
+        plot!(yFreqs .+ 1, y2Spectre, xaxis = :log)
     end 
 
-    p3 = plot(p1, p2, layout = (2, 1))
-    display(p3)
+    p3 = plot(p1, p2, layout = (2, 1)) |> display
 
     return nothing
 end
