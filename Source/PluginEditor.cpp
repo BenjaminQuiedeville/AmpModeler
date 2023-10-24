@@ -19,7 +19,7 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 
     createKnob(volumeSlider, volumeSliderLabel, volumeSliderAttachment, "MASTER_VOLUME");
 
-    // irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(); };
+    irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(); };
     addAndMakeVisible(irLoadButton);
 
     setSize (1000, 600);

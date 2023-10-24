@@ -71,7 +71,7 @@ public:
     PreBoost *preBoost;
     PreampDistorsion *preamp;
     ThreeBandEQ *postEQ;
-    IRLoader irLoader;
+    IRLoader *irLoader;
 
 private:
 

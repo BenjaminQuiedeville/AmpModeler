@@ -16,7 +16,8 @@
 #include "SmoothParam.h"
 #include "pffft/pffft.hpp"
 
-using FFT = pffft::FFT<float, 1024>;
+#define FFT_SIZE 16384
+using FFT = pffft::FFT<float, FFT_SIZE>;
 
 /*
 
@@ -42,20 +43,17 @@ struct IRLoader {
     void process(float *input, size_t nSamples);
 
     int blockSize;
-    size_t fftSize;
     size_t convolutionResultSize;
 
     int overlapAddIndex;
 
-    float *inputBufferPadded;
-    float *inputDftBuffer;
-    float *irDftBuffer;
-    float *convolutionResultBuffer;
-    float *overlapAddBuffer;
+    FFT::FreqVector inputDftBuffer;
+    FFT::FreqVector irDftBuffer;
+    FFT::TimeVector inputBufferPadded;
+    FFT::TimeVector convolutionResultBuffer;
+    FFT::TimeVector overlapAddBuffer;
 
     FFT *fftEngine;
-    FFT::TimeVector timeVector;
-    FFT::FreqVector freqVector;
     
     bool initIR;
 

@@ -21,7 +21,7 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
     preBoost  = new PreBoost();
     preamp    = new PreampDistorsion();
     postEQ    = new ThreeBandEQ();
-    // irLoader  = new IRLoader();
+    irLoader  = new IRLoader();
 
     apvts.addParameterListener("GATE_THRESH", this);
     apvts.addParameterListener("BITE", this);
@@ -56,7 +56,7 @@ AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
     delete preBoost;
     delete preamp;
     delete postEQ;
-    // delete irLoader;
+    delete irLoader;
 }
 
 //==============================================================================
@@ -132,7 +132,7 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     masterVolume.newTarget(DB_TO_GAIN(-6.0f));
 
     postEQ->prepareToPlay(sampleRate);
-    irLoader.init(sampleRate, samplesPerBlock);
+    irLoader->init(sampleRate, samplesPerBlock);
 }
 
 void AmpModelerAudioProcessor::releaseResources()
@@ -187,7 +187,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     preamp->process(audioPtr, numSamples);
     postEQ->process(audioPtr, numSamples);
-    irLoader.process(audioPtr, numSamples);
+    irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
         audioPtr[i] *= masterVolume.nextValue();
