@@ -110,15 +110,19 @@ int main(int argc, char **argv) {
     char tempSample[4] = {0, 0, 0, 0};
     for (size_t i = 0; i < signalLength; i++) {
         
-        char *ptr = &signalChar[i*sampleSizeBytes]; 
+        int index = i*sampleSizeBytes;
 
-        tempSample[0] = ptr[0];
-        tempSample[1] = ptr[1];
-        tempSample[2] = ptr[2];
+        int32_t sample = (signalChar[index] << 16) | (signalChar[index + 1] << 8) | (signalChar[index + 2]);
+        
+        if (sample & 0x800000) {//  if the 24th bit is set, this is a negative number in 24-bit world
+            sample = sample | ~0xFFFFFF; // so make sure sign is extended to the 32 bit float
+        }
 
-        signal[i] = *(int32_t *)tempSample;
+        signal[i] = sample;
 
-        printf("%ld ", signalChar[i]);
+
+
+        printf("%d ", signalChar[i]);
     }
 
     printf("\n");
