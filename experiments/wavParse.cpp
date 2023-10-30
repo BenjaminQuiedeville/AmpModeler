@@ -1,17 +1,39 @@
 #include <iostream>
 #include <fstream>
 #include <cstdint>
+#include <assert.h>
+#include <memory.h>
 
+#define BITS_24_MAX (double)(1 << 23 - 1)
 
+struct Signal {
 
-int main(int argc, char **argv) {
+    // mono signal;
 
-    std::string filepath = std::string(argv[1]);
+    float *data;
+    size_t size;
+    double samplerate;
+
+    Signal() {
+        data = nullptr;
+        size = 0;
+        samplerate = 0.0;
+    }
+
+    ~Signal() {
+        if (data != nullptr) {
+            free(data);
+        }
+    }
+};
+
+void wavParse(FILE *wavFile, Signal *outSignal) {
 
     char temp[1] = {0};
     char riffString[4];
     int32_t ChunkSize; 
     char format[4];
+
     char SubChunk1ID[4];
     int32_t SubChunk1Size;
     int16_t AudioFormat;
@@ -19,118 +41,185 @@ int main(int argc, char **argv) {
     int32_t samplerate;
     int32_t byteRate;
     int16_t BlockAlign;
-    int16_t BitsPerSample;
-
+    int16_t bitsPerSample;
+    
     char SubChunk2ID[4];
-    int32_t SubChunk2Size;
-
-    std::ifstream wavFile;
-    wavFile.open(filepath);
-
-    wavFile.read(riffString, 4);
+    int32_t signalSizeBytes;
+    
+    fread(riffString, 1, 4, wavFile);
+    fread((char *)(&ChunkSize), 1, 4, wavFile);
+    fread(format, 1, 4, wavFile);
+    
     printf("%4s \n", riffString);
-
-    wavFile.read((char *)(&ChunkSize), 4);
     printf("ChunkSize = %d \n", ChunkSize);
-
-    wavFile.read(format, 4);
     printf("format = %4s \n", format);
 
     while (temp[0] != 'f') {
-        wavFile.read(temp, 1);
+        fread(temp, 1, 1, wavFile);
     }
 
     SubChunk1ID[0] = temp[0];
+    temp[0] = 0;
 
-    wavFile.read(SubChunk1ID+1, 3);
-    printf("SubChunk1ID = %4s \n", SubChunk1ID);
+    fread(SubChunk1ID+1, 1, 3, wavFile);
 
-    wavFile.read((char *)(&SubChunk1Size), 4);
-    printf("SubChunk1Size = %d \n", SubChunk1Size);
+    fread((char *)(&SubChunk1Size), 1, 4, wavFile);
+    fread((char *)(&AudioFormat), 1, 2, wavFile);
+
+    fread((char *)(&NumChannels), 1, 2, wavFile);   
+    fread((char *)(&samplerate), 1, 4, wavFile);    
+    fread((char *)(&byteRate), 1, 4, wavFile);  
+    fread((char *)(&BlockAlign), 1, 2, wavFile);    
+    fread((char *)(&bitsPerSample), 1, 2, wavFile);
     
-    wavFile.read((char *)(&AudioFormat), 2);
+    assert(NumChannels == 1);
+    printf("SubChunk1ID = %4s \n", SubChunk1ID);
+    printf("SubChunk1Size = %d \n", SubChunk1Size);
     printf("AudioFormat = %d \n", AudioFormat);
 
-    wavFile.read((char *)(&NumChannels), 2);
     printf("NumChannels = %d \n", NumChannels);
-
-    wavFile.read((char *)(&samplerate), 4);
     printf("samplerate = %d \n", samplerate);
-
-    wavFile.read((char *)(&byteRate), 4);
     printf("byteRate = %d \n", byteRate);
-
-    wavFile.read((char *)(&BlockAlign), 2);
     printf("BlockAlign = %d \n", BlockAlign);
+    printf("bitsPerSample = %d \n", bitsPerSample);
 
-    wavFile.read((char *)(&BitsPerSample), 2);
-    printf("BitsPerSample = %d \n", BitsPerSample);
-
-    if (byteRate != (samplerate * NumChannels * BitsPerSample/8)) {
+    if (byteRate != (samplerate * NumChannels * bitsPerSample/8)) {
         printf("byte Rate errone");
     }
 
-    if (BlockAlign != (NumChannels * BitsPerSample/8)) {
+    if (BlockAlign != (NumChannels * bitsPerSample/8)) {
         printf("BlockAlign Rate errone");
     }
 
     while (temp[0] != 'd') {
-        wavFile.read(temp, 1);
+        fread(temp, 1, 1, wavFile);
     }
 
     SubChunk2ID[0] = temp[0];
     temp[0] = 0;
-    wavFile.read(SubChunk2ID+1, 3);
-    if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a' || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a') {
+    fread(SubChunk2ID+1, 1, 3, wavFile);
+    
+
+    if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a' 
+     || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a') 
+    {
         while (temp[0] != 'd') {
-            wavFile.read(temp, 1);
+            fread(temp, 1, 1, wavFile);
         }
+
         SubChunk2ID[0] = temp[0];
-        wavFile.read(SubChunk2ID+1, 3);
+        fread(SubChunk2ID+1, 1, 3, wavFile);
+
     }
+
+    assert((SubChunk2ID[0] == 'd' || SubChunk2ID[1] == 'a' 
+         || SubChunk2ID[2] == 't' || SubChunk2ID[3] == 'a'));
 
     printf("SubChunk2ID = %4s \n", SubChunk2ID);
 
+    fread(&signalSizeBytes, 4, 1, wavFile);
+    printf("signalSizeBytes = %d \n", signalSizeBytes);
     
-    wavFile.read((char *)(&SubChunk2Size), 4);
-    printf("SubChunk2Size = %d \n", SubChunk2Size);
+    size_t sampleSizeBytes = BlockAlign/NumChannels;
+    size_t numSamples = signalSizeBytes/sampleSizeBytes;
 
 
-    char *signalChar = (char *)malloc(SubChunk2Size);
+    outSignal->samplerate = (double)samplerate;
+    outSignal->size = numSamples;
+    outSignal->data = (float *)calloc(numSamples, sizeof(float));
 
-    wavFile.read(signalChar, SubChunk1Size);
+    uint32_t counter = 0;
+    if (bitsPerSample == 16) {
 
-    size_t sampleSizeBytes = BitsPerSample/8;
+        int8_t sampleChar[2] = {0x00, 0x00};
 
-    wavFile.close();
+        while (!feof(wavFile) && counter < numSamples) {
+            fread(sampleChar, 1, 2, wavFile);
+            
+            int32_t mask = 0x01 << (bitsPerSample - 1);
+            int16_t sampleInt = *(int16_t *)sampleChar;
 
-    size_t signalLength = SubChunk2Size/sampleSizeBytes;
-    int32_t *signal = (int32_t *)calloc(signalLength, sizeof(int32_t));
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFF;
+            }            
 
-    char tempSample[4] = {0, 0, 0, 0};
-    for (size_t i = 0; i < signalLength; i++) {
-        
-        int index = i*sampleSizeBytes;
+            float sample = sampleInt / (float)_I16_MAX;
 
-        int32_t sample = (signalChar[index] << 16) | (signalChar[index + 1] << 8) | (signalChar[index + 2]);
-        
-        if (sample & 0x800000) {//  if the 24th bit is set, this is a negative number in 24-bit world
-            sample = sample | ~0xFFFFFF; // so make sure sign is extended to the 32 bit float
+            outSignal->data[counter] = sample;
+            counter++;
         }
 
-        signal[i] = sample;
+    } else if (bitsPerSample == 24) {
+    
+        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+        while (!feof(wavFile) && counter < numSamples) {
+            fread(sampleChar, 1, 3, wavFile);
 
+            int64_t mask = 0x01 << (bitsPerSample - 1);
+            // uint32_t mask = 0x800000;
+            int32_t sampleInt = *(int32_t *)sampleChar;
 
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFFFF;
+            }
 
-        printf("%d ", signalChar[i]);
+            float sample = sampleInt / BITS_24_MAX / 2.0;
+
+            outSignal->data[counter] = sample;
+            counter++;
+        }
+
+    } else if (bitsPerSample == 32) {
+        
+        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+
+        while (!feof(wavFile) && counter < numSamples) {
+
+            fread(sampleChar, 1, 4, wavFile);
+
+            int64_t mask = 0x01 << (bitsPerSample - 1);
+            int32_t sampleInt = *(int32_t *)sampleChar;
+
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFFFFFF;
+            }
+
+            float sample = sampleInt / (float)_I32_MAX;
+
+            outSignal->data[counter] = sample;
+            counter++;
+        }
     }
 
-    printf("\n");
+    printf("\n");    
+    return;
+}
 
-    printf("Bravo tout est bon !\n");
+int main(int argc, char **argv) {
 
-    free(signalChar);
-    free(signal);
+    if (argc < 2) {
+        printf("erreur, pas de nom de fichier donné\n");
+        return 1;
+    }
+
+    std::string filepath = std::string(argv[1]);
+
+    std::cout << "Parsing the file : \"" << filepath << "\"\n";
+
+    FILE *wavFile;
+    Signal *signal = new Signal();
+
+    wavFile = fopen(argv[1], "rb");
+
+    wavParse(wavFile, signal);
+
+    for (size_t i = 0; i < 50; i++) {
+        printf("%.3f ", signal->data[i]);
+    }
+
+    fclose(wavFile);
+
+    delete signal;
 
     return 0;
 }
