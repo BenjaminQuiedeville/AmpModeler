@@ -10,6 +10,9 @@
 
 #pragma once
 
+#ifndef JUCE_MODAL_LOOPS_PERMITTED
+    #define JUCE_MODAL_LOOPS_PERMITTED 1
+#endif
 
 #include <JuceHeader.h>
 #include "common.h"
@@ -41,6 +44,7 @@ struct IRLoader {
     void loadIR();
     void prepareConvolution(const float* irPtr, int irSize);
     void process(float *input, size_t nSamples);
+    size_t parseWavFile(const std::string& filepath, float *buffer);
 
     int blockSize;
     size_t convolutionResultSize;

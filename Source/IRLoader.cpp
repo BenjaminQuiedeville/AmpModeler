@@ -12,8 +12,11 @@
 #include <memory>
 #include <math.h>
 #include <assert.h>
+#include <fstream>
+#include <iostream>
 
-// refaire l'impulse response avec des float et pas des doubles.
+#define BITS_24_MAX (double)(1 << 23 - 1)
+
 #define BASE_IR_SIZE 5793
 static float baseIR[BASE_IR_SIZE] = {
 #include "baseIR.inc"
@@ -64,6 +67,183 @@ void IRLoader::prepareConvolution(const float *irPtr, int irSize) {
 
 }
 
+size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
+
+
+    char temp[1] = {0};
+    char riffString[4];
+    int32_t ChunkSize; 
+    char format[4];
+
+    char SubChunk1ID[4];
+    int32_t SubChunk1Size;
+    int16_t AudioFormat;
+    int16_t NumChannels;
+    int32_t samplerate;
+    int32_t byteRate;
+    int16_t BlockAlign;
+    int16_t bitsPerSample;
+    
+    char SubChunk2ID[4];
+    int32_t signalSizeBytes;
+
+    FILE *wavFile = fopen(filepath.data(), "rb");
+
+    assert(!ferror(wavFile));
+
+    fread(riffString, 1, 4, wavFile);
+
+    assert(riffString[0] == 'R' || riffString[1] == 'I' 
+        || riffString[2] == 'F' || riffString[3] == 'F');
+
+    // if (riffString[0] != 'R' || riffString[1] != 'I' 
+    //  || riffString[2] != 'F' || riffString[3] != 'F')
+    // {
+    //     return 0;
+    // }
+
+    fread((char *)(&ChunkSize), 1, 4, wavFile);
+    fread(format, 1, 4, wavFile);
+
+    while (temp[0] != 'f') {
+        fread(temp, 1, 1, wavFile);
+    }
+
+    SubChunk1ID[0] = temp[0];
+    temp[0] = 0;
+
+    fread(SubChunk1ID+1, 1, 3, wavFile);
+
+    fread((char *)(&SubChunk1Size), 1, 4, wavFile);
+    fread((char *)(&AudioFormat), 1, 2, wavFile);
+
+    fread((char *)(&NumChannels), 1, 2, wavFile);   
+    fread((char *)(&samplerate), 1, 4, wavFile);    
+    fread((char *)(&byteRate), 1, 4, wavFile);  
+    fread((char *)(&BlockAlign), 1, 2, wavFile);    
+    fread((char *)(&bitsPerSample), 1, 2, wavFile);
+    
+    assert(NumChannels == 1);
+    
+    // if (NumChannels != 1) { 
+    //     return 0; 
+    // }
+
+    assert(byteRate == (samplerate * NumChannels * bitsPerSample/8));
+    assert(BlockAlign == (NumChannels * bitsPerSample/8));
+
+    // if (byteRate != (samplerate * NumChannels * bitsPerSample/8)) {
+    //     printf("byte Rate errone");
+    // }
+
+    // if (BlockAlign != (NumChannels * bitsPerSample/8)) {
+    //     printf("BlockAlign Rate errone");
+    // }
+
+    while (temp[0] != 'd') {
+        fread(temp, 1, 1, wavFile);
+    }
+
+    SubChunk2ID[0] = temp[0];
+    temp[0] = 0;
+    fread(SubChunk2ID+1, 1, 3, wavFile);
+    
+
+    if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a' 
+     || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a') 
+    {
+        while (temp[0] != 'd') {
+            fread(temp, 1, 1, wavFile);
+        }
+
+        SubChunk2ID[0] = temp[0];
+        fread(SubChunk2ID+1, 1, 3, wavFile);
+
+    }
+
+    assert((SubChunk2ID[0] == 'd' || SubChunk2ID[1] == 'a' 
+         || SubChunk2ID[2] == 't' || SubChunk2ID[3] == 'a'));
+
+    // printf("SubChunk2ID = %4s \n", SubChunk2ID);
+
+    fread(&signalSizeBytes, 4, 1, wavFile);
+    // printf("signalSizeBytes = %d \n", signalSizeBytes);
+    
+    size_t sampleSizeBytes = BlockAlign/NumChannels;
+    size_t numSamples = signalSizeBytes/sampleSizeBytes;
+
+
+    buffer = (float *)calloc(numSamples, sizeof(float));
+    assert(buffer != nullptr);
+
+    uint32_t counter = 0;
+    if (bitsPerSample == 16) {
+
+        int8_t sampleChar[2] = {0x00, 0x00};
+
+        while (!feof(wavFile) && counter < numSamples) {
+            fread(sampleChar, 1, 2, wavFile);
+            
+            int32_t mask = (int32_t)1 << (bitsPerSample - 1);
+            int16_t sampleInt = *(int16_t *)sampleChar;
+
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFF;
+            }            
+
+            float sample = sampleInt / (float)_I16_MAX;
+
+            buffer[counter] = sample;
+            counter++;
+        }
+
+    } else if (bitsPerSample == 24) {
+    
+        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+        while (!feof(wavFile) && counter < numSamples) {
+            fread(sampleChar, 1, 3, wavFile);
+
+            int64_t mask = (int64_t)1 << (bitsPerSample - 1);
+            // uint32_t mask = 0x800000;
+            int32_t sampleInt = *(int32_t *)sampleChar;
+
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFFFF;
+            }
+
+            float sample = sampleInt / BITS_24_MAX / 2.0;
+
+            buffer[counter] = sample;
+            counter++;
+        }
+
+    } else if (bitsPerSample == 32) {
+        
+        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+
+        while (!feof(wavFile) && counter < numSamples) {
+
+            fread(sampleChar, 1, 4, wavFile);
+
+            int64_t mask = (int64_t)1 << (bitsPerSample - 1);
+            int32_t sampleInt = *(int32_t *)sampleChar;
+
+            if (sampleInt & mask) {
+                sampleInt |= ~0xFFFFFFFF;
+            }
+
+            float sample = sampleInt / (float)_I32_MAX;
+
+            buffer[counter] = sample;
+            counter++;
+        }
+    }
+
+    fclose(wavFile);
+
+    return numSamples;
+}
+
 void IRLoader::loadIR() {
 
     if (initIR) {
@@ -71,32 +251,21 @@ void IRLoader::loadIR() {
         initIR = false;
         return;
     }
+    
+    float *irBuffer = nullptr;
 
-    auto irChooser = std::make_unique<juce::FileChooser>("Select an .wav IR to load",
-                                                          juce::File{},
-                                                          "*.wav");
-    auto chooserFlags = juce::FileBrowserComponent::openMode
-                      | juce::FileBrowserComponent::canSelectFiles;
+    juce::FileChooser chooser("Choose a .wav File to open");
 
-    auto formatManager = new juce::AudioFormatManager();
-    juce::AudioBuffer<float> *irBuffer;
+    chooser.browseForFileToOpen();
+    const std::string filepath = chooser.getResult().getFullPathName().toStdString();
 
-    irChooser->launchAsync(chooserFlags, [&, this](const juce::FileChooser& fc) {
-        auto file = fc.getResult();
+    size_t irSize = parseWavFile(filepath, irBuffer);
 
-        if (file != juce::File{}) {
-            auto reader = formatManager->createReaderFor (file);
+    prepareConvolution(irBuffer, irSize);
 
-            if (reader != nullptr) {
-                irBuffer = new juce::AudioBuffer<float>(1, reader->lengthInSamples);
-                reader->read(irBuffer, 0, reader->lengthInSamples, 0, true, false);
-            }
-        }
-    });
-    prepareConvolution(irBuffer->getReadPointer(0), irBuffer->getNumSamples());
-
-    delete formatManager;
-    delete irBuffer;
+    if (irBuffer != nullptr) { free(irBuffer); }
+    
+    return;
 }
 
 

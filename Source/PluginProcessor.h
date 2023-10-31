@@ -10,6 +10,9 @@
 #include "ThreeBandEQ.h"
 #include "IRLoader.h"
 
+#include <vector>
+
+
 /*
 RESTANT : 
     input processing 
@@ -20,6 +23,36 @@ RESTANT :
     re EQ
 */
 
+enum Params {
+    GATE_THRESH,
+    BITE,
+    TIGHT,
+    PRE_BOOST,
+    PREAMP_GAIN,
+    TONESTACK_BASS,
+    TONESTACK_MIDDLE,
+    TONESTACK_TREBBLE,
+    PREAMP_VOLUME,
+    RESONANCE,
+    PRESENCE,
+    MASTER_VOLUME,
+    N_PARAMS
+};
+
+const std::vector<juce::String> ParamsID = {
+    "GATE_THRESH",
+    "BITE",
+    "TIGHT",
+    "PRE_BOOST",
+    "PREAMP_GAIN",
+    "TONESTACK_BASS",
+    "TONESTACK_MIDDLE",
+    "TONESTACK_TREBBLE",
+    "PREAMP_VOLUME",
+    "RESONANCE",
+    "PRESENCE",
+    "MASTER_VOLUME"
+};
 
 class AmpModelerAudioProcessor  : public juce::AudioProcessor, 
                                 juce::AudioProcessorValueTreeState::Listener
@@ -65,7 +98,7 @@ public:
 	void getStateInformation (juce::MemoryBlock& destData) override;
 	void setStateInformation (const void* data, int sizeInBytes) override;
 
-	juce::AudioProcessorValueTreeState apvts;
+	juce::AudioProcessorValueTreeState *apvts;
 
     NoiseGate *noiseGate;
     PreBoost *preBoost;
@@ -75,9 +108,6 @@ public:
 
 private:
 
-	// juce::dsp::ProcessSpec spec;
-
-    // juce::dsp::Gain<sample_t> staticInputGain;
 	SmoothParam masterVolume;
 
     void initParameters();

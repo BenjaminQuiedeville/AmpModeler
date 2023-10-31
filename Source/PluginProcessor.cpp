@@ -12,51 +12,36 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), 
-        apvts(*this, nullptr, "Params", createParameterLayout())
+                       )
 #endif
 {
 
+    apvts =  new juce::AudioProcessorValueTreeState(*this, nullptr, "Params", createParameterLayout());
+    
     noiseGate = new NoiseGate();
     preBoost  = new PreBoost();
     preamp    = new PreampDistorsion();
     postEQ    = new ThreeBandEQ();
     irLoader  = new IRLoader();
 
-    apvts.addParameterListener("GATE_THRESH", this);
-    apvts.addParameterListener("BITE", this);
-    apvts.addParameterListener("TIGHT", this);
-    apvts.addParameterListener("PRE_BOOST", this);
-    apvts.addParameterListener("PREAMP_GAIN", this);
-    apvts.addParameterListener("3_BAND_EQ_BASS", this);
-    apvts.addParameterListener("3_BAND_EQ_MIDDLE", this);
-    apvts.addParameterListener("3_BAND_EQ_TREBBLE", this);
-    apvts.addParameterListener("PREAMP_VOLUME", this);
-    apvts.addParameterListener("RESONANCE", this);
-    apvts.addParameterListener("PRESENCE", this);
-    apvts.addParameterListener("MASTER_VOLUME", this);
+    for (uint8_t i = 0; i < N_PARAMS; i++) {
+        apvts->addParameterListener(ParamsID[i], this);
+    }
 }
 
 AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
 
-    apvts.removeParameterListener("GATE_THRESH", this);
-    apvts.removeParameterListener("BITE", this);
-    apvts.removeParameterListener("TIGHT", this);
-    apvts.removeParameterListener("PRE_BOOST", this);
-    apvts.removeParameterListener("PREAMP_GAIN", this);
-    apvts.removeParameterListener("3_BAND_EQ_BASS", this);
-    apvts.removeParameterListener("3_BAND_EQ_MIDDLE", this);
-    apvts.removeParameterListener("3_BAND_EQ_TREBBLE", this);
-    apvts.removeParameterListener("PREAMP_VOLUME", this);
-    apvts.removeParameterListener("RESONANCE", this);
-    apvts.removeParameterListener("PRESENCE", this);
-    apvts.removeParameterListener("MASTER_VOLUME", this);
+    for (uint8_t i = 0; i < N_PARAMS; i++) {
+        apvts->removeParameterListener(ParamsID[i], this);
+    }
 
     delete noiseGate;
     delete preBoost;
     delete preamp;
     delete postEQ;
     delete irLoader;
+
+    delete apvts;
 }
 
 //==============================================================================
@@ -213,7 +198,7 @@ juce::AudioProcessorEditor* AmpModelerAudioProcessor::createEditor()
 void AmpModelerAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
     juce::MemoryOutputStream stream(destData, false);
-    apvts.state.writeToStream(stream);
+    apvts->state.writeToStream(stream);
 }   
 
 void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {
@@ -221,7 +206,7 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
     juce::ValueTree importedTree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
 
     if (importedTree.isValid()) {
-        apvts.state = importedTree;
+        apvts->state = importedTree;
         initParameters();
     }
 
@@ -229,70 +214,79 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
 
 void AmpModelerAudioProcessor::initParameters() {
 
-    noiseGate->threshold = *apvts.getRawParameterValue("GATE_THRESH");
+    noiseGate->threshold = *apvts->getRawParameterValue(ParamsID[GATE_THRESH]);
 
-    preamp->preGain.newTarget(*apvts.getRawParameterValue("PREAMP_GAIN"));
+    preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamsID[PREAMP_GAIN]));
 
-    float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
-    float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
-    float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
+    float bassEQgain = *apvts->getRawParameterValue(ParamsID[TONESTACK_BASS]);
+    float trebbleEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_TREBBLE]);
+    float midEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_MIDDLE]);
     postEQ->updateGains(bassEQgain, midEQgian, trebbleEQgian);
 
-    float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
+    float preampVolume = *apvts->getRawParameterValue(ParamsID[PREAMP_VOLUME]);
     preamp->postGain.newTarget(preampVolume);
     
-    masterVolume.newTarget(*apvts.getRawParameterValue("MASTER_VOLUME"));
+    masterVolume.newTarget(*apvts->getRawParameterValue(ParamsID[MASTER_VOLUME]));
 }
 
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
 
-    if (parameterID == "GATE_THRESH") {
-        noiseGate->threshold = *apvts.getRawParameterValue("GATE_THRESH");
+    if (parameterID == ParamsID[GATE_THRESH]) {
+        noiseGate->threshold = *apvts->getRawParameterValue(ParamsID[GATE_THRESH]);
+        return;
     }
 
-    if (parameterID == "BITE") {
+    if (parameterID == ParamsID[BITE]) {
 
+        return;
     }
 
-    if (parameterID == "TIGHT") {
+    if (parameterID == ParamsID[TIGHT]) {
 
+        return;
     }
 
-    if (parameterID == "PRE_BOOST") {
+    if (parameterID == ParamsID[PRE_BOOST]) {
 
+        return;
     }
 
-    if (parameterID == "PREAMP_GAIN") {
-        preamp->preGain.newTarget(*apvts.getRawParameterValue("PREAMP_GAIN"));
+    if (parameterID == ParamsID[PREAMP_GAIN]) {
+        preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamsID[PREAMP_GAIN]));
+        return;
     }
 
-    if (parameterID == "3_BAND_EQ_BASS"
-        || parameterID == "3_BAND_EQ_MIDDLE"
-        || parameterID == "3_BAND_EQ_TREBBLE")
+    if (parameterID == ParamsID[TONESTACK_BASS]
+        || parameterID == ParamsID[TONESTACK_MIDDLE]
+        || parameterID == ParamsID[TONESTACK_TREBBLE])
     {
-        float bassEQgain = *apvts.getRawParameterValue("3_BAND_EQ_BASS");
-        float trebbleEQgian = *apvts.getRawParameterValue("3_BAND_EQ_TREBBLE");
-        float midEQgian = *apvts.getRawParameterValue("3_BAND_EQ_MIDDLE");
+        float bassEQgain = *apvts->getRawParameterValue(ParamsID[TONESTACK_BASS]);
+        float trebbleEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_TREBBLE]);
+        float midEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_MIDDLE]);
         postEQ->updateGains(bassEQgain, midEQgian, trebbleEQgian);
+        return;
     }
 
-    if (parameterID == "PREAMP_VOLUME") {
-        float preampVolume = *apvts.getRawParameterValue("PREAMP_VOLUME");
+    if (parameterID == ParamsID[PREAMP_VOLUME]) {
+        float preampVolume = *apvts->getRawParameterValue(ParamsID[PREAMP_VOLUME]);
         preamp->postGain.newTarget(preampVolume);
+        return;
     }
 
-    if (parameterID == "RESONANCE") {
+    if (parameterID == ParamsID[RESONANCE]) {
 
+        return;
     }
 
-    if (parameterID == "PRESENCE") {
+    if (parameterID == ParamsID[PRESENCE]) {
 
+        return;
     }
 
-    if (parameterID == "MASTER_VOLUME") {
-        masterVolume.newTarget(DB_TO_GAIN(*apvts.getRawParameterValue("MASTER_VOLUME")));
+    if (parameterID == ParamsID[MASTER_VOLUME]) {
+        masterVolume.newTarget(DB_TO_GAIN(*apvts->getRawParameterValue(ParamsID[MASTER_VOLUME])));
+        return;
     }
-
 
 }
 
@@ -301,24 +295,24 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("GATE_THRESH", "Gate Thresh", -80.0f, -40.0f, -70.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[GATE_THRESH], "Gate Thresh", -80.0f, -40.0f, -70.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("BITE", "Bite", 0.0f, 10.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("TIGHT", "Tight", 0.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[BITE], "Bite", 0.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TIGHT], "Tight", 0.0f, 10.0f, 0.0f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PRE_BOOST", "Boost", 0.0f, 20.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_GAIN", "Pre Gain", -40.0f, 40.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PRE_BOOST], "Boost", 0.0f, 20.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PREAMP_GAIN], "Pre Gain", -40.0f, 40.0f, 0.0f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_BASS", "Bass", -12.0f, 12.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_MIDDLE", "Mid", -12.0f, 12.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("3_BAND_EQ_TREBBLE", "Trebble", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_BASS], "Bass", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_MIDDLE], "Mid", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_TREBBLE], "Trebble", -12.0f, 12.0f, 0.0f));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PREAMP_VOLUME", "Post Gain", -30.0f, 10.0f, -12.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("RESONANCE", "Reson", 0.0f, 3.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("PRESENCE", "Presence", 0.0f, 3.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PREAMP_VOLUME], "Post Gain", -30.0f, 10.0f, -12.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[RESONANCE], "Reson", 0.0f, 3.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PRESENCE], "Presence", 0.0f, 3.0f, 0.0f));
 
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>("MASTER_VOLUME", "Master Vol", -20.0f, 0.0f, -6.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[MASTER_VOLUME], "Master Vol", -20.0f, 0.0f, -6.0f));
 
     return { params.begin(), params.end() };
 }

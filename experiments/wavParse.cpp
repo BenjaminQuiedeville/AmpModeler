@@ -206,10 +206,9 @@ int main(int argc, char **argv) {
 
     std::cout << "Parsing the file : \"" << filepath << "\"\n";
 
-    FILE *wavFile;
     Signal *signal = new Signal();
 
-    wavFile = fopen(argv[1], "rb");
+    FILE *wavFile = fopen(argv[1], "rb");
 
     wavParse(wavFile, signal);
 

@@ -6,18 +6,18 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
 
-    createKnob(gateSlider, gateSliderLabel, gateSliderAttachment, "GATE_THRESH");
+    createKnob(gateSlider, gateSliderLabel, gateSliderAttachment, ParamsID[GATE_THRESH]);
 
-    createKnob(gainSlider, gainSliderLabel, gainSliderAttachment, "PREAMP_GAIN");
+    createKnob(gainSlider, gainSliderLabel, gainSliderAttachment, ParamsID[PREAMP_GAIN]);
 
-    createKnob(bassEQSlider, bassEQSliderLabel, bassEQSliderAttachment, "3_BAND_EQ_BASS");
-    createKnob(midEQSlider, midEQSliderLabel, midEQSliderAttachment, "3_BAND_EQ_MIDDLE");
-    createKnob(trebbleEQSlider, trebbleEQSliderLabel, trebbleEQSliderAttachment, "3_BAND_EQ_TREBBLE");
+    createKnob(bassEQSlider, bassEQSliderLabel, bassEQSliderAttachment, ParamsID[TONESTACK_BASS]);
+    createKnob(midEQSlider, midEQSliderLabel, midEQSliderAttachment, ParamsID[TONESTACK_MIDDLE]);
+    createKnob(trebbleEQSlider, trebbleEQSliderLabel, trebbleEQSliderAttachment, ParamsID[TONESTACK_TREBBLE]);
 
-    createKnob(preampVolumeSlider, preampVolumeSliderLabel, preampVolumeSliderAttachment, "PREAMP_VOLUME");
+    createKnob(preampVolumeSlider, preampVolumeSliderLabel, preampVolumeSliderAttachment, ParamsID[PREAMP_VOLUME]);
 
 
-    createKnob(volumeSlider, volumeSliderLabel, volumeSliderAttachment, "MASTER_VOLUME");
+    createKnob(volumeSlider, volumeSliderLabel, volumeSliderAttachment, ParamsID[MASTER_VOLUME]);
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(); };
     addAndMakeVisible(irLoadButton);
@@ -79,7 +79,7 @@ void AmpModelerAudioProcessorEditor::resized() {
 void AmpModelerAudioProcessorEditor::createKnob(juce::Slider &slider, 
                                                 juce::Label &label, 
                                                 std::unique_ptr<SliderAttachment> &sliderAttachmnt, 
-                                                const std::string paramID)
+                                                const juce::String &paramID)
 {
     slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
@@ -90,5 +90,5 @@ void AmpModelerAudioProcessorEditor::createKnob(juce::Slider &slider,
     label.setFont(15.0f);
     addAndMakeVisible(label);
 
-    sliderAttachmnt = std::make_unique<SliderAttachment>(audioProcessor.apvts, paramID, slider);
+    sliderAttachmnt = std::make_unique<SliderAttachment>(*(audioProcessor.apvts), paramID, slider);
 }

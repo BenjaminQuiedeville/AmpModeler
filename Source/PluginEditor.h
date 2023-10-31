@@ -54,7 +54,7 @@ private:
     void createKnob(juce::Slider &slider, 
 					juce::Label &label, 
 					std::unique_ptr<SliderAttachment> &sliderAttchmnt, 
-					const std::string paramID);
+					const juce::String& paramID);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmpModelerAudioProcessorEditor)
 };
