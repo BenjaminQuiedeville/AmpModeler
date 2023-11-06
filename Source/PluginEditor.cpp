@@ -47,8 +47,8 @@ void AmpModelerAudioProcessorEditor::resized() {
     const int nRows = 4;
     const int nCols = 6;
 
-    auto computeXcoord = [&](int col){ return horizontalMargin + WIDTH/nCols * col; };
-    auto computeYcoord = [&](int row){ return verticalMargin + HEIGHT/nRows * row; };
+    auto computeXcoord = [&](int col) { return horizontalMargin + WIDTH/nCols * col; };
+    auto computeYcoord = [&](int row) { return verticalMargin + HEIGHT/nRows * row; };
 
     gateSlider.setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
     gateSliderLabel.setBounds(gateSlider.getX(), gateSlider.getY() - 20, gateSlider.getWidth(), 20);

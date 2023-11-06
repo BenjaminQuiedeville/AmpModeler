@@ -295,24 +295,48 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[GATE_THRESH], "Gate Thresh", -80.0f, -40.0f, -70.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[GATE_THRESH], "Gate Thresh", -80.0f, -40.0f, -70.0f
+    ));
     
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[BITE], "Bite", 0.0f, 10.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TIGHT], "Tight", 0.0f, 10.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[BITE], "Bite", 0.0f, 10.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[TIGHT], "Tight", 0.0f, 10.0f, 0.0f
+    ));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PRE_BOOST], "Boost", 0.0f, 20.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PREAMP_GAIN], "Pre Gain", -40.0f, 40.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[PRE_BOOST], "Boost", 0.0f, 20.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[PREAMP_GAIN], "Pre Gain", -40.0f, 40.0f, 0.0f
+    ));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_BASS], "Bass", -12.0f, 12.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_MIDDLE], "Mid", -12.0f, 12.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[TONESTACK_TREBBLE], "Trebble", -12.0f, 12.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[TONESTACK_BASS], "Bass", -12.0f, 12.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[TONESTACK_MIDDLE], "Mid", -12.0f, 12.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[TONESTACK_TREBBLE], "Trebble", -12.0f, 12.0f, 0.0f
+    ));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PREAMP_VOLUME], "Post Gain", -30.0f, 10.0f, -12.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[RESONANCE], "Reson", 0.0f, 3.0f, 0.0f));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[PRESENCE], "Presence", 0.0f, 3.0f, 0.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[PREAMP_VOLUME], "Post Gain", -30.0f, 10.0f, -12.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[RESONANCE], "Reson", 0.0f, 3.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[PRESENCE], "Presence", 0.0f, 3.0f, 0.0f
+    ));
 
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(ParamsID[MASTER_VOLUME], "Master Vol", -20.0f, 0.0f, -6.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[MASTER_VOLUME], "Master Vol", -20.0f, 0.0f, -6.0f
+    ));
 
     return { params.begin(), params.end() };
 }

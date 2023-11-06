@@ -14,7 +14,7 @@
     #define JUCE_MODAL_LOOPS_PERMITTED 1
 #endif
 
-#include <JuceHeader.h>
+// #include <JuceHeader.h>
 #include "common.h"
 #include "SmoothParam.h"
 #include "pffft/pffft.hpp"
