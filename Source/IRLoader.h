@@ -44,7 +44,6 @@ struct IRLoader {
     void loadIR();
     void prepareConvolution(const float* irPtr, int irSize);
     void process(float *input, size_t nSamples);
-    size_t parseWavFile(const std::string& filepath, float *buffer);
 
     int blockSize;
     size_t convolutionResultSize;
@@ -63,3 +62,5 @@ struct IRLoader {
 
     SmoothParam outLevel; 
 };
+
+static size_t parseWavFile(const std::string& filepath, float *buffer);

@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #define BITS_24_MAX (double)(1 << 23 - 1)
 
@@ -22,52 +23,7 @@ static float baseIR[BASE_IR_SIZE] = {
 #include "baseIR.inc"
 };
 
-IRLoader::IRLoader() {
-
-    fftEngine = new FFT(false);
-
-    inputBufferPadded = fftEngine->createTimeVector();
-    inputDftBuffer = fftEngine->createFreqVector();
-    irDftBuffer = fftEngine->createFreqVector();
-    convolutionResultBuffer = fftEngine->createTimeVector();
-    overlapAddBuffer = fftEngine->createTimeVector();
-
-}
-
-IRLoader::~IRLoader() {
-
-    delete fftEngine;
-}
-
-void IRLoader::init(double _samplerate, int _blockSize) {
-
-    initIR = true;
-    overlapAddIndex = 0;
-    blockSize = _blockSize;
-
-    loadIR();
-}
-
-void IRLoader::prepareConvolution(const float *irPtr, int irSize) {
-
-
-    FFT::TimeVector irTimeVec = fftEngine->createTimeVector();
-    
-    assert(irSize < FFT_SIZE);
-
-    for (size_t i = 0; i < irSize; i++) {
-        irTimeVec[i] = irPtr[i];
-    }
-
-    fftEngine->forward(irTimeVec, irDftBuffer);
-    fftEngine->scale(irDftBuffer);
-
-    convolutionResultSize = irSize + blockSize - 1;
-    return;
-
-}
-
-size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
+static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
 
     char temp[1] = {0};
@@ -172,7 +128,8 @@ size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
     size_t numSamples = signalSizeBytes/sampleSizeBytes;
 
 
-    buffer = (float *)calloc(numSamples, sizeof(float));
+    // std::vector<float> *buffervec = new std::vector<float>()
+    *buffer = (float *)calloc(numSamples, sizeof(float));
     assert(buffer != nullptr);
 
     uint32_t counter = 0;
@@ -192,7 +149,7 @@ size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
 
             float sample = sampleInt / (float)_I16_MAX;
 
-            buffer[counter] = sample;
+            (*buffer)[counter] = sample;
             counter++;
         }
 
@@ -212,7 +169,7 @@ size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
 
             float sample = sampleInt / BITS_24_MAX / 2.0;
 
-            buffer[counter] = sample;
+            (*buffer)[counter] = sample;
             counter++;
         }
 
@@ -233,7 +190,7 @@ size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
 
             float sample = sampleInt / (float)_I32_MAX;
 
-            buffer[counter] = sample;
+            (*buffer)[counter] = sample;
             counter++;
         }
     }
@@ -242,6 +199,53 @@ size_t IRLoader::parseWavFile(const std::string& filepath, float *buffer) {
 
     return numSamples;
 }
+
+
+IRLoader::IRLoader() {
+
+    fftEngine = new FFT(false);
+
+    inputBufferPadded = fftEngine->createTimeVector();
+    inputDftBuffer = fftEngine->createFreqVector();
+    irDftBuffer = fftEngine->createFreqVector();
+    convolutionResultBuffer = fftEngine->createTimeVector();
+    overlapAddBuffer = fftEngine->createTimeVector();
+
+}
+
+IRLoader::~IRLoader() {
+
+    delete fftEngine;
+}
+
+void IRLoader::init(double _samplerate, int _blockSize) {
+
+    initIR = true;
+    overlapAddIndex = 0;
+    blockSize = _blockSize;
+
+    loadIR();
+}
+
+void IRLoader::prepareConvolution(const float *irPtr, int irSize) {
+
+
+    FFT::TimeVector irTimeVec = fftEngine->createTimeVector();
+    
+    assert(irSize < FFT_SIZE);
+
+    for (size_t i = 0; i < irSize; i++) {
+        irTimeVec[i] = irPtr[i];
+    }
+
+    fftEngine->forward(irTimeVec, irDftBuffer);
+    fftEngine->scale(irDftBuffer);
+
+    convolutionResultSize = irSize + blockSize - 1;
+    return;
+
+}
+
 
 void IRLoader::loadIR() {
 
@@ -258,9 +262,11 @@ void IRLoader::loadIR() {
     chooser->browseForFileToOpen();
     const std::string filepath = chooser->getResult().getFullPathName().toStdString();
 
-    size_t irSize = parseWavFile(filepath, irBuffer);
+    size_t irSize = parseWavFile(filepath, &irBuffer);
 
-    prepareConvolution(irBuffer, irSize);
+    if (irSize != 0) {
+        prepareConvolution(irBuffer, irSize);
+    }
 
     if (irBuffer != nullptr) { free(irBuffer); }
     
@@ -314,4 +320,6 @@ void IRLoader::process(float *input, size_t nSamples) {
     }
 
     overlapAddIndex = (overlapAddIndex + nSamples) % (FFT_SIZE);
+
+    return;
 }
