@@ -141,12 +141,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source\pffft\pffft.c"/>
     <ClCompile Include="..\..\Source\IRLoader.cpp"/>
+    <ClCompile Include="..\..\Source\Biquad.cpp"/>
     <ClCompile Include="..\..\Source\PreBoost.cpp"/>
     <ClCompile Include="..\..\Source\NoiseGate.cpp"/>
     <ClCompile Include="..\..\Source\ThreeBandEQ.cpp"/>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp"/>
     <ClCompile Include="..\..\Source\PluginEditor.cpp"/>
-    <ClCompile Include="..\..\Source\Biquad.cpp"/>
     <ClCompile Include="..\..\Source\PreampDistorsion.cpp"/>
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>

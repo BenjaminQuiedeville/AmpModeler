@@ -2,8 +2,8 @@
   ==============================================================================
 
     Biquad.cpp
-    Created: 23 Apr 2023 12:01:44am
-    Author:  Benjamin
+    Created: 17 Nov 2023 8:06:02pm
+    Author:  benjamin
 
   ==============================================================================
 */
@@ -43,7 +43,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
     double twoSqrtAAlpha = 0.0;
 
     switch (filterType) {
-        case LOWPASS:
+        case BIQUAD_LOWPASS:
             a0Inv = 1.0/(1.0 + alpha);
 
             b0 = (1.0 - cosw0) * 0.5 * a0Inv;
@@ -53,7 +53,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
             a2 = (1.0 - alpha) * a0Inv;
             break;
 
-        case HIGHPASS:
+        case BIQUAD_HIGHPASS:
             a0Inv = 1.0/(1.0 + alpha);
 
             b0 = (1.0 + cosw0) * 0.5 * a0Inv;
@@ -63,7 +63,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
             a2 = (1.0 - alpha) * a0Inv;
             break;
 
-        case PEAK: 
+        case BIQUAD_PEAK: 
             A = pow(10.0, gaindB/40.0);
             AInv = 1.0/A;
             a0Inv = 1.0/(1.0 + alpha * AInv);
@@ -75,7 +75,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
             a2 = (1.0 - alpha * AInv) * a0Inv;
             break;
 
-        case LOWSHELF: 
+        case BIQUAD_LOWSHELF: 
             A = pow(10.0, gaindB/40.0);
             twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
             a0Inv = 1.0/((A + 1.0) + (A - 1.0)*cosw0 + twoSqrtAAlpha); 
@@ -87,7 +87,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
             a2 = ((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
             break;
 
-        case HIGHSHELF:
+        case BIQUAD_HIGHSHELF:
             A = pow(10.0, gaindB/40.0);
             twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
             a0Inv = 1.0/((A + 1.0) - (A - 1.0)* cosw0 + twoSqrtAAlpha); 

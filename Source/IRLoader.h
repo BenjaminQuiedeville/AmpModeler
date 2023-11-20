@@ -8,7 +8,8 @@
 ==============================================================================
 */
 
-#pragma once
+#ifndef IR_LOADER_H
+#define IR_LOADER_H
 
 #ifndef JUCE_MODAL_LOOPS_PERMITTED
     #define JUCE_MODAL_LOOPS_PERMITTED 1
@@ -63,4 +64,6 @@ struct IRLoader {
     SmoothParam outLevel; 
 };
 
-static size_t parseWavFile(const std::string& filepath, float *buffer);
+static size_t parseWavFile(const std::string& filepath, float **buffer);
+
+#endif // IR_LOADER_H

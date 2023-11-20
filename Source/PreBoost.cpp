@@ -11,8 +11,8 @@
 #include "PreBoost.h"
 
 PreBoost::PreBoost() {
-    tightFilter = new Biquad(Biquad::FilterType::LOWPASS);
-    biteFilter = new Biquad(Biquad::FilterType::PEAK);
+    tightFilter = new Biquad(FilterType::BIQUAD_LOWPASS);
+    biteFilter = new Biquad(FilterType::BIQUAD_PEAK);
 }
 
 PreBoost::~PreBoost() {

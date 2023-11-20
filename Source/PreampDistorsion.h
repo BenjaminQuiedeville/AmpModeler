@@ -8,7 +8,8 @@
   ==============================================================================
 */
 
-#pragma once
+#ifndef PREAMP_H
+#define PREAMP_H
 
 #include <JuceHeader.h>
 
@@ -24,15 +25,6 @@
 */
 
 
-enum DriveType {
-    APPROX, 
-    TANH,
-    CUBIC,
-    HARDCLIP,
-    ASYMETRIC,
-    NTYPES,
-};
-
 struct PreampDistorsion {
     PreampDistorsion();
     ~PreampDistorsion();
@@ -43,31 +35,33 @@ struct PreampDistorsion {
     SmoothParam preGain;
     SmoothParam postGain;
     double stageGain;
-
-    DriveType driveType;
-
+    double stageAttenuation;
     double samplerate;
 
-    const double inputFilterFrequency = 900.0;
-    OnepoleFilter inputFilter;
+    double inputFilterFrequency = 900.0;
+    OnepoleFilter *inputFilter;
+
+    OnepoleFilter *couplingFilter1;
+    OnepoleFilter *couplingFilter2;
+    OnepoleFilter *couplingFilter3;
 
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
+    int upSampleFactor;
 
-
-    sample_t processDrive(sample_t sample, DriveType curveType);
-
-    sample_t expappr(sample_t x) { 
-
-        const sample_t x2 = x*x;
-        const sample_t x3 = x2*x;
-        const sample_t x4 = x3*x;
-        const sample_t x5 = x4*x;
-        return 1.0f + x + x2/2.0f + x3/6.0f + x4/24.0f + x5/120.0f; 
-    }
-
-    sample_t tanhApprox(sample_t x) {
-        return (expappr(x) - expappr(-x))/(expappr(x) + expappr(-x)); 
-    }
 
 };
+
+    // sample_t expappr(sample_t x) {
+
+    //     const sample_t x2 = x*x;
+    //     const sample_t x3 = x2*x;
+    //     const sample_t x4 = x3*x;
+    //     const sample_t x5 = x4*x;
+    //     return 1.0f + x + x2/2.0f + x3/6.0f + x4/24.0f + x5/120.0f; 
+    // }
+
+    // sample_t tanhApprox(sample_t x) {
+    //     return (expappr(x) - expappr(-x))/(expappr(x) + expappr(-x)); 
+    // }
+#endif // PREAMP_H

@@ -9,15 +9,15 @@
 */
 
 #include "PreampDistorsion.h"
+#include <memory>
 
 PreampDistorsion::PreampDistorsion() {
     
+    upSampleFactor = 2
     overSampler = new juce::dsp::Oversampling<sample_t>(
-        1, 1, 
+        1, upSampleFactor, 
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
-
-    driveType = CUBIC;
 }
 
 PreampDistorsion::~PreampDistorsion() {
@@ -30,8 +30,8 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     preGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
     postGain.init(samplerate, 0.02, 0.0, SMOOTH_PARAM_LIN);
 
-    inputFilter.prepareToPlay(samplerate);
-    inputFilter.setCoefficients(inputFilterFrequency);
+    inputFilter->prepareToPlay(samplerate*upSampleFactor);
+    inputFilter->setCoefficients(inputFilterFrequency);
 
     overSampler->initProcessing(blockSize);
 
@@ -39,50 +39,58 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     postGain.newTarget(DB_TO_GAIN(-12.0));
 
     stageGain = DB_TO_GAIN(20.0);
+    stageAttenuation = 0.5;
 }
+
+static inline sample_t waveShaping(sample_t sample) {
+    
+    sample *= -1.0f;
+
+    if (sample > 0.0f) { sample = std::tanh(sample); }
+    if (sample < -1.0f) { sample = -1.0f; }
+
+    return sample;
+}
+
 
 void PreampDistorsion::process(float *input, size_t nSamples) {
-
-    inputFilter.processBufferHighpass(input, nSamples);
-    
-    // d'abord sans upsampling pour voir si la courbe fonctionne bien.
         
-    for (size_t index = 0; index < nSamples; index++) {
+    AudioBlock upSampledBlock = 
+        overSampler->processSamplesUp(AudioBlock(&input, 1, nSamples));
+
+    inputFilter->processBufferHighpass(input, nSamples);
+
+    sample_t *upSampledData = upSampledBlock.getChannelPointer(0);
+
+    for (size_t index = 0; index < nSamples*(overSampler->getOversamplingFactor()); index++) {
         
-        input[index] = preGain.nextValue() * input[index];
+        sample_t sample = upSampledData[index];
 
-        input[index] = stageGain * input[index];
-        input[index] = processDrive(input[index], driveType);
+        sample *= stageGain;
+        sample = waveShaping(sample);
+        sample *= 0.5;
 
-        input[index] = stageGain * input[index];
-        input[index] = processDrive(input[index], driveType);
+        sample = preGain.nextValue() * sample;
 
-        input[index] = postGain.nextValue() * input[index];
-    }
-}
+        sample *= stageGain;
+        sample = waveShaping(sample);
+        sample *= 0.5;
 
-sample_t PreampDistorsion::processDrive(sample_t sample, DriveType curveType) {
-    
-    switch (curveType) {
-        case APPROX:
-            sample = tanhApprox(sample);
-            break;
+        sample *= stageGain;
+        sample = waveShaping(sample);
+        sample *= 0.5;
 
-        case TANH:
-            sample = tanh(sample);
-            break;
-
-        case CUBIC: 
-            sample = sample <= -1 ? -0.666f 
-                   : sample >= 1 ? 0.666f 
-                   : sample - 0.333 * pow(sample, 3);
-            break;
-
-        case HARDCLIP:
-            break;
+        sample *= stageGain;
+        sample = waveShaping(sample);
+        sample *= 0.5;
+        
+        sample = postGain.nextValue() * sample;
     }
 
-    return sample > 1.0f ? 1.0f
-         : sample < -1.0f ? -1.0f
-         : sample;
+    auto outputBlock = AudioBlock(&input, 1, nSamples);
+
+    overSampler->processSamplesDown(outputBlock);
+
+    memcpy((void *)input, (void *)outputBlock.getChannelPointer(0), nSamples);
+
 }

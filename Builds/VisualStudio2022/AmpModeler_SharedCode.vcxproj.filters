@@ -625,6 +625,9 @@
     <ClCompile Include="..\..\Source\IRLoader.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Biquad.cpp">
+      <Filter>AmpModeler\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\PreBoost.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
@@ -638,9 +641,6 @@
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginEditor.cpp">
-      <Filter>AmpModeler\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Biquad.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PreampDistorsion.cpp">

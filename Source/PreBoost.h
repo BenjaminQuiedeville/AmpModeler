@@ -8,7 +8,8 @@
   ==============================================================================
 */
 
-#pragma once
+#ifndef PREBOOST_H
+#define PREBOOST_H
 
 #include <JuceHeader.h>
 #include "common.h"
@@ -37,3 +38,5 @@ struct PreBoost {
     Biquad *biteFilter;
 
 };
+
+#endif // PREBOOST_H

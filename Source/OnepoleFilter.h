@@ -7,10 +7,13 @@
 
   ==============================================================================
 */
+
+#ifndef ONEPOLE_H
+#define ONEPOLE_H
+
 #include <JuceHeader.h>
 #include "common.h"
 
-#pragma once
 
 struct OnepoleFilter {
 
@@ -56,3 +59,5 @@ struct OnepoleFilter {
     sample_t a1 = 0.0f;
     sample_t y1 = 0.0f;
 };
+
+#endif // ONEPOLE_H

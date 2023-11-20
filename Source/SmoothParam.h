@@ -8,8 +8,8 @@
   ==============================================================================
 */
 
-#ifndef _PARAM_SMOOTHER
-#define _PARAM_SMOOTHER
+#ifndef PARAM_SMOOTHER_H
+#define PARAM_SMOOTHER_H
 
 #include <math.h>
 #include <cstdint>
@@ -88,4 +88,4 @@ struct SmoothParam {
     bool isSmoothing;
 };
 
-#endif // _PARAM_SMOOTHER
+#endif // PARAM_SMOOTHER_H
