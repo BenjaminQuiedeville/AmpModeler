@@ -22,8 +22,7 @@ PreampDistorsion::PreampDistorsion() {
     preGain  = new SmoothParam();
     postGain = new SmoothParam();
 
-    inputFilter = new OnepoleFilter();
-
+    inputFilter     = new OnepoleFilter();
     couplingFilter1 = new OnepoleFilter();
     couplingFilter2 = new OnepoleFilter();
     couplingFilter3 = new OnepoleFilter();
@@ -135,6 +134,8 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample *= outputAttenuation;
         
         sample = postGain->nextValue() * sample;
+
+        upSampledData[index] = sample;
     }
 
     auto outputBlock = AudioBlock(&buffer, 1, nSamples);
