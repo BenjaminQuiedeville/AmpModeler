@@ -21,8 +21,10 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
     noiseGate = new NoiseGate();
     preBoost  = new PreBoost();
     preamp    = new PreampDistorsion();
-    postEQ    = new ThreeBandEQ();
+    toneStack    = new ThreeBandEQ();
     irLoader  = new IRLoader();
+
+    masterVolume = new SmoothParam();
 
     for (uint8_t i = 0; i < N_PARAMS; i++) {
         apvts->addParameterListener(ParamsID[i], this);
@@ -38,8 +40,10 @@ AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
     delete noiseGate;
     delete preBoost;
     delete preamp;
-    delete postEQ;
+    delete toneStack;
     delete irLoader;
+
+    delete masterVolume;
 
     delete apvts;
 }
@@ -113,10 +117,10 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     preamp->prepareToPlay(sampleRate, samplesPerBlock);
 
-    masterVolume.init(sampleRate, 0.02, 1.0, SMOOTH_PARAM_LIN);
-    masterVolume.newTarget(DB_TO_GAIN(-6.0f));
+    masterVolume->init(sampleRate, 0.02, 1.0, SMOOTH_PARAM_LIN);
+    masterVolume->newTarget(DB_TO_GAIN(-6.0f));
 
-    postEQ->prepareToPlay(sampleRate);
+    toneStack->prepareToPlay(sampleRate);
     irLoader->init(sampleRate, samplesPerBlock);
 }
 
@@ -171,11 +175,11 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     noiseGate->process(audioPtr, numSamples);
 
     preamp->process(audioPtr, numSamples);
-    postEQ->process(audioPtr, numSamples);
+    toneStack->process(audioPtr, numSamples);
     irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
-        audioPtr[i] *= masterVolume.nextValue();
+        audioPtr[i] *= masterVolume->nextValue();
     }
 
     // copy left channel into right channel
@@ -216,23 +220,23 @@ void AmpModelerAudioProcessor::initParameters() {
 
     noiseGate->threshold = *apvts->getRawParameterValue(ParamsID[GATE_THRESH]);
 
-    preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamsID[PREAMP_GAIN]));
+    preamp->preGain->newTarget(*apvts->getRawParameterValue(ParamsID[PREAMP_GAIN]));
 
     float bassEQgain = *apvts->getRawParameterValue(ParamsID[TONESTACK_BASS]);
     float trebbleEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_TREBBLE]);
     float midEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_MIDDLE]);
-    postEQ->updateGains(bassEQgain, midEQgian, trebbleEQgian);
+    toneStack->updateGains(bassEQgain, midEQgian, trebbleEQgian);
 
     float preampVolume = *apvts->getRawParameterValue(ParamsID[PREAMP_VOLUME]);
-    preamp->postGain.newTarget(preampVolume);
+    preamp->postGain->newTarget(preampVolume);
     
-    masterVolume.newTarget(*apvts->getRawParameterValue(ParamsID[MASTER_VOLUME]));
+    masterVolume->newTarget(*apvts->getRawParameterValue(ParamsID[MASTER_VOLUME]));
 }
 
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
 
     if (parameterID == ParamsID[GATE_THRESH]) {
-        noiseGate->threshold = *apvts->getRawParameterValue(ParamsID[GATE_THRESH]);
+        noiseGate->threshold = newValue;
         return;
     }
 
@@ -252,8 +256,12 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[PREAMP_GAIN]) {
-        preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamsID[PREAMP_GAIN]));
+        preamp->preGain->newTarget(newValue);
         return;
+    }
+
+    if (parameterID == ParamsID[INPUT_FILTER]) {
+        preamp->inputFilter->setCoefficients(newValue);
     }
 
     if (parameterID == ParamsID[TONESTACK_BASS]
@@ -263,13 +271,12 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
         float bassEQgain = *apvts->getRawParameterValue(ParamsID[TONESTACK_BASS]);
         float trebbleEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_TREBBLE]);
         float midEQgian = *apvts->getRawParameterValue(ParamsID[TONESTACK_MIDDLE]);
-        postEQ->updateGains(bassEQgain, midEQgian, trebbleEQgian);
+        toneStack->updateGains(bassEQgain, midEQgian, trebbleEQgian);
         return;
     }
 
     if (parameterID == ParamsID[PREAMP_VOLUME]) {
-        float preampVolume = *apvts->getRawParameterValue(ParamsID[PREAMP_VOLUME]);
-        preamp->postGain.newTarget(preampVolume);
+        preamp->postGain->newTarget(newValue);
         return;
     }
 
@@ -284,7 +291,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[MASTER_VOLUME]) {
-        masterVolume.newTarget(DB_TO_GAIN(*apvts->getRawParameterValue(ParamsID[MASTER_VOLUME])));
+        masterVolume->newTarget(DB_TO_GAIN(newValue));
         return;
     }
 
@@ -312,6 +319,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamsID[PREAMP_GAIN], "Pre Gain", -40.0f, 40.0f, 0.0f
     ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamsID[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 40.0f
+    ));
+    
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamsID[TONESTACK_BASS], "Bass", -12.0f, 12.0f, 0.0f

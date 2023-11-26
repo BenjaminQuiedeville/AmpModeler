@@ -30,20 +30,22 @@ struct PreampDistorsion {
     ~PreampDistorsion();
     
     void prepareToPlay(double samplerate, int blockSize);
-    void process(float *input, size_t nSamples);
+    void process(float *buffer, size_t nSamples);
 
-    SmoothParam preGain;
-    SmoothParam postGain;
+    SmoothParam *preGain;
+    SmoothParam *postGain;
     double stageGain;
-    double stageAttenuation;
     double samplerate;
+    double outputAttenuation = DB_TO_GAIN(-25.0);
 
-    double inputFilterFrequency = 900.0;
     OnepoleFilter *inputFilter;
 
     OnepoleFilter *couplingFilter1;
     OnepoleFilter *couplingFilter2;
     OnepoleFilter *couplingFilter3;
+
+    Biquad *tubeBypassFilter1;
+    Biquad *tubeBypassFilter2;
 
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
@@ -54,10 +56,10 @@ struct PreampDistorsion {
 
     // sample_t expappr(sample_t x) {
 
-    //     const sample_t x2 = x*x;
-    //     const sample_t x3 = x2*x;
-    //     const sample_t x4 = x3*x;
-    //     const sample_t x5 = x4*x;
+    //     sample_t x2 = x*x;
+    //     sample_t x3 = x2*x;
+    //     sample_t x4 = x3*x;
+    //     sample_t x5 = x4*x;
     //     return 1.0f + x + x2/2.0f + x3/6.0f + x4/24.0f + x5/120.0f; 
     // }
 

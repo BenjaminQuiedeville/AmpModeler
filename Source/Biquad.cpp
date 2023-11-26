@@ -10,25 +10,6 @@
 
 #include "Biquad.h"
 
-void Biquad::prepareToPlay(double _samplerate) {
-    samplerate = _samplerate;
-    twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
-
-    b0 = 1.0;
-    b1 = 0.0;
-    b2 = 0.0;
-    a1 = 0.0;
-    a2 = 0.0;
-    reset();
-}
-
-void Biquad::reset() {
-    x1 = 0.0f;
-    x2 = 0.0f;
-    y1 = 0.0f;
-    y2 = 0.0f;
-}
-
 void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
 
     double w0 = twoPiOverSamplerate * frequency;
@@ -40,7 +21,7 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
     double A = 0.0;
     double AInv = 0.0; 
     double a0Inv = 0.0;
-    double twoSqrtAAlpha = 0.0;
+    double twoSqrtAlpha = 0.0;
 
     switch (filterType) {
         case BIQUAD_LOWPASS:
@@ -77,26 +58,26 @@ void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
 
         case BIQUAD_LOWSHELF: 
             A = pow(10.0, gaindB/40.0);
-            twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
-            a0Inv = 1.0/((A + 1.0) + (A - 1.0)*cosw0 + twoSqrtAAlpha); 
+            twoSqrtAlpha = 2.0 * sqrt(A)* alpha;
+            a0Inv = 1.0/((A + 1.0) + (A - 1.0)*cosw0 + twoSqrtAlpha); 
             
-            b0 = A*((A + 1.0) - (A - 1.0)*cosw0 + twoSqrtAAlpha)*a0Inv;
+            b0 = A*((A + 1.0) - (A - 1.0)*cosw0 + twoSqrtAlpha)*a0Inv;
             b1 = 2.0 * A*((A - 1.0) - (A + 1.0)*cosw0)*a0Inv;
-            b2 = A*((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            b2 = A*((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
             a1 = -2.0 * ((A - 1.0) + (A + 1.0)*cosw0)*a0Inv;
-            a2 = ((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            a2 = ((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
             break;
 
         case BIQUAD_HIGHSHELF:
             A = pow(10.0, gaindB/40.0);
-            twoSqrtAAlpha = 2.0 * sqrt(A)* alpha;
-            a0Inv = 1.0/((A + 1.0) - (A - 1.0)* cosw0 + twoSqrtAAlpha); 
+            twoSqrtAlpha = 2.0 * sqrt(A)* alpha;
+            a0Inv = 1.0/((A + 1.0) - (A - 1.0)* cosw0 + twoSqrtAlpha); 
 
-            b0 = A*((A + 1.0) + (A - 1.0) * cosw0 + twoSqrtAAlpha) * a0Inv;
+            b0 = A*((A + 1.0) + (A - 1.0) * cosw0 + twoSqrtAlpha) * a0Inv;
             b1 = -2.0 * A *((A - 1.0) + (A + 1.0) * cosw0) * a0Inv;
-            b2 = A*((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            b2 = A*((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
             a1 = 2.0 * ((A - 1.0) - (A + 1.0)*cosw0) * a0Inv;
-            a2 = ((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAAlpha) * a0Inv;
+            a2 = ((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
             break;
 
         default:

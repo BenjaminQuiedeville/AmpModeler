@@ -29,6 +29,7 @@ enum Params {
     TIGHT,
     PRE_BOOST,
     PREAMP_GAIN,
+    INPUT_FILTER,
     TONESTACK_BASS,
     TONESTACK_MIDDLE,
     TONESTACK_TREBBLE,
@@ -45,6 +46,7 @@ const std::vector<juce::String> ParamsID = {
     "TIGHT",
     "PRE_BOOST",
     "PREAMP_GAIN",
+    "INPUT_FILTER",
     "TONESTACK_BASS",
     "TONESTACK_MIDDLE",
     "TONESTACK_TREBBLE",
@@ -103,12 +105,12 @@ public:
     NoiseGate *noiseGate;
     PreBoost *preBoost;
     PreampDistorsion *preamp;
-    ThreeBandEQ *postEQ;
+    ThreeBandEQ *toneStack;
     IRLoader *irLoader;
 
 private:
 
-	SmoothParam masterVolume;
+	SmoothParam *masterVolume;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

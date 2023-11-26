@@ -202,11 +202,12 @@ function main()::Nothing
     
     t::Float64 = 0.5
     m::Float64 = 0.5
-    l::Float64 = 0.5 
+    l::Float64 = 0.5
 
-    toneStackJCM800  = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
-    toneStackBassman = Components{Float64}(250e3, 1e6, 25e3, 56e3, 0.25e-9, 20e-9, 20e-9)
-    toneStackSoldano = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
+    toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
+    toneStackBassman    = Components{Float64}(250e3, 1e6, 25e3, 56e3, 0.25e-9, 20e-9, 20e-9)
+    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
+    toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
 
     samplerate::Float64 = 48000.0
     model = DiscreteModel(toneStack(toneStackBassman, t, m, l), 1/samplerate)
@@ -220,34 +221,47 @@ function main()::Nothing
 
     ###
 
-    toneFilter = toneStackRational(toneStackBassman, t, m, l, samplerate, Float64)
+    toneJCM = toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
+    toneSoldano = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
+    toneEngl = toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
     testFilter = Onepole(1000, samplerate)
 
     signal = zeros(nFreq)
     signal[1] = 1
-    y2 = filter!(signal, toneFilter)
-    @show toneFilter
+    yJCM = filter!(signal, toneJCM)
+    ySoldano = filter!(signal, toneSoldano)
+    yEngl = filter!(signal, toneEngl)
+    @show toneJCM
 
-    y2Spectre = 20 * log10.((y2 |> rfft .|> abs).^2)
+    yJCMSpectre = 20 * log10.((yJCM |> rfft .|> abs).^2)
+    ySoldanoSpectre = 20 * log10.((ySoldano |> rfft .|> abs).^2)
+    yEnglSpectre = 20 * log10.((yEngl |> rfft .|> abs).^2)
 
 
-    p1 = begin
-        plot()
-        plot!(yFreqs .+ 1, ySpectre, 
-              xaxis = :log, 
-              ylims = [-50, 10])
-        # plot!(y)
-    end
+    # p1 = begin
+    #     plot()
+    #     plot!(yFreqs .+ 1, ySpectre, 
+    #           xaxis = :log, 
+    #           ylims = [-50, 10])
+    #     # plot!(y)
+    # end
 
     p2 = begin
         plot()
-        plot!(yFreqs .+ 1, y2Spectre, 
+        plot!(yFreqs .+ 1, yJCMSpectre, 
               xaxis = :log, 
-              ylims = [-50, 10])
+              ylims = [-40, 10],
+              xlims = [10, 20000],
+              label = "JCM")
+        plot!(yFreqs .+ 1, ySoldanoSpectre,
+              label = "Soldano")
+        plot!(yFreqs .+ 1, yEnglSpectre,
+              label = "Engl")
         # plot!(y2)
     end 
 
-    p3 = plot(p1, p2, layout = (2, 1)) |> display
+    # p3 = plot(p1, p2, layout = (2, 1)) |> display
+    display(p2)
 
     return nothing
 end
