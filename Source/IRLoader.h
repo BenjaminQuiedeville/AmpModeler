@@ -67,3 +67,11 @@ struct IRLoader {
 static size_t parseWavFile(const std::string& filepath, float **buffer);
 
 #endif // IR_LOADER_H
+
+/*
+
+FFT::TimeVector *vector 
+
+vector
+
+*/

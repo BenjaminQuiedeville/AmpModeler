@@ -24,6 +24,27 @@
     changer l'algo de distorsion pour une courbe asymétrique haute headroom
 */
 
+struct OverSampler {
+
+    OverSampler();
+
+    ~OverSampler();
+
+    void prepareToPlay(double _samplerate);
+
+    void upSample(float *source, float *upSampled, size_t sourceSize, size_t upSampledSize);
+    void downSample(float *upSampled, float *dest, size_t upSampledSize, size_t destSize);
+
+    Biquad *upSampleFilter1;
+    Biquad *upSampleFilter2;
+    
+    Biquad *downSampleFilter1;
+    Biquad *downSampleFilter2;
+
+    uint8_t upSampleFactor = 4;
+
+};
+
 
 struct PreampDistorsion {
     PreampDistorsion();
@@ -34,9 +55,9 @@ struct PreampDistorsion {
 
     SmoothParam *preGain;
     SmoothParam *postGain;
-    double stageGain;
     double samplerate;
-    double outputAttenuation = DB_TO_GAIN(-25.0);
+    float stageGain;
+    float outputAttenuation = (float)DB_TO_GAIN(-25.0);
 
     OnepoleFilter *inputFilter;
 
@@ -44,13 +65,16 @@ struct PreampDistorsion {
     OnepoleFilter *couplingFilter2;
     OnepoleFilter *couplingFilter3;
 
+    OnepoleFilter *stageOutputFilter1;
+    OnepoleFilter *stageOutputFilter2;
+
+
     Biquad *tubeBypassFilter1;
     Biquad *tubeBypassFilter2;
 
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
-    int upSampleFactor;
-
+    uint8_t upSampleFactor;
 
 };
 

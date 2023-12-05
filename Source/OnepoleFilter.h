@@ -29,13 +29,13 @@ struct OnepoleFilter {
     }
 
     inline sample_t processLowPass(sample_t sample) {
-        sample = sample * b0 - a1 * y1;
+        sample = (float)(sample * b0 - a1 * y1);
         y1 = sample;
         return sample;
     }
 
     inline sample_t processHighPass(sample_t sample) {
-        sample_t lpSample = sample * b0 - a1 * y1;
+        sample_t lpSample = (float)(sample * b0 - a1 * y1);
         y1 = lpSample;
         return sample - lpSample;
     }

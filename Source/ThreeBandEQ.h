@@ -75,13 +75,13 @@ struct ToneStack {
 
     inline sample_t processSample(sample_t sample) {
 
-        sample_t outputSample = sample * b0
+        sample_t outputSample = (float)(sample * b0
                             + x1 * b1
                             + x2 * b2
                             + x3 * b3
                             - y1 * a1
                             - y2 * a2
-                            - y3 * a3;
+                            - y3 * a3);
 
         x3 = x2; 
         x2 = x1;
