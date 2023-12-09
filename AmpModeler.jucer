@@ -5,8 +5,6 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
-      <FILE id="nPB6Tk" name="Poweramp.cpp" compile="1" resource="0" file="Source/Poweramp.cpp"/>
-      <FILE id="r6f1EJ" name="Poweramp.h" compile="0" resource="0" file="Source/Poweramp.h"/>
       <GROUP id="{F63B909F-21A6-9A23-99F6-5223DCFE68EC}" name="pffft">
         <FILE id="kjFl1x" name="pffft.c" compile="1" resource="0" file="Source/pffft/pffft.c"/>
         <FILE id="uFar0p" name="pffft.h" compile="0" resource="0" file="Source/pffft/pffft.h"/>

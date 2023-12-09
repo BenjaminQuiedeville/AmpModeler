@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "PreBoost.h"
+#include "Boost.h"
 
 Boost::Boost() {
     tightFilter = new OnepoleFilter();

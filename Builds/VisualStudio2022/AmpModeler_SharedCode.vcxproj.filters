@@ -619,9 +619,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\Poweramp.cpp">
-      <Filter>AmpModeler\Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\pffft\pffft.c">
       <Filter>AmpModeler\Source\pffft</Filter>
     </ClCompile>
@@ -3168,9 +3165,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\Poweramp.h">
-      <Filter>AmpModeler\Source</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\pffft\pffft.h">
       <Filter>AmpModeler\Source\pffft</Filter>
     </ClInclude>

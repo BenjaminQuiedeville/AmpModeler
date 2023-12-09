@@ -36,6 +36,10 @@ private:
     std::unique_ptr<Knob> midEQKnob;
     std::unique_ptr<Knob> trebbleEQKnob;
     std::unique_ptr<Knob> preampVolumeKnob;
+
+    std::unique_ptr<Knob> resonanceKnob;
+    std::unique_ptr<Knob> presenceKnob;
+
     std::unique_ptr<Knob> volumeKnob;
 
     // juce::Slider gateSlider;

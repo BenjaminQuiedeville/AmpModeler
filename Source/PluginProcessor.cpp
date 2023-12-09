@@ -24,6 +24,9 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
     toneStack = new Tonestack();
     irLoader  = new IRLoader();
 
+    resonanceFilter = new Biquad(FilterType::BIQUAD_LOWSHELF);
+    presenceFilter  = new Biquad(FilterType::BIQUAD_HIGHSHELF);
+
     masterVolume = new SmoothParam();
 
     for (uint8_t i = 0; i < N_PARAMS; i++) {
@@ -42,6 +45,9 @@ AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
     delete preamp;
     delete toneStack;
     delete irLoader;
+
+    delete resonanceFilter;
+    delete presenceFilter;
 
     delete masterVolume;
 
@@ -123,6 +129,13 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     toneStack->prepareToPlay(sampleRate);
     irLoader->init(sampleRate, samplesPerBlock);
+
+    resonanceFilter->prepareToPlay(sampleRate);
+    resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, 0.0);
+
+    presenceFilter->prepareToPlay(sampleRate);
+    presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, 0.0);
+
 }
 
 void AmpModelerAudioProcessor::releaseResources()
@@ -173,11 +186,11 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     float *audioPtr = buffer.getWritePointer(0);
 
     /******PROCESS********/
-    noiseGate->process(audioPtr, numSamples);
-    preBoost->process(audioPtr, numSamples);
-    preamp->process(audioPtr, numSamples);
-    toneStack->process(audioPtr, numSamples);
-    irLoader->process(audioPtr, numSamples);
+    // noiseGate->process(audioPtr, numSamples);
+    // preBoost->process(audioPtr, numSamples);
+    // preamp->process(audioPtr, numSamples);
+    // toneStack->process(audioPtr, numSamples);
+    // irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
         audioPtr[i] *= masterVolume->nextValue();
@@ -283,11 +296,13 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
     if (parameterID == ParamsID[RESONANCE]) {
 
+        resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, newValue);
         return;
     }
 
     if (parameterID == ParamsID[PRESENCE]) {
 
+        presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, newValue);
         return;
     }
 
@@ -340,10 +355,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
         ParamsID[PREAMP_VOLUME], "Post Gain", -30.0f, 10.0f, -12.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamsID[RESONANCE], "Reson", 0.0f, 3.0f, 0.0f
+        ParamsID[RESONANCE], "Reson", 0.0f, 6.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamsID[PRESENCE], "Presence", 0.0f, 3.0f, 0.0f
+        ParamsID[PRESENCE], "Presence", 0.0f, 6.0f, 0.0f
     ));
 
 

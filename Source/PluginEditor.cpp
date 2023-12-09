@@ -9,12 +9,18 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     gateKnob         = std::make_unique<Knob>("GATE_KNOB_LABEL", "Gate Thresh");
     boostTopKnob     = std::make_unique<Knob>("BOOST_TOP_KNOB_LABEL" , "Boost Top");
     boostTightKnob   = std::make_unique<Knob>("BOOST_TIGHT_KNOB_LABEL", "Boost Tight");
+    
     gainKnob         = std::make_unique<Knob>("GAIN_KNOB_LABEL", "Pre Gain");
     inputFilterKnob  = std::make_unique<Knob>("INPUT_KNOB_FILTER_LABEL", "Input Filter");
+    
     bassEQKnob       = std::make_unique<Knob>("BASS_EQ_KNOB_LABEL", "Bass");
     midEQKnob        = std::make_unique<Knob>("MIDDLE_EQ_KNOB_LABEL", "Mid");
     trebbleEQKnob    = std::make_unique<Knob>("TREBBLE_EQ_KNOB_LABEL", "Trebble");
     preampVolumeKnob = std::make_unique<Knob>("PREMP_VOLUME_KNOB_LABEL", "Post Gain");
+
+    resonanceKnob    = std::make_unique<Knob>("RESONANCE_KNOB_LABEL", "Resonance");
+    presenceKnob     = std::make_unique<Knob>("PRESENCE_KNOB_LABEL", "Presence");
+
     volumeKnob       = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
 
 
@@ -46,13 +52,16 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 
     createKnob(preampVolumeKnob.get(), ParamsID[PREAMP_VOLUME]);
 
+    createKnob(resonanceKnob.get(), ParamsID[RESONANCE]);
+    createKnob(presenceKnob.get(), ParamsID[PRESENCE]);
+
     createKnob(volumeKnob.get(), ParamsID[MASTER_VOLUME]);
 
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(); };
     addAndMakeVisible(irLoadButton);
 
-    setSize (1000, 600);
+    setSize (1200, 600);
 }
 
 AmpModelerAudioProcessorEditor::~AmpModelerAudioProcessorEditor()
@@ -75,7 +84,7 @@ void AmpModelerAudioProcessorEditor::resized() {
     const int WIDTH = getWidth() - 2*horizontalMargin;
 
     const int nRows = 4;
-    const int nCols = 6;
+    const int nCols = 8;
 
     auto computeXcoord = [&](int col) { return horizontalMargin + WIDTH/nCols * col; };
     auto computeYcoord = [&](int row) { return verticalMargin + HEIGHT/nRows * row; };
@@ -128,19 +137,36 @@ void AmpModelerAudioProcessorEditor::resized() {
                                    trebbleEQKnob->slider.getWidth(), 
                                    20);
 
-    preampVolumeKnob->slider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    resonanceKnob->slider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    resonanceKnob->label.setBounds(resonanceKnob->slider.getX(),
+                                   resonanceKnob->slider.getY() - 20,
+                                   resonanceKnob->slider.getWidth(), 
+                                   20);
+
+    presenceKnob->slider.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
+    presenceKnob->label.setBounds(presenceKnob->slider.getX(),
+                                   presenceKnob->slider.getY() - 20,
+                                   presenceKnob->slider.getWidth(), 
+                                   20);
+
+    
+
+    preampVolumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
     preampVolumeKnob->label.setBounds(preampVolumeKnob->slider.getX(), 
                                       preampVolumeKnob->slider.getY() - 20, 
                                       preampVolumeKnob->slider.getWidth(), 
                                       20);
 
-	volumeKnob->slider.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
+
+
+
+	volumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
     volumeKnob->label.setBounds(volumeKnob->slider.getX(), 
                                 volumeKnob->slider.getY() - 20, 
                                 volumeKnob->slider.getWidth(), 
                                 20);
 
-    irLoadButton.setBounds(computeXcoord(5), computeYcoord(0), 100, 50);
+    irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
 
 }
 

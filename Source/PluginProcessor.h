@@ -5,10 +5,12 @@
 #include "SmoothParam.h"
 
 #include "NoiseGate.h"
-#include "PreBoost.h"
+#include "Boost.h"
 #include "Preamp.h"
 #include "Tonestack.h"
 #include "IRLoader.h"
+
+#include "Biquad.h"
 
 #include <vector>
 
@@ -107,6 +109,9 @@ public:
     PreampDistorsion *preamp;
     Tonestack *toneStack;
     IRLoader *irLoader;
+
+    Biquad *resonanceFilter;
+    Biquad *presenceFilter;
 
 private:
 
