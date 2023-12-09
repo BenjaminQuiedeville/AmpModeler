@@ -6,8 +6,8 @@
 
 #include "NoiseGate.h"
 #include "PreBoost.h"
-#include "PreampDistorsion.h"
-#include "ThreeBandEQ.h"
+#include "Preamp.h"
+#include "Tonestack.h"
 #include "IRLoader.h"
 
 #include <vector>
@@ -103,9 +103,9 @@ public:
 	juce::AudioProcessorValueTreeState *apvts;
 
     NoiseGate *noiseGate;
-    PreBoost *preBoost;
+    Boost *preBoost;
     PreampDistorsion *preamp;
-    ThreeBandEQ *toneStack;
+    Tonestack *toneStack;
     IRLoader *irLoader;
 
 private:

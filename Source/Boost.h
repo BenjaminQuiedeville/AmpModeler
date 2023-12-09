@@ -14,27 +14,32 @@
 #include <JuceHeader.h>
 #include "common.h"
 #include "Biquad.h"
+#include "OnepoleFilter.h"
 
-struct PreBoost {
+struct Boost {
 
-    PreBoost();
-    ~PreBoost();
+    Boost();
+    ~Boost();
 
     void prepareToPlay(double _samplerate);
     void updateTight(const float newFrequency);
     void updateBite(const float newGain);
-    void process(AudioBlock &audioBlock);
+    inline void process(float *buffer, size_t nSamples) {
 
+        tightFilter->processBufferHighpass(buffer, nSamples);
+        biteFilter->process(buffer, nSamples);
+
+    }
 
     float tightFrequency;
     const float biteFrequency = 1700.0f;
 
-    float tightQ = 0.7f;
+    // float tightQ = 0.7f;
     float biteQ = 0.5f;
 
-    float biteGain;
+    // float biteGain;
 
-    Biquad *tightFilter;
+    OnepoleFilter *tightFilter;
     Biquad *biteFilter;
 
 };

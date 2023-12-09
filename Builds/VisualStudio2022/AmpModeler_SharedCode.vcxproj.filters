@@ -619,6 +619,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Poweramp.cpp">
+      <Filter>AmpModeler\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\pffft\pffft.c">
       <Filter>AmpModeler\Source\pffft</Filter>
     </ClCompile>
@@ -628,13 +631,13 @@
     <ClCompile Include="..\..\Source\Biquad.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\PreBoost.cpp">
+    <ClCompile Include="..\..\Source\Boost.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\NoiseGate.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\ThreeBandEQ.cpp">
+    <ClCompile Include="..\..\Source\Tonestack.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
@@ -643,7 +646,7 @@
     <ClCompile Include="..\..\Source\PluginEditor.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\PreampDistorsion.cpp">
+    <ClCompile Include="..\..\Source\Preamp.cpp">
       <Filter>AmpModeler\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.cpp">
@@ -3165,6 +3168,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Poweramp.h">
+      <Filter>AmpModeler\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\pffft\pffft.h">
       <Filter>AmpModeler\Source\pffft</Filter>
     </ClInclude>
@@ -3177,7 +3183,7 @@
     <ClInclude Include="..\..\Source\SmoothParam.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\PreBoost.h">
+    <ClInclude Include="..\..\Source\Boost.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\NoiseGate.h">
@@ -3186,7 +3192,7 @@
     <ClInclude Include="..\..\Source\OnepoleFilter.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\ThreeBandEQ.h">
+    <ClInclude Include="..\..\Source\Tonestack.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\common.h">
@@ -3195,7 +3201,7 @@
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\PreampDistorsion.h">
+    <ClInclude Include="..\..\Source\Preamp.h">
       <Filter>AmpModeler\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Biquad.h">

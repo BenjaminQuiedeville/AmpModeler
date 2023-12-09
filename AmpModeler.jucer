@@ -5,6 +5,8 @@
               defines="JUCE_MODAL_LOOPS_PERMITTED=1" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="E3QCxP" name="AmpModeler">
     <GROUP id="{5F3966C6-1932-C7AA-6CFF-79C30D3B6DC4}" name="Source">
+      <FILE id="nPB6Tk" name="Poweramp.cpp" compile="1" resource="0" file="Source/Poweramp.cpp"/>
+      <FILE id="r6f1EJ" name="Poweramp.h" compile="0" resource="0" file="Source/Poweramp.h"/>
       <GROUP id="{F63B909F-21A6-9A23-99F6-5223DCFE68EC}" name="pffft">
         <FILE id="kjFl1x" name="pffft.c" compile="1" resource="0" file="Source/pffft/pffft.c"/>
         <FILE id="uFar0p" name="pffft.h" compile="0" resource="0" file="Source/pffft/pffft.h"/>
@@ -14,13 +16,13 @@
       <FILE id="Ga6TFI" name="IRLoader.h" compile="0" resource="0" file="Source/IRLoader.h"/>
       <FILE id="Z8OTdg" name="SmoothParam.h" compile="0" resource="0" file="Source/SmoothParam.h"/>
       <FILE id="lWgZdX" name="Biquad.cpp" compile="1" resource="0" file="Source/Biquad.cpp"/>
-      <FILE id="lXkePf" name="PreBoost.cpp" compile="1" resource="0" file="Source/PreBoost.cpp"/>
-      <FILE id="elEYj0" name="PreBoost.h" compile="0" resource="0" file="Source/PreBoost.h"/>
+      <FILE id="lXkePf" name="Boost.cpp" compile="1" resource="0" file="Source/Boost.cpp"/>
+      <FILE id="elEYj0" name="Boost.h" compile="0" resource="0" file="Source/Boost.h"/>
       <FILE id="inaQln" name="NoiseGate.cpp" compile="1" resource="0" file="Source/NoiseGate.cpp"/>
       <FILE id="HEpT1R" name="NoiseGate.h" compile="0" resource="0" file="Source/NoiseGate.h"/>
       <FILE id="YblBs8" name="OnepoleFilter.h" compile="0" resource="0" file="Source/OnepoleFilter.h"/>
-      <FILE id="OYmPa3" name="ThreeBandEQ.cpp" compile="1" resource="0" file="Source/ThreeBandEQ.cpp"/>
-      <FILE id="pcE1DH" name="ThreeBandEQ.h" compile="0" resource="0" file="Source/ThreeBandEQ.h"/>
+      <FILE id="OYmPa3" name="Tonestack.cpp" compile="1" resource="0" file="Source/Tonestack.cpp"/>
+      <FILE id="pcE1DH" name="Tonestack.h" compile="0" resource="0" file="Source/Tonestack.h"/>
       <FILE id="gcYSZm" name="common.h" compile="0" resource="0" file="Source/common.h"/>
       <FILE id="dAT7TB" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -28,10 +30,8 @@
             file="Source/PluginProcessor.h"/>
       <FILE id="s5IOLz" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
-      <FILE id="oWjfe4" name="PreampDistorsion.cpp" compile="1" resource="0"
-            file="Source/PreampDistorsion.cpp"/>
-      <FILE id="Kxjl8A" name="PreampDistorsion.h" compile="0" resource="0"
-            file="Source/PreampDistorsion.h"/>
+      <FILE id="oWjfe4" name="Preamp.cpp" compile="1" resource="0" file="Source/Preamp.cpp"/>
+      <FILE id="Kxjl8A" name="Preamp.h" compile="0" resource="0" file="Source/Preamp.h"/>
       <FILE id="KSl8EG" name="Biquad.h" compile="0" resource="0" file="Source/Biquad.h"/>
       <FILE id="fZZefG" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>

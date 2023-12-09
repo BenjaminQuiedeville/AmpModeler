@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "PreampDistorsion.h"
+#include "Preamp.h"
 #include <memory>
 #include <assert.h>
 
@@ -177,7 +177,8 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample = inputFilter->processHighPass(sample);
         sample *= 0.9f;
 
-        sample = (float)(preGain->nextValue()) * sample;
+        sample = (sample_t)(preGain->nextValue()) * sample;
+
 
         // Second Tube first stage of saturation, stop there for clean tone
         sample *= stageGain;
@@ -194,6 +195,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample = couplingFilter2->processHighPass(sample);
         sample = stageOutputFilter1->processLowPass(sample);
 
+
         // Fourth tube stage
         sample *= stageGain;
         sample = waveShaping(sample);
@@ -203,7 +205,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         sample *= outputAttenuation;
         
-        sample = (float)(postGain->nextValue()) * sample;
+        sample *= (sample_t)(postGain->nextValue());
 
         upSampledData[index] = sample;
     }

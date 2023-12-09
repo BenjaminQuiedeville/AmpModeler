@@ -8,9 +8,9 @@
   ==============================================================================
 */
 
-#include "ThreeBandEQ.h"
+#include "Tonestack.h"
 
-void ToneStack::updateCoefficients(float t, float m, float l) {
+void Tonestack::updateCoefficients(float t, float m, float l) {
 
     double L = std::exp((l-1.0)*3.4);
 
@@ -76,36 +76,36 @@ void ToneStack::updateCoefficients(float t, float m, float l) {
 
 
 
-ThreeBandEQ::ThreeBandEQ() {
+// ThreeBandEQ::ThreeBandEQ() {
 
-    bassFilters    = new Biquad(FilterType::BIQUAD_PEAK);
-    midFilters     = new Biquad(FilterType::BIQUAD_PEAK);
-    trebbleFilters = new Biquad(FilterType::BIQUAD_PEAK);
-}
+//     bassFilters    = new Biquad(FilterType::BIQUAD_PEAK);
+//     midFilters     = new Biquad(FilterType::BIQUAD_PEAK);
+//     trebbleFilters = new Biquad(FilterType::BIQUAD_PEAK);
+// }
 
-ThreeBandEQ::~ThreeBandEQ() {
-    delete bassFilters;
-    delete midFilters;
-    delete trebbleFilters;
-}
+// ThreeBandEQ::~ThreeBandEQ() {
+//     delete bassFilters;
+//     delete midFilters;
+//     delete trebbleFilters;
+// }
 
-void ThreeBandEQ::prepareToPlay(double _samplerate) {
+// void ThreeBandEQ::prepareToPlay(double _samplerate) {
 
-    bassFilters->prepareToPlay(_samplerate);
-    midFilters->prepareToPlay(_samplerate);
-    trebbleFilters->prepareToPlay(_samplerate);
-}
+//     bassFilters->prepareToPlay(_samplerate);
+//     midFilters->prepareToPlay(_samplerate);
+//     trebbleFilters->prepareToPlay(_samplerate);
+// }
 
-void ThreeBandEQ::process(float *input, size_t nSamples) {
+// void ThreeBandEQ::process(float *input, size_t nSamples) {
 
-    bassFilters->process(input, nSamples);
-    midFilters->process(input, nSamples);
-    trebbleFilters->process(input, nSamples);
-}
+//     bassFilters->process(input, nSamples);
+//     midFilters->process(input, nSamples);
+//     trebbleFilters->process(input, nSamples);
+// }
 
-void ThreeBandEQ::updateGains(double bassGain, double midGain, double trebbleGain) {
+// void ThreeBandEQ::updateGains(double bassGain, double midGain, double trebbleGain) {
 
-    bassFilters->setCoefficients(bassFreq, bassQ, bassGain);
-    midFilters->setCoefficients(midFreq, midQ, midGain);
-    trebbleFilters->setCoefficients(trebbleFreq, trebbleQ, trebbleGain);
-}
+//     bassFilters->setCoefficients(bassFreq, bassQ, bassGain);
+//     midFilters->setCoefficients(midFreq, midQ, midGain);
+//     trebbleFilters->setCoefficients(trebbleFreq, trebbleQ, trebbleGain);
+// }
