@@ -20,7 +20,7 @@
 #include "SmoothParam.h"
 #include "pffft/pffft.hpp"
 
-#define FFT_SIZE 16384
+#define FFT_SIZE (1 << 15)
 using FFT = pffft::FFT<float, FFT_SIZE>;
 
 /*

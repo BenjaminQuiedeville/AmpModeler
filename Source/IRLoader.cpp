@@ -45,7 +45,7 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
     FILE *wavFile = fopen(filepath.data(), "rb");
 
-    assert(!ferror(wavFile));
+    if (ferror(wavFile)) { return 0; }
 
     fread(riffString, 1, 4, wavFile);
 
@@ -261,6 +261,8 @@ void IRLoader::loadIR() {
 
     chooser->browseForFileToOpen();
     const std::string filepath = chooser->getResult().getFullPathName().toStdString();
+
+    if (filepath == "") { return; }
 
     size_t irSize = parseWavFile(filepath, &irBuffer);
 

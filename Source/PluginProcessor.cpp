@@ -186,11 +186,11 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     float *audioPtr = buffer.getWritePointer(0);
 
     /******PROCESS********/
-    // noiseGate->process(audioPtr, numSamples);
+    noiseGate->process(audioPtr, numSamples);
     // preBoost->process(audioPtr, numSamples);
-    // preamp->process(audioPtr, numSamples);
+    preamp->process(audioPtr, numSamples);
     // toneStack->process(audioPtr, numSamples);
-    // irLoader->process(audioPtr, numSamples);
+    irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
         audioPtr[i] *= masterVolume->nextValue();
