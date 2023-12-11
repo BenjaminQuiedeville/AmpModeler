@@ -257,9 +257,13 @@ void IRLoader::loadIR() {
 
     float *irBuffer = nullptr;
 
-    juce::FileChooser *chooser = new juce::FileChooser("Choose a .wav File to open", juce::File(), "*.wav");
+    auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
 
-    chooser->browseForFileToOpen();
+    bool fileChoosed = chooser->browseForFileToOpen();
+    if (!fileChoosed) { 
+        return; 
+    }
+
     const std::string filepath = chooser->getResult().getFullPathName().toStdString();
 
     if (filepath == "") { return; }
@@ -272,7 +276,6 @@ void IRLoader::loadIR() {
 
     if (irBuffer != nullptr) { free(irBuffer); }
     
-    delete chooser;
     return;
 }
 
@@ -283,12 +286,15 @@ void IRLoader::process(float *input, size_t nSamples) {
         inputBufferPadded[i] = input[i];
     }
 
+    // memcpy(inputBufferPadded.data(), input, nSamples*sizeof(sample_t));
+
     fftEngine->forward(inputBufferPadded, inputDftBuffer);
     fftEngine->scale(inputDftBuffer);
 
     for (size_t i = 0; i < fftEngine->spectrum_size; i++) {
         inputDftBuffer[i] *= irDftBuffer[i];
     }
+
     
     fftEngine->inverse(inputDftBuffer, convolutionResultBuffer);
 
@@ -320,6 +326,8 @@ void IRLoader::process(float *input, size_t nSamples) {
     for (int i = 0; i < nSamples; i++) {
         input[i] = inputBufferPadded[i];
     }
+
+    // memcpy(input, inputBufferPadded.data(), nSamples * sizeof(sample_t));
 
     overlapAddIndex = (overlapAddIndex + nSamples) % (FFT_SIZE);
 

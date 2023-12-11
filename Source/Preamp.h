@@ -75,6 +75,7 @@ struct PreampDistorsion {
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
     uint8_t upSampleFactor;
+    float headroom = 10.0f;
 
 };
 

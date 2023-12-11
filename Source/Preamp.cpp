@@ -72,7 +72,7 @@ void OverSampler::downSample(float *upSampled, float *dest, size_t upSampledSize
 
 PreampDistorsion::PreampDistorsion() {
     
-    upSampleFactor = 2;
+    upSampleFactor = 4;
     overSampler = new juce::dsp::Oversampling<sample_t>(
         1, upSampleFactor, 
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
@@ -146,14 +146,14 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageGain = (float)DB_TO_GAIN(25.0);
 }
 
-static inline sample_t waveShaping(sample_t sample) {
+static inline sample_t waveShaping(sample_t sample, float headroom) {
     
-    sample *= -1.0f;
+    sample = -sample / headroom;
 
     if (sample > 0.0f) { sample = std::tanh(sample); }
     if (sample < -1.0f) { sample = -1.0f; }
 
-    return sample;
+    return sample*headroom;
 }
 
 
@@ -172,17 +172,17 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         sample = tubeBypassFilter1->processSample(sample);
         sample *= stageGain;
-        sample = waveShaping(sample);
+        sample = waveShaping(sample, 2*headroom);
         
         sample = inputFilter->processHighPass(sample);
         sample *= 0.9f;
 
-        sample = (sample_t)(preGain->nextValue()) * sample;
+        sample = (sample_t)DB_TO_GAIN(preGain->nextValue()) * sample;
 
 
         // Second Tube first stage of saturation, stop there for clean tone
         sample *= stageGain;
-        sample = waveShaping(sample);
+        sample = waveShaping(sample, headroom);
         sample *= 0.5f;
         sample = couplingFilter1->processHighPass(sample);
 
@@ -190,7 +190,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         // Third tube stage
         sample = tubeBypassFilter2->processSample(sample);
         sample *= stageGain;
-        sample = waveShaping(sample);
+        sample = waveShaping(sample, headroom);
         sample *= 0.5f;
         sample = couplingFilter2->processHighPass(sample);
         sample = stageOutputFilter1->processLowPass(sample);
@@ -198,14 +198,15 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         // Fourth tube stage
         sample *= stageGain;
-        sample = waveShaping(sample);
-        sample *= 0.5f;
+        sample = waveShaping(sample, headroom);
+        // sample *= 0.5f;
         sample = couplingFilter3->processHighPass(sample);
         sample = stageOutputFilter2->processLowPass(sample);
 
         sample *= outputAttenuation;
         
-        sample *= (sample_t)(postGain->nextValue());
+        sample *= (sample_t)DB_TO_GAIN(postGain->nextValue());
+        sample /= headroom;
 
         upSampledData[index] = sample;
     }

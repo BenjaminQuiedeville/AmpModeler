@@ -189,7 +189,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     noiseGate->process(audioPtr, numSamples);
     // preBoost->process(audioPtr, numSamples);
     preamp->process(audioPtr, numSamples);
-    // toneStack->process(audioPtr, numSamples);
+    toneStack->process(audioPtr, numSamples);
     irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
