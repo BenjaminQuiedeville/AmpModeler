@@ -265,12 +265,13 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[PRE_BOOST]) {
-
+        preBoost->level->newTarget(DB_TO_GAIN(newValue));
         return;
     }
 
     if (parameterID == ParamsID[INPUT_FILTER]) {
         preamp->inputFilter->setCoefficients(newValue);
+        return;
     }
 
     if (parameterID == ParamsID[PREAMP_GAIN]) {
@@ -295,13 +296,11 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[RESONANCE]) {
-
         resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, newValue);
         return;
     }
 
     if (parameterID == ParamsID[PRESENCE]) {
-
         presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, newValue);
         return;
     }

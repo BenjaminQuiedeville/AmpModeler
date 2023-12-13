@@ -52,8 +52,8 @@ void OverSampler::upSample(float *source, float *upSampled, size_t sourceSize, s
         upSampled[upSampleFactor*i] = source[i];
     }
 
-    upSampleFilter1->process(upSampled, upSampledSize);    
-    upSampleFilter2->process(upSampled, upSampledSize);    
+    upSampleFilter1->processBuffer(upSampled, upSampledSize);    
+    upSampleFilter2->processBuffer(upSampled, upSampledSize);    
 
 }
 
@@ -61,8 +61,8 @@ void OverSampler::downSample(float *upSampled, float *dest, size_t upSampledSize
 
     assert(upSampledSize == destSize*upSampleFactor);
 
-    downSampleFilter1->process(upSampled, upSampledSize);
-    downSampleFilter2->process(upSampled, upSampledSize);
+    downSampleFilter1->processBuffer(upSampled, upSampledSize);
+    downSampleFilter2->processBuffer(upSampled, upSampledSize);
 
     for (size_t i = 0; i < destSize; i++) {
         dest[i] = upSampled[i*upSampleFactor];
@@ -170,7 +170,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         // input Tube stage
 
-        sample = tubeBypassFilter1->processSample(sample);
+        sample = tubeBypassFilter1->process(sample);
         sample *= stageGain;
         sample = waveShaping(sample, 2*headroom);
         
@@ -188,7 +188,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
 
         // Third tube stage
-        sample = tubeBypassFilter2->processSample(sample);
+        sample = tubeBypassFilter2->process(sample);
         sample *= stageGain;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;

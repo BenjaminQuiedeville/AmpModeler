@@ -57,7 +57,7 @@ struct PreampDistorsion {
     SmoothParam *postGain;
     double samplerate;
     float stageGain;
-    float outputAttenuation = (float)DB_TO_GAIN(-25.0);
+    float outputAttenuation = (float)DB_TO_GAIN(-20.0);
 
     OnepoleFilter *inputFilter;
 

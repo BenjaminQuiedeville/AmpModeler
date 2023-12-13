@@ -15,6 +15,10 @@
 #include "common.h"
 #include "Biquad.h"
 #include "OnepoleFilter.h"
+#include "SmoothParam.h"
+
+#define BOOST_BITE_Q     0.5
+#define BOOST_BITE_FREQ  1700.0
 
 struct Boost {
 
@@ -26,21 +30,19 @@ struct Boost {
     void updateBite(const float newGain);
     inline void process(float *buffer, size_t nSamples) {
 
-        tightFilter->processBufferHighpass(buffer, nSamples);
-        biteFilter->process(buffer, nSamples);
+        for (size_t i = 0; i<nSamples; i++) {
+            sample_t sample = buffer[i];
+            sample = tightFilter->processHighPass(sample);
+            sample = biteFilter->process(sample);
+            buffer[i] = sample * DB_TO_GAIN(level->nextValue());
+        }
 
     }
 
-    float tightFrequency;
-    const float biteFrequency = 1700.0f;
-
-    // float tightQ = 0.7f;
-    float biteQ = 0.5f;
-
-    // float biteGain;
 
     OnepoleFilter *tightFilter;
     Biquad *biteFilter;
+    SmoothParam *level;
 
 };
 

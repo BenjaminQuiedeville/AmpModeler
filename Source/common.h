@@ -23,4 +23,9 @@ using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 
 #define CLIP(x, min, max) (x > max ? max : x < min ? min : x)
 
+static inline float scale(float x, float min, float max, float newmin, float newmax, float curve) {
+    return std::powf((x - min) / (max - min), curve) * (newmax - newmin) + newmin;
+}
+
+
 #endif  // AMP_MODELER_COMMON

@@ -49,14 +49,14 @@ struct Biquad {
 
     void setCoefficients(double frequency, double Q, double gaindB);
 
-    void process(sample_t *signal, size_t nSamples) {
+    void processBuffer(sample_t *signal, size_t nSamples) {
 
         for (size_t i = 0; i < nSamples; i++) {
-            signal[i] = processSample(signal[i]);
+            signal[i] = process(signal[i]);
         }
     }
 
-    inline sample_t processSample(sample_t sample) {
+    inline sample_t process(sample_t sample) {
 
         sample_t outputSample = (float)(sample * b0 + x1 * b1 + x2 * b2
                               - y1 * a1 - y2 * a2);
