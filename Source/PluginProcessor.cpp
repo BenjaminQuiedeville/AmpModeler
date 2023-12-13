@@ -105,6 +105,8 @@ int AmpModelerAudioProcessor::getCurrentProgram()
 
 void AmpModelerAudioProcessor::setCurrentProgram (int index)
 {
+    index;
+    return;
 }
 
 const juce::String AmpModelerAudioProcessor::getProgramName (int index)

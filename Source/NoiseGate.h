@@ -10,14 +10,14 @@
 
 #pragma once
 
-#include <JuceHeader.h>
+#include "JuceHeader.h"
 #include "common.h"
 #include "SmoothParam.h"
 
 struct NoiseGate {
     NoiseGate() {};
 
-    void prepareToPlay(double samplerate);
+    void prepareToPlay(double _samplerate);
     void process(float *input, size_t nSamples);
 
     float threshold;

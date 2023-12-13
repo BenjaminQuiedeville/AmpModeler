@@ -10,10 +10,10 @@
 
 #include "NoiseGate.h"
 
-void NoiseGate::prepareToPlay(double samplerate) {
+void NoiseGate::prepareToPlay(double _samplerate) {
 
-    samplerate = samplerate;
-    windowSize = floor(samplerate*0.001f);
+    samplerate = _samplerate;
+    windowSize = floor(_samplerate*0.001f);
 
     rmsBuffer.setSize(1, windowSize);
     rmsBufferPtr = rmsBuffer.getWritePointer(0);
@@ -23,7 +23,7 @@ void NoiseGate::prepareToPlay(double samplerate) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGain.init(samplerate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
+    gateGain.init(_samplerate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
 }
 
 

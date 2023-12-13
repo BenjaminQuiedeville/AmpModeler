@@ -11,7 +11,7 @@
 #ifndef TONE_STACK_H
 #define TONE_STACK_H
 
-#include <JuceHeader.h>
+#include "JuceHeader.h"
 #include "Biquad.h"
 
 #define RESONANCE_FREQUENCY 250.0

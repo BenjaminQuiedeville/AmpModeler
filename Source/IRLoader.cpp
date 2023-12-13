@@ -16,7 +16,11 @@
 #include <iostream>
 #include <vector>
 
-#define BITS_24_MAX (double)(1 << 23 - 1)
+#ifndef JUCE_MODAL_LOOPS_PERMITTED
+    #define JUCE_MODAL_LOOPS_PERMITTED 1
+#endif
+
+#define BITS_24_MAX ((double)(1 << 23 - 1))
 
 #define BASE_IR_SIZE 5793
 static float baseIR[BASE_IR_SIZE] = {

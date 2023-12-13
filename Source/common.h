@@ -11,7 +11,7 @@
 #ifndef AMP_MODELER_COMMON
 #define AMP_MODELER_COMMON
 
-#include <JuceHeader.h>
+#include "JuceHeader.h"
 
 typedef float sample_t;
 using AudioBlock = juce::dsp::AudioBlock<sample_t>;

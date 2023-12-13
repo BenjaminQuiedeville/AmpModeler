@@ -11,7 +11,7 @@
 #ifndef BIQUAD_H
 #define BIQUAD_H
 
-#include <JuceHeader.h>
+#include "JuceHeader.h"
 #include "common.h"
 
 enum FilterType {
@@ -26,7 +26,7 @@ enum FilterType {
 
 struct Biquad {
 
-    Biquad(FilterType type) { filterType = type; }
+    Biquad(FilterType type) { filterType = (uint8_t)type; }
 
     void prepareToPlay(double _samplerate) {
         samplerate = _samplerate;
