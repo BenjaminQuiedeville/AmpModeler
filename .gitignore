@@ -15,3 +15,6 @@ Builds/VisualStudio2022/x64
 Builds/VisualStudio2022/.vs
 
 Builds/LinuxMakefile/build
+
+build/
+libs/
