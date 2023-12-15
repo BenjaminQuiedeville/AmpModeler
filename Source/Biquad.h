@@ -28,9 +28,7 @@ struct Biquad {
 
     Biquad(FilterType type) { filterType = (uint8_t)type; }
 
-    void prepareToPlay(double _samplerate) {
-        samplerate = _samplerate;
-        twoPiOverSamplerate = juce::MathConstants<double>::twoPi / samplerate;
+    void prepareToPlay() {
 
         b0 = 1.0;
         b1 = 0.0;
@@ -47,7 +45,7 @@ struct Biquad {
         y2 = 0.0f;
     }
 
-    void setCoefficients(double frequency, double Q, double gaindB);
+    void setCoefficients(double frequency, double Q, double gaindB, double samplerate);
 
     void processBuffer(sample_t *signal, size_t nSamples) {
 
@@ -67,11 +65,16 @@ struct Biquad {
         return outputSample;
     }
 
-    double samplerate;
-    double twoPiOverSamplerate;
-    double b0, b1, b2, a1, a2;
+    double b0 = 1.0;
+    double b1 = 0.0;
+    double b2 = 0.0;
+    double a1 = 0.0;
+    double a2 = 0.0;
 
-    sample_t x1, x2, y1, y2;
+    sample_t x1 = 0.0f;
+    sample_t x2 = 0.0f;
+    sample_t y1 = 0.0f;
+    sample_t y2 = 0.0f;
     uint8_t filterType;
 
 };

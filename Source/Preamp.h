@@ -32,8 +32,8 @@ struct OverSampler {
 
     void prepareToPlay(double _samplerate);
 
-    void upSample(float *source, float *upSampled, size_t sourceSize, size_t upSampledSize);
-    void downSample(float *upSampled, float *dest, size_t upSampledSize, size_t destSize);
+    void upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize);
+    void downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize);
 
     Biquad *upSampleFilter1;
     Biquad *upSampleFilter2;

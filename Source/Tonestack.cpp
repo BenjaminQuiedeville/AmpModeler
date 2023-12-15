@@ -73,39 +73,3 @@ void Tonestack::updateCoefficients(float t, float m, float l) {
     a3 = (-A0 + A1*c - A2*std::pow(c, 2.0) + A3*std::pow(c, 3.0))/a0;
 
 }
-
-
-
-// ThreeBandEQ::ThreeBandEQ() {
-
-//     bassFilters    = new Biquad(FilterType::BIQUAD_PEAK);
-//     midFilters     = new Biquad(FilterType::BIQUAD_PEAK);
-//     trebbleFilters = new Biquad(FilterType::BIQUAD_PEAK);
-// }
-
-// ThreeBandEQ::~ThreeBandEQ() {
-//     delete bassFilters;
-//     delete midFilters;
-//     delete trebbleFilters;
-// }
-
-// void ThreeBandEQ::prepareToPlay(double _samplerate) {
-
-//     bassFilters->prepareToPlay(_samplerate);
-//     midFilters->prepareToPlay(_samplerate);
-//     trebbleFilters->prepareToPlay(_samplerate);
-// }
-
-// void ThreeBandEQ::process(float *input, size_t nSamples) {
-
-//     bassFilters->process(input, nSamples);
-//     midFilters->process(input, nSamples);
-//     trebbleFilters->process(input, nSamples);
-// }
-
-// void ThreeBandEQ::updateGains(double bassGain, double midGain, double trebbleGain) {
-
-//     bassFilters->setCoefficients(bassFreq, bassQ, bassGain);
-//     midFilters->setCoefficients(midFreq, midQ, midGain);
-//     trebbleFilters->setCoefficients(trebbleFreq, trebbleQ, trebbleGain);
-// }

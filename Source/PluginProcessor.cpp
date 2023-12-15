@@ -111,16 +111,21 @@ void AmpModelerAudioProcessor::setCurrentProgram (int index)
 
 const juce::String AmpModelerAudioProcessor::getProgramName (int index)
 {
+    index;
     return {};
 }
 
 void AmpModelerAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
+    newName; index;
+    return;
 }
 
 //==============================================================================
 void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    samplerate = sampleRate;
+
     noiseGate->prepareToPlay(sampleRate);
     preBoost->prepareToPlay(sampleRate);
 
@@ -132,11 +137,9 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     toneStack->prepareToPlay(sampleRate);
     irLoader->init(sampleRate, samplesPerBlock);
 
-    resonanceFilter->prepareToPlay(sampleRate);
-    resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, 0.0);
+    resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, 0.0, sampleRate);
 
-    presenceFilter->prepareToPlay(sampleRate);
-    presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, 0.0);
+    presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, 0.0, sampleRate);
 
 }
 
@@ -174,6 +177,8 @@ bool AmpModelerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 
 void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+   midiMessages;
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -181,7 +186,7 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     size_t numSamples = (size_t)buffer.getNumSamples();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
-        buffer.clear (i, 0, numSamples);
+        buffer.clear (i, 0, (int)numSamples);
     }
 
 
@@ -189,17 +194,17 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     /******PROCESS********/
     noiseGate->process(audioPtr, numSamples);
-    // preBoost->process(audioPtr, numSamples);
+    preBoost->process(audioPtr, numSamples);
     preamp->process(audioPtr, numSamples);
     toneStack->process(audioPtr, numSamples);
     irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
-        audioPtr[i] *= masterVolume->nextValue();
+        audioPtr[i] *= (sample_t)(masterVolume->nextValue());
     }
 
     // copy left channel into right channel
-    buffer.copyFrom(1, 0, buffer, 0, 0, numSamples);
+    buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
 
 }
 
@@ -257,12 +262,15 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[BITE]) {
-        preBoost->updateBite(newValue);
+        //@refactor one line function
+        preBoost->biteFilter->setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, newValue, samplerate);
+
         return;
     }
 
     if (parameterID == ParamsID[TIGHT]) {
-        preBoost->updateTight(newValue);
+        //@refactor one line function
+        preBoost->tightFilter->setCoefficients(newValue, samplerate);
         return;
     }
 
@@ -272,7 +280,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[INPUT_FILTER]) {
-        preamp->inputFilter->setCoefficients(newValue);
+        preamp->inputFilter->setCoefficients(newValue, (preamp->samplerate)*(preamp->upSampleFactor));
         return;
     }
 
@@ -298,12 +306,12 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamsID[RESONANCE]) {
-        resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, newValue);
+        resonanceFilter->setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, newValue, samplerate);
         return;
     }
 
     if (parameterID == ParamsID[PRESENCE]) {
-        presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, newValue);
+        presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, newValue, samplerate);
         return;
     }
 

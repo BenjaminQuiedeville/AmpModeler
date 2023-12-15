@@ -30,23 +30,23 @@ OverSampler::~OverSampler() {
 
 void OverSampler::prepareToPlay(double _samplerate) {
 
-    upSampleFilter1->prepareToPlay  (_samplerate*upSampleFactor);
-    upSampleFilter2->prepareToPlay  (_samplerate*upSampleFactor);
-    downSampleFilter1->prepareToPlay(_samplerate*upSampleFactor);
-    downSampleFilter2->prepareToPlay(_samplerate*upSampleFactor);
+    upSampleFilter1->prepareToPlay();
+    upSampleFilter2->prepareToPlay();
+    downSampleFilter1->prepareToPlay();
+    downSampleFilter2->prepareToPlay();
 
-    upSampleFilter1->setCoefficients  (_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor));
-    upSampleFilter2->setCoefficients  (_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor));
-    downSampleFilter1->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0);
-    downSampleFilter2->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0);
+    upSampleFilter1->setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
+    upSampleFilter2->setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
+    downSampleFilter1->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
+    downSampleFilter2->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
 
 }
 
-void OverSampler::upSample(float *source, float *upSampled, size_t sourceSize, size_t upSampledSize) {
+void OverSampler::upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize) {
 
     assert(upSampledSize == sourceSize * upSampleFactor);
 
-    // upSampled doit etre mis à zero
+    memset(upSampled, 0, upSampledSize * sizeof(sample_t));
 
     for (size_t i = 0; i < sourceSize; i++) {
         upSampled[upSampleFactor*i] = source[i];
@@ -57,7 +57,7 @@ void OverSampler::upSample(float *source, float *upSampled, size_t sourceSize, s
 
 }
 
-void OverSampler::downSample(float *upSampled, float *dest, size_t upSampledSize, size_t destSize) {
+void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize) {
 
     assert(upSampledSize == destSize*upSampleFactor);
 
@@ -117,31 +117,23 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     preGain->init(samplerate, 0.02, DB_TO_GAIN(0.0), SMOOTH_PARAM_LIN);
     postGain->init(samplerate, 0.02, DB_TO_GAIN(-12.0), SMOOTH_PARAM_LIN);
     
-    inputFilter->prepareToPlay(samplerate*upSampleFactor);
-    couplingFilter1->prepareToPlay(samplerate*upSampleFactor);
-    couplingFilter2->prepareToPlay(samplerate*upSampleFactor);
-    couplingFilter3->prepareToPlay(samplerate*upSampleFactor);
+    inputFilter->prepareToPlay();
+    couplingFilter1->prepareToPlay();
+    couplingFilter2->prepareToPlay();
+    couplingFilter3->prepareToPlay();
 
-    stageOutputFilter1->prepareToPlay(samplerate*upSampleFactor);
-    stageOutputFilter2->prepareToPlay(samplerate*upSampleFactor);
+    inputFilter->setCoefficients(40.0, samplerate*upSampleFactor);
+    couplingFilter1->setCoefficients(50.0, samplerate*upSampleFactor);
+    couplingFilter2->setCoefficients(50.0, samplerate*upSampleFactor);
+    couplingFilter3->setCoefficients(50.0, samplerate*upSampleFactor);
 
-    tubeBypassFilter1->prepareToPlay(samplerate*upSampleFactor);
-    tubeBypassFilter2->prepareToPlay(samplerate*upSampleFactor);
+    stageOutputFilter1->setCoefficients(2000.0, samplerate*upSampleFactor);
+    stageOutputFilter2->setCoefficients(2000.0, samplerate*upSampleFactor);
 
-
-    inputFilter->setCoefficients(40.0);
-    couplingFilter1->setCoefficients(50.0);
-    couplingFilter2->setCoefficients(50.0);
-    couplingFilter3->setCoefficients(50.0);
-
-    stageOutputFilter1->setCoefficients(2000.0);
-    stageOutputFilter2->setCoefficients(2000.0);
-
-    tubeBypassFilter1->setCoefficients(100.0, 0.6, 6.0);
-    tubeBypassFilter2->setCoefficients(100.0, 0.6, 6.0);
+    tubeBypassFilter1->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter2->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
 
     overSampler->initProcessing(blockSize);
-
 
     stageGain = (float)DB_TO_GAIN(25.0);
 }

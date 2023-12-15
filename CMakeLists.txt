@@ -40,7 +40,6 @@ target_sources(${PROJECT_NAME}
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp 
         Source/Biquad.cpp 
-        Source/Boost.cpp 
         Source/IRLoader.cpp 
         Source/NoiseGate.cpp 
         Source/Preamp.cpp 

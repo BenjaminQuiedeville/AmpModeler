@@ -17,14 +17,14 @@
 
 struct OnepoleFilter {
 
-    OnepoleFilter() {}
-
-    void prepareToPlay(double _samplerate) {
-        piOverSamplerate = juce::MathConstants<float>::pi / _samplerate;
+    void prepareToPlay() {
+        b0 = 1.0;
+        a1 = 0.0;
+        y1 = 0.0f;
     }
 
-    void setCoefficients(double frequency) {
-        b0 = sin(piOverSamplerate * frequency);
+    void setCoefficients(double frequency, double samplerate) {
+        b0 = sin(juce::MathConstants<float>::pi / samplerate * frequency);
         a1 = b0 - 1.0f;
     }
 
@@ -52,9 +52,6 @@ struct OnepoleFilter {
         }
     }
     
-
-    double piOverSamplerate;
-
     double b0 = 1.0;
     double a1 = 0.0;
     sample_t y1 = 0.0;

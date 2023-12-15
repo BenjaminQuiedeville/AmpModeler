@@ -22,27 +22,39 @@
 
 struct Boost {
 
-    Boost();
-    ~Boost();
+    Boost() {
+        tightFilter = new OnepoleFilter();
+        biteFilter = new Biquad(FilterType::BIQUAD_PEAK);
+        level = new SmoothParam();
+    }
 
-    void prepareToPlay(double _samplerate);
-    void updateTight(const float newFrequency);
-    void updateBite(const float newGain);
+    ~Boost() {
+        delete tightFilter;
+        delete biteFilter;
+        delete level;
+    }
+
+    void prepareToPlay(double _samplerate) {
+        samplerate = _samplerate;
+        biteFilter->prepareToPlay();
+        level->init(_samplerate, 0.02, 0.0, CurveType::SMOOTH_PARAM_LIN);
+    }
+
     inline void process(float *buffer, size_t nSamples) {
 
         for (size_t i = 0; i<nSamples; i++) {
             sample_t sample = buffer[i];
             sample = tightFilter->processHighPass(sample);
             sample = biteFilter->process(sample);
-            buffer[i] = sample * DB_TO_GAIN(level->nextValue());
+            buffer[i] = sample * (sample_t)DB_TO_GAIN(level->nextValue());
         }
 
     }
 
-
     OnepoleFilter *tightFilter;
     Biquad *biteFilter;
     SmoothParam *level;
+    double samplerate;
 
 };
 

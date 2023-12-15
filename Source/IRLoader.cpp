@@ -20,7 +20,7 @@
     #define JUCE_MODAL_LOOPS_PERMITTED 1
 #endif
 
-#define BITS_24_MAX ((double)(1 << 23 - 1))
+#define BITS_24_MAX (double)((1 << 23) - 1)
 
 #define BASE_IR_SIZE 5793
 static float baseIR[BASE_IR_SIZE] = {
@@ -28,7 +28,6 @@ static float baseIR[BASE_IR_SIZE] = {
 };
 
 static size_t parseWavFile(const std::string& filepath, float **buffer) {
-
 
     char temp[1] = {0};
     char riffString[4];
@@ -49,7 +48,10 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
     FILE *wavFile = fopen(filepath.data(), "rb");
 
-    if (ferror(wavFile)) { return 0; }
+    if (ferror(wavFile)) { 
+        // fclose(wavfile);    
+        return 0; 
+    }
 
     fread(riffString, 1, 4, wavFile);
 

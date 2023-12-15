@@ -10,9 +10,9 @@
 
 #include "Biquad.h"
 
-void Biquad::setCoefficients(double frequency, double Q, double gaindB) {
+void Biquad::setCoefficients(double frequency, double Q, double gaindB, double samplerate) {
 
-    double w0 = twoPiOverSamplerate * frequency;
+    double w0 = juce::MathConstants<double>::twoPi / samplerate * frequency;
     double cosw0 = cos(w0);
     double sinw0 = sin(w0);
 

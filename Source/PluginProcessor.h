@@ -113,9 +113,12 @@ public:
     Biquad *resonanceFilter;
     Biquad *presenceFilter;
 
+	SmoothParam *masterVolume;
+
+    double samplerate;
+
 private:
 
-	SmoothParam *masterVolume;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;
