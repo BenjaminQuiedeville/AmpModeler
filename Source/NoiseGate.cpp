@@ -23,15 +23,15 @@ void NoiseGate::prepareToPlay(double _samplerate) {
     threshold = -70.0f;
 
     isOpen = false;
-    gateGain.init(_samplerate, attackTimeMs, 0.0, SMOOTH_PARAM_LIN);
+    gateGain.init(0.0);
 }
 
 
-void NoiseGate::process(float *input, size_t nSamples) {
+void NoiseGate::process(sample_t *input, sample_t *sidechain, size_t nSamples) {
 
     for (size_t index = 0; index < nSamples; index++) {
 
-        rmsBufferPtr[rmsBufferIndex] = (input[index]);
+        rmsBufferPtr[rmsBufferIndex] = (sidechain[index]);
         rmsBufferIndex++;
 
         if (rmsBufferIndex == (size_t)rmsBuffer.getNumSamples()) {
@@ -39,14 +39,14 @@ void NoiseGate::process(float *input, size_t nSamples) {
             rmsBufferIndex = 0;
 
             isOpen = juce::Decibels::gainToDecibels(currentRms) > threshold;
-            // DBG("current RMS : " << juce::Decibels::gainToDecibels(currentRms));
             
             // float rampTime = isOpen ? attackTimeSeconds : releaseTimeSeconds;
             // float newGain = isOpen ? 1.0f : 0.0f;
-            gateGain.rampTimeMs = isOpen ? attackTimeMs : releaseTimeMs;
-            gateGain.newTarget(isOpen ? 1.0 : 0.0);
+            gateGain.newTarget(isOpen ? 1.0 : 0.0, 
+                               isOpen ? attackTimeMs : releaseTimeMs, 
+                               samplerate);
         }
 
-        input[index] = gateGain.nextValue() * input[index];
+        input[index] *= gateGain.nextValue();
     }    
 }

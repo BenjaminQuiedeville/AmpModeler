@@ -78,8 +78,8 @@ PreampDistorsion::PreampDistorsion() {
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
 
-    preGain  = new SmoothParam();
-    postGain = new SmoothParam();
+    preGain  = new SmoothParamLinear();
+    postGain = new SmoothParamLinear();
 
     inputFilter     = new OnepoleFilter();
     couplingFilter1 = new OnepoleFilter();
@@ -114,8 +114,8 @@ PreampDistorsion::~PreampDistorsion() {
 void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     samplerate = _samplerate;
 
-    preGain->init(samplerate, 0.02, DB_TO_GAIN(0.0), SMOOTH_PARAM_LIN);
-    postGain->init(samplerate, 0.02, DB_TO_GAIN(-12.0), SMOOTH_PARAM_LIN);
+    preGain->init(DB_TO_GAIN(0.0));
+    postGain->init(DB_TO_GAIN(-12.0));
     
     inputFilter->prepareToPlay();
     couplingFilter1->prepareToPlay();
@@ -169,7 +169,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample = inputFilter->processHighPass(sample);
         sample *= 0.9f;
 
-        sample = (sample_t)DB_TO_GAIN(preGain->nextValue()) * sample;
+        sample = std::pow((sample_t)preGain->nextValue() * 0.1f, 2.0f) * sample;
 
 
         // Second Tube first stage of saturation, stop there for clean tone

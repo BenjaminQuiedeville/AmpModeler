@@ -14,15 +14,15 @@
 
 #include <vector>
 
+#define RESONANCE_FREQUENCY 250.0
+#define RESONANCE_Q         0.7
+#define PRESENCE_FREQUENCY  500.0
+#define PRESENCE_Q          0.4
+
 
 /*
 RESTANT : 
-    input processing 
     gate
-    pre boost
-    amp {input disto EQ}
-    Compression 
-    re EQ
 */
 
 enum Params {
@@ -113,9 +113,11 @@ public:
     Biquad *resonanceFilter;
     Biquad *presenceFilter;
 
-	SmoothParam *masterVolume;
+	SmoothParamLinear *masterVolume;
 
-    double samplerate;
+    double samplerate = 44100.0;
+
+    sample_t *intputSignalCopy = nullptr;
 
 private:
 

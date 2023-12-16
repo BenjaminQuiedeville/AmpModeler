@@ -49,20 +49,19 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     FILE *wavFile = fopen(filepath.data(), "rb");
 
     if (ferror(wavFile)) { 
-        // fclose(wavfile);    
         return 0; 
     }
 
     fread(riffString, 1, 4, wavFile);
 
-    assert(riffString[0] == 'R' || riffString[1] == 'I' 
-        || riffString[2] == 'F' || riffString[3] == 'F');
+    // assert(riffString[0] == 'R' || riffString[1] == 'I' 
+    //     || riffString[2] == 'F' || riffString[3] == 'F');
 
-    // if (riffString[0] != 'R' || riffString[1] != 'I' 
-    //  || riffString[2] != 'F' || riffString[3] != 'F')
-    // {
-    //     return 0;
-    // }
+    assert(memcmp(riffString, "RIFF", 4) == 0);
+    if ((riffString, "RIFF", 4) != 0) {
+        fclose(wavFile);
+        return 0;
+    }
 
     fread((char *)(&ChunkSize), 1, 4, wavFile);
     fread(format, 1, 4, wavFile);
@@ -89,17 +88,6 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     assert(byteRate == (samplerate * NumChannels * bitsPerSample/8));
     assert(BlockAlign == (NumChannels * bitsPerSample/8));
     
-    // if (NumChannels != 1) { 
-    //     return 0; 
-    // }
-
-    // if (byteRate != (samplerate * NumChannels * bitsPerSample/8)) {
-    //     printf("byte Rate errone");
-    // }
-
-    // if (BlockAlign != (NumChannels * bitsPerSample/8)) {
-    //     printf("BlockAlign Rate errone");
-    // }
 
     while (temp[0] != 'd') {
         fread(temp, 1, 1, wavFile);
@@ -109,9 +97,11 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     temp[0] = 0;
     fread(SubChunk2ID+1, 1, 3, wavFile);
     
+    // if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a'
+    //  || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a')
+    assert(memcmp(SubChunk2ID, "data", 4) == 0);
 
-    if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a'
-     || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a')
+    if (memcmp(SubChunk2ID, "data", 4) == 0)
     {
         while (temp[0] != 'd') {
             fread(temp, 1, 1, wavFile);
@@ -121,20 +111,13 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
         fread(SubChunk2ID+1, 1, 3, wavFile);
 
     }
-
-    assert((SubChunk2ID[0] == 'd' || SubChunk2ID[1] == 'a' 
-         || SubChunk2ID[2] == 't' || SubChunk2ID[3] == 'a'));
-
-    // printf("SubChunk2ID = %4s \n", SubChunk2ID);
-    // printf("signalSizeBytes = %d \n", signalSizeBytes);
-
+    
     fread(&signalSizeBytes, 4, 1, wavFile);
     
     size_t sampleSizeBytes = BlockAlign/NumChannels;
     size_t numSamples = signalSizeBytes/sampleSizeBytes;
 
 
-    // std::vector<float> *buffervec = new std::vector<float>()
     *buffer = (float *)calloc(numSamples, sizeof(float));
     assert(buffer != nullptr);
 
@@ -166,14 +149,13 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
             fread(sampleChar, 1, 3, wavFile);
 
             int64_t mask = (int64_t)1 << (bitsPerSample - 1);
-            // uint32_t mask = 0x800000;
             int32_t sampleInt = *(int32_t *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFFFF;
             }
 
-            float sample = sampleInt / BITS_24_MAX / 2.0;
+            sample_t sample = (sample_t)sampleInt / (sample_t)BITS_24_MAX / 2.0f;
 
             (*buffer)[counter] = sample;
             counter++;
@@ -217,15 +199,19 @@ IRLoader::IRLoader() {
     convolutionResultBuffer = fftEngine->createTimeVector();
     overlapAddBuffer = fftEngine->createTimeVector();
 
+    outLevel = new SmoothParamLinear();
+
 }
 
 IRLoader::~IRLoader() {
 
     delete fftEngine;
+    delete outLevel;
+
 }
 
-void IRLoader::init(double _samplerate, int _blockSize) {
-
+void IRLoader::init(double _samplerate, size_t _blockSize) {
+    samplerate = _samplerate;
     initIR = true;
     overlapAddIndex = 0;
     blockSize = _blockSize;
@@ -233,7 +219,7 @@ void IRLoader::init(double _samplerate, int _blockSize) {
     loadIR();
 }
 
-void IRLoader::prepareConvolution(const float *irPtr, int irSize) {
+void IRLoader::prepareConvolution(const float *irPtr, size_t irSize) {
 
 
     FFT::TimeVector irTimeVec = fftEngine->createTimeVector();
@@ -309,7 +295,7 @@ void IRLoader::process(float *input, size_t nSamples) {
     // pffft_transform(fftSetup, inputDftBuffer, inputBufferPadded, nullptr, PFFFT_BACKWARD);
 
     // clear les samples précédents pour éviter le recouvrement avec des samples passés
-    for (size_t i = 0; i < nSamples; i++) {
+    for (int i = 0; i < nSamples; i++) {
         int index = overlapAddIndex - i - 1;
         if (index < 0) { index += nSamples; }
         index %= nSamples;
@@ -319,7 +305,7 @@ void IRLoader::process(float *input, size_t nSamples) {
 
     // mettre les samples dans l'overlap add
     for (size_t i = 0; i < convolutionResultSize; i++) {
-        int index = (overlapAddIndex + i) % convolutionResultSize;
+        size_t index = (overlapAddIndex + i) % convolutionResultSize;
         overlapAddBuffer[index] += convolutionResultBuffer[i];
     }
 

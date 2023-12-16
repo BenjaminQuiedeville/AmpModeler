@@ -53,8 +53,8 @@ struct PreampDistorsion {
     void prepareToPlay(double samplerate, int blockSize);
     void process(float *buffer, size_t nSamples);
 
-    SmoothParam *preGain;
-    SmoothParam *postGain;
+    SmoothParamLinear *preGain;
+    SmoothParamLinear *postGain;
     double samplerate;
     float stageGain;
     float outputAttenuation = (float)DB_TO_GAIN(-20.0);

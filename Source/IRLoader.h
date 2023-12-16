@@ -37,14 +37,16 @@ struct IRLoader {
     IRLoader();
     ~IRLoader();
 
-    void init(double samplerate, int blockSize);
+    void init(double samplerate, size_t blockSize);
 
     void loadIR();
-    void prepareConvolution(const float* irPtr, int irSize);
+    void prepareConvolution(const float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
-    int blockSize;
+    size_t blockSize;
     size_t convolutionResultSize;
+
+    double samplerate;
 
     int overlapAddIndex;
 
@@ -58,7 +60,7 @@ struct IRLoader {
     
     bool initIR;
 
-    SmoothParam outLevel; 
+    SmoothParamLinear *outLevel; 
 };
 
 static size_t parseWavFile(const std::string& filepath, float **buffer);

@@ -13,79 +13,85 @@
 
 #include <math.h>
 #include <cstdint>
+#include "OnepoleFilter.h"
 
-enum CurveType {
-    SMOOTH_PARAM_LIN,
-    SMOOTH_PARAM_TANH,
-    SMOOTH_PARAM_ALGEBRAIC,
-};
-
-// formula for exp curve : f(x, start, stop, tau) = (start - stop) * exp(-x/tau) + start
-
-struct SmoothParam {
+#define SMOOTH_PARAM_TIME 0.02
 
 
-    SmoothParam() {}
-    ~SmoothParam() {}
+struct SmoothParamLinear {
 
-    void init(double _samplerate, double _rampTimeMs, double initValue, uint8_t _curveType) {
-        samplerate = _samplerate;
-        rampTimeMs = _rampTimeMs;
-
+    void init(double initValue) {
+        target = initValue;
         currentValue = initValue;
-        curveType = _curveType;
+        prevTarget = target;
+
+        normValue = 0.0;
         isSmoothing = false;
     }
 
-    void newTarget(double _target) {
-        prevTarget = currentTarget;
-        currentTarget = _target;
+    void newTarget(double newTarget, double rampTimeMs, double samplerate) {
+        prevTarget = target;
+        target = newTarget;
         stepHeight = 1.0 / (rampTimeMs * 0.001 * samplerate);
 
-        currentNormValue = 0.0;
         isSmoothing = true;
+    }
+
+    double nextValue() {
+
+        if (!isSmoothing) { return target; }
+
+        normValue += stepHeight;
+        if (normValue >= 1.0) {
+            isSmoothing = false;
+            normValue = 1.0;
+            currentValue = target;
+            return currentValue;
+        }
+
+        currentValue = normValue * (target - prevTarget) + prevTarget;
+        return currentValue;
+    }
+
+    double target;
+    double prevTarget;
+    double stepHeight;
+    double normValue;
+    double currentValue;
+
+    bool isSmoothing;
+};  
+
+
+struct SmoothParamIIR {
+
+    void init(double initValue) {
+        currentValue = initValue;
+        target = initValue;
+        y1 = initValue;
+
+        b0 = 1.0;
+        a1 = 0.0;
+    }
+    
+    void newTarget(double newTarget, double tauMs, double samplerate) {
+        b0 = std::sin(juce::MathConstants<double>::pi / samplerate * tauMs * 0.001);
+        a1 = b0 - 1.0;
+        target = newTarget;
     }
     
     double nextValue() {
-
-        if (!isSmoothing) { return currentTarget; }
-
-        switch (curveType) {
-            case SMOOTH_PARAM_LIN:
-                currentValue = currentNormValue * (currentTarget - prevTarget) + prevTarget;
-
-                break;
-
-            case SMOOTH_PARAM_TANH:
-            case SMOOTH_PARAM_ALGEBRAIC:
-                double x = 2.0 * (currentNormValue * 2.0 - 1.0);
-                double algebraic = x / (1.0 + abs(x));
-                double normalized = (algebraic * 1.5 + 1.0) * 0.5;
-
-                currentValue = normalized * (currentTarget - prevTarget) + prevTarget;
-                break;
-        }
-
-        currentNormValue += stepHeight;
-        if (currentNormValue >= 1.0) {
-            isSmoothing = false;
-            currentNormValue = 1.0;
-        }
+        currentValue = target * b0 - y1 * a1;
+        y1 = currentValue;
 
         return currentValue;
     }
 
-    double samplerate;
-    double stepHeight;
-    double currentNormValue;
     double currentValue;
-    double currentTarget;
-    double prevTarget;
-    double rampTimeMs;
+    double target;
+    double b0, a1;
+    double y1;
 
-    uint8_t curveType;
-
-    bool isSmoothing;
 };
 
 #endif // PARAM_SMOOTHER_H

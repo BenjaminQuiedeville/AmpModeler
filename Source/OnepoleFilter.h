@@ -25,7 +25,7 @@ struct OnepoleFilter {
 
     void setCoefficients(double frequency, double samplerate) {
         b0 = sin(juce::MathConstants<float>::pi / samplerate * frequency);
-        a1 = b0 - 1.0f;
+        a1 = b0 - 1.0;
     }
 
     inline sample_t processLowPass(sample_t sample) {

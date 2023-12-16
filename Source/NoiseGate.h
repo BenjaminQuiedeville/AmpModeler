@@ -18,7 +18,7 @@ struct NoiseGate {
     NoiseGate() {};
 
     void prepareToPlay(double _samplerate);
-    void process(float *input, size_t nSamples);
+    void process(sample_t *input, sample_t *sidechain, size_t nSamples);
 
     float threshold;
 
@@ -34,5 +34,5 @@ struct NoiseGate {
     double releaseTimeMs = 15.0;
 
     bool isOpen;
-    SmoothParam gateGain;
+    SmoothParamIIR gateGain;
 };
