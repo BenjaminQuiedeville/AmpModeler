@@ -13,6 +13,7 @@
 #include "Biquad.h"
 
 #include <vector>
+#include <random>
 
 #define RESONANCE_FREQUENCY 250.0
 #define RESONANCE_Q         0.7
@@ -22,8 +23,35 @@
 
 /*
 RESTANT : 
-    gate
+    gate 
+
+    test sample player ? 
 */
+
+struct TestOsc {
+
+    void setFreq(double freq, double samplerate) {
+        a = 2.0f * (float)sin(juce::MathConstants<double>::pi * freq/samplerate);
+    }
+
+    sample_t generateNextSample() {
+        
+        if (doNoise) {
+            return gain * (std::rand() / RAND_MAX * 2.0f - 1.0f) ;
+        }
+            
+        s[0] = s[0] - a*s[1];
+        s[1] = s[1] + a*s[0];
+        return s[0] * gain;
+    }
+
+    sample_t s[2] = {0.5f, 0.0f};
+    sample_t a = 0.0f;
+    sample_t gain = 0.01f;
+    bool doNoise = false;
+};
+
+
 
 enum Params {
     GATE_THRESH,
@@ -42,7 +70,7 @@ enum Params {
     N_PARAMS
 };
 
-const std::vector<juce::String> ParamsID = {
+const std::vector<juce::String> ParamIDs = {
     "GATE_THRESH",
     "BITE",
     "TIGHT",
@@ -115,9 +143,12 @@ public:
 
 	SmoothParamLinear *masterVolume;
 
+    TestOsc *testOsc;
+
     double samplerate = 44100.0;
 
     sample_t *intputSignalCopy = nullptr;
+    bool doTestOsc = false;
 
 private:
 

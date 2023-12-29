@@ -24,42 +24,39 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     volumeKnob       = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
 
 
-    // createKnob(gateSlider, gateSliderLabel, gateSliderAttachment, ParamsID[GATE_THRESH]);
+    createKnob(gateKnob.get(), ParamIDs[GATE_THRESH]);
+    createKnob(boostTopKnob.get(), ParamIDs[BITE]);
+    createKnob(boostTightKnob.get(), ParamIDs[TIGHT]);
 
-    // createKnob(gainSlider, gainSliderLabel, gainSliderAttachment, ParamsID[PREAMP_GAIN]);
+    createKnob(gainKnob.get(), ParamIDs[PREAMP_GAIN]);
 
-    // createKnob(inputFilterSlider, inputFilterSliderLabel, inputFilterSliderAttachment, ParamsID[INPUT_FILTER]);
+    createKnob(inputFilterKnob.get(), ParamIDs[INPUT_FILTER]);
 
-    // createKnob(bassEQSlider, bassEQSliderLabel, bassEQSliderAttachment, ParamsID[TONESTACK_BASS]);
-    // createKnob(midEQSlider, midEQSliderLabel, midEQSliderAttachment, ParamsID[TONESTACK_MIDDLE]);
-    // createKnob(trebbleEQSlider, trebbleEQSliderLabel, trebbleEQSliderAttachment, ParamsID[TONESTACK_TREBBLE]);
+    createKnob(bassEQKnob.get(), ParamIDs[TONESTACK_BASS]);
+    createKnob(midEQKnob.get(), ParamIDs[TONESTACK_MIDDLE]);
+    createKnob(trebbleEQKnob.get(), ParamIDs[TONESTACK_TREBBLE]);
 
-    // createKnob(preampVolumeSlider, preampVolumeSliderLabel, preampVolumeSliderAttachment, ParamsID[PREAMP_VOLUME]);
+    createKnob(preampVolumeKnob.get(), ParamIDs[PREAMP_VOLUME]);
 
-    // createKnob(volumeSlider, volumeSliderLabel, volumeSliderAttachment, ParamsID[MASTER_VOLUME]);
+    createKnob(resonanceKnob.get(), ParamIDs[RESONANCE]);
+    createKnob(presenceKnob.get(), ParamIDs[PRESENCE]);
 
-    createKnob(gateKnob.get(), ParamsID[GATE_THRESH]);
-    createKnob(boostTopKnob.get(), ParamsID[BITE]);
-    createKnob(boostTightKnob.get(), ParamsID[TIGHT]);
-
-    createKnob(gainKnob.get(), ParamsID[PREAMP_GAIN]);
-
-    createKnob(inputFilterKnob.get(), ParamsID[INPUT_FILTER]);
-
-    createKnob(bassEQKnob.get(), ParamsID[TONESTACK_BASS]);
-    createKnob(midEQKnob.get(), ParamsID[TONESTACK_MIDDLE]);
-    createKnob(trebbleEQKnob.get(), ParamsID[TONESTACK_TREBBLE]);
-
-    createKnob(preampVolumeKnob.get(), ParamsID[PREAMP_VOLUME]);
-
-    createKnob(resonanceKnob.get(), ParamsID[RESONANCE]);
-    createKnob(presenceKnob.get(), ParamsID[PRESENCE]);
-
-    createKnob(volumeKnob.get(), ParamsID[MASTER_VOLUME]);
-
+    createKnob(volumeKnob.get(), ParamIDs[MASTER_VOLUME]);
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(); };
     addAndMakeVisible(irLoadButton);
+
+    testOscToggle.onClick = [&]() { 
+        audioProcessor.doTestOsc = testOscToggle.getToggleState(); 
+    }; 
+
+    testOscNoiseToggle.onClick = [&]() { 
+        audioProcessor.testOsc->doNoise = testOscNoiseToggle.getToggleState(); 
+    };
+
+    addAndMakeVisible(testOscToggle);
+    addAndMakeVisible(testOscNoiseToggle);
+
 
     setSize (1200, 600);
 }
@@ -76,18 +73,18 @@ void AmpModelerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AmpModelerAudioProcessorEditor::resized() {
     
-    const int knobSize = 100;
-    const int horizontalMargin = 25;
-    const int verticalMargin = 50;
+    int knobSize = 100;
+    int horizontalMargin = 25;
+    int verticalMargin = 50;
 
-    const int HEIGHT = getHeight() - 2*verticalMargin;
-    const int WIDTH = getWidth() - 2*horizontalMargin;
+    int HEIGHT = getHeight() - 2*verticalMargin;
+    int WIDTH = getWidth() - 2*horizontalMargin;
 
-    const int nRows = 4;
-    const int nCols = 8;
+    int nRows = 4;
+    int nCols = 8;
 
-    auto computeXcoord = [&](int col) { return horizontalMargin + WIDTH/nCols * col; };
-    auto computeYcoord = [&](int row) { return verticalMargin + HEIGHT/nRows * row; };
+    auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
+    auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
 
     gateKnob->slider.setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
     gateKnob->label.setBounds(gateKnob->slider.getX(), 
@@ -168,6 +165,8 @@ void AmpModelerAudioProcessorEditor::resized() {
 
     irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
 
+    testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
+    testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
 }
 
 

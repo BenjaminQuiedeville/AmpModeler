@@ -14,25 +14,39 @@
 #include "common.h"
 #include "SmoothParam.h"
 
+#define GATE_BUFFER_LENGTH_SECONDS 0.1
+
+/*
+buffer de taille fixe, 
+*/
+
 struct NoiseGate {
-    NoiseGate() {};
+    
+    NoiseGate() {
+        gateGain = new SmoothParamIIR();
+    }
+    
+    ~NoiseGate() {
+        delete gateGain;
+        
+        free(gateBuffer);
+    }
+
 
     void prepareToPlay(double _samplerate);
     void process(sample_t *input, sample_t *sidechain, size_t nSamples);
 
-    float threshold;
-
-    float samplerate;
-    size_t windowSize; //10ms
-
-    float currentRms;
-    juce::AudioBuffer<sample_t> rmsBuffer;
-    float *rmsBufferPtr;
-    size_t rmsBufferIndex;
-
-    double attackTimeMs  = 0.1;
+    double samplerate;
+    sample_t *gateBuffer = nullptr;
+    size_t gateBufferLength = 0;
+    int32_t gateBufferIndex = 0;
+    
+    double absoluteSum = 0.0;
+    
+    SmoothParamIIR *gateGain;
+    double threshold = 0.0;
+    
+    double attackTimeMs = 1.0;
     double releaseTimeMs = 15.0;
 
-    bool isOpen;
-    SmoothParamIIR gateGain;
 };
