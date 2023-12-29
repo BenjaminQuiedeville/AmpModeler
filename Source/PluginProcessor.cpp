@@ -150,7 +150,7 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     presenceFilter->setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, 0.0, sampleRate);
 
     if (!intputSignalCopy) {
-        intputSignalCopy = (sample_t *)malloc(samplesPerBlock * sizeof(sample_t));
+        intputSignalCopy = (sample_t *)calloc(samplesPerBlock,  sizeof(sample_t));
     }
 
     testOsc->setFreq(100.0, sampleRate);
@@ -212,7 +212,6 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             audioPtr[i] = testOsc->generateNextSample();
         }
     }
-
 
     memcpy(intputSignalCopy, audioPtr, numSamples);
 

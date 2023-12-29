@@ -19,12 +19,12 @@ struct Knob {
 class AmpModelerAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
-	AmpModelerAudioProcessorEditor (AmpModelerAudioProcessor&);
-	~AmpModelerAudioProcessorEditor() override;
+    AmpModelerAudioProcessorEditor (AmpModelerAudioProcessor&);
+    ~AmpModelerAudioProcessorEditor() override;
 
-	//==============================================================================
-	void paint (juce::Graphics&) override;
-	void resized() override;
+    //==============================================================================
+    void paint (juce::Graphics&) override;
+    void resized() override;
 
 private:
 

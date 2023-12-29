@@ -157,7 +157,7 @@ void AmpModelerAudioProcessorEditor::resized() {
 
 
 
-	volumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
+    volumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
     volumeKnob->label.setBounds(volumeKnob->slider.getX(), 
                                 volumeKnob->slider.getY() - 20, 
                                 volumeKnob->slider.getWidth(), 

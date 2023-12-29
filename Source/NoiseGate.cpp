@@ -40,10 +40,8 @@ void NoiseGate::process(sample_t *input, sample_t *sidechain, size_t nSamples) {
         gateBufferIndex = (gateBufferIndex+1) % gateBufferLength;
         
         absoluteSum += std::abs(gateBuffer[gateBufferIndex];
-        
-        double average = absoluteSum / gateBufferLength;
-        
-        bool isOpen = GAIN_TO_DB(average) > threshold;
+                
+        bool isOpen = (absoluteSum / gateBufferLength) > threshold;
         gateGain->newTarget(isOpen ? 1.0 : 0.0, 
                             isOpen ? attackTimeMs : releaseTimeMs,
                             samplerate);

@@ -16,10 +16,6 @@
 
 #define GATE_BUFFER_LENGTH_SECONDS 0.1
 
-/*
-buffer de taille fixe, 
-*/
-
 struct NoiseGate {
     
     NoiseGate() {
@@ -27,8 +23,8 @@ struct NoiseGate {
     }
     
     ~NoiseGate() {
+    
         delete gateGain;
-        
         free(gateBuffer);
     }
 
@@ -37,6 +33,8 @@ struct NoiseGate {
     void process(sample_t *input, sample_t *sidechain, size_t nSamples);
 
     double samplerate;
+    double threshold = 0.0;
+    
     sample_t *gateBuffer = nullptr;
     size_t gateBufferLength = 0;
     int32_t gateBufferIndex = 0;
@@ -44,7 +42,6 @@ struct NoiseGate {
     double absoluteSum = 0.0;
     
     SmoothParamIIR *gateGain;
-    double threshold = 0.0;
     
     double attackTimeMs = 1.0;
     double releaseTimeMs = 15.0;
