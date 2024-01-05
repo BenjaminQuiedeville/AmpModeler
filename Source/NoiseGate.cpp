@@ -34,12 +34,12 @@ void NoiseGate::process(sample_t *input, sample_t *sidechain, size_t nSamples) {
 
     for (size_t i = 0; i < nSamples; i++) {
         
-        absoluteSum -= std::abs(gateBuffer[gateBufferIndex];
+        absoluteSum -= std::abs(gateBuffer[gateBufferIndex]);
         
         gateBuffer[gateBufferIndex] = sidechain[i];
         gateBufferIndex = (gateBufferIndex+1) % gateBufferLength;
         
-        absoluteSum += std::abs(gateBuffer[gateBufferIndex];
+        absoluteSum += std::abs(gateBuffer[gateBufferIndex]);
                 
         bool isOpen = (absoluteSum / gateBufferLength) > threshold;
         gateGain->newTarget(isOpen ? 1.0 : 0.0, 
