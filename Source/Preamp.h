@@ -56,8 +56,8 @@ struct PreampDistorsion {
     SmoothParamLinear *preGain;
     SmoothParamLinear *postGain;
     double samplerate;
-    float stageGain;
-    float outputAttenuation = (float)DB_TO_GAIN(-20.0);
+    sample_t stageGain;
+    sample_t outputAttenuation = (sample_t)DB_TO_GAIN(-20.0);
 
     OnepoleFilter *inputFilter;
 
@@ -75,20 +75,8 @@ struct PreampDistorsion {
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;
     uint8_t upSampleFactor;
-    float headroom = 10.0f;
+    sample_t headroom = 10.0f;
 
 };
 
-    // sample_t expappr(sample_t x) {
-
-    //     sample_t x2 = x*x;
-    //     sample_t x3 = x2*x;
-    //     sample_t x4 = x3*x;
-    //     sample_t x5 = x4*x;
-    //     return 1.0f + x + x2/2.0f + x3/6.0f + x4/24.0f + x5/120.0f; 
-    // }
-
-    // sample_t tanhApprox(sample_t x) {
-    //     return (expappr(x) - expappr(-x))/(expappr(x) + expappr(-x)); 
-    // }
 #endif // PREAMP_H

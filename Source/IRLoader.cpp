@@ -14,7 +14,6 @@
 #include <assert.h>
 #include <fstream>
 #include <iostream>
-#include <vector>
 
 #ifndef JUCE_MODAL_LOOPS_PERMITTED
     #define JUCE_MODAL_LOOPS_PERMITTED 1
@@ -31,9 +30,9 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
     char temp[1] = {0};
     char riffString[4];
-    int32_t ChunkSize; 
+    int32_t ChunkSize;
     char format[4];
-
+    
     char SubChunk1ID[4];
     int32_t SubChunk1Size;
     int16_t AudioFormat;
@@ -45,11 +44,11 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     
     char SubChunk2ID[4];
     int32_t signalSizeBytes;
-
+    
     FILE *wavFile = fopen(filepath.data(), "rb");
-
-    if (ferror(wavFile)) { 
-        return 0; 
+    
+    if (ferror(wavFile)) {
+        return 0;
     }
 
     fread(riffString, 1, 4, wavFile);
