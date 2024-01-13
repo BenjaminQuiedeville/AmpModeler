@@ -39,7 +39,6 @@ target_sources(${PROJECT_NAME}
     PRIVATE 
         Source/PluginProcessor.cpp
         Source/PluginEditor.cpp 
-        Source/Biquad.cpp 
         Source/IRLoader.cpp 
         Source/NoiseGate.cpp 
         Source/Preamp.cpp 
