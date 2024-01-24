@@ -12,7 +12,6 @@
 #define IR_LOADER_H
 
 
-// #include "JuceHeader.h"
 #include "common.h"
 #include "SmoothParam.h"
 #include "pffft/pffft.hpp"

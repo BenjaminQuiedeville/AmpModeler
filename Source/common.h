@@ -11,7 +11,9 @@
 #ifndef AMP_MODELER_COMMON
 #define AMP_MODELER_COMMON
 
-#include "JuceHeader.h"
+#include "juce_core/juce_core.h"
+#include "juce_audio_processors/juce_audio_processors.h"
+#include "juce_dsp/juce_dsp.h"
 
 typedef float sample_t;
 

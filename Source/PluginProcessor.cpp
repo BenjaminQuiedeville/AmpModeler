@@ -1,6 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "JucePluginDefines.h"
+// #include "JucePluginDefines.h"
 
 //==============================================================================
 AmpModelerAudioProcessor::AmpModelerAudioProcessor()

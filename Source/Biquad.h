@@ -11,7 +11,6 @@
 #ifndef BIQUAD_H
 #define BIQUAD_H
 
-#include "JuceHeader.h"
 #include "common.h"
 
 enum FilterType {

@@ -11,7 +11,7 @@
 #ifndef ONEPOLE_H
 #define ONEPOLE_H
 
-#include "JuceHeader.h"
+#include "juce_core/juce_core.h"
 #include "common.h"
 
 

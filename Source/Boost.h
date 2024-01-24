@@ -11,7 +11,6 @@
 #ifndef PREBOOST_H
 #define PREBOOST_H
 
-#include "JuceHeader.h"
 #include "common.h"
 #include "Biquad.h"
 #include "OnepoleFilter.h"

@@ -11,7 +11,6 @@
 #ifndef TONE_STACK_H
 #define TONE_STACK_H
 
-#include "JuceHeader.h"
 #include "Biquad.h"
 
 struct EQComponents {

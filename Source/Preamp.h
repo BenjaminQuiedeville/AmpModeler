@@ -11,7 +11,7 @@
 #ifndef PREAMP_H
 #define PREAMP_H
 
-#include "JuceHeader.h"
+#include "juce_dsp/juce_dsp.h"
 
 #include "common.h"
 #include "OnepoleFilter.h"

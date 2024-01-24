@@ -1,6 +1,7 @@
 #pragma once
 
-#include "JuceHeader.h"
+#include <juce_audio_processors/juce_audio_processors.h>
+
 #include "common.h"
 #include "SmoothParam.h"
 
@@ -14,6 +15,10 @@
 
 #include <vector>
 #include <random>
+
+#ifndef  JucePlugin_Name
+    #define JucePlugin_Name "AmpModeler"
+#endif
 
 #define RESONANCE_FREQUENCY 250.0
 #define RESONANCE_Q         0.7
