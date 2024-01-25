@@ -198,14 +198,11 @@ IRLoader::IRLoader() {
     convolutionResultBuffer = fftEngine->createTimeVector();
     overlapAddBuffer = fftEngine->createTimeVector();
 
-    outLevel = new SmoothParamLinear();
-
 }
 
 IRLoader::~IRLoader() {
 
     delete fftEngine;
-    delete outLevel;
 
 }
 

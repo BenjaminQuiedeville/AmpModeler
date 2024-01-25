@@ -53,21 +53,20 @@ struct PreampDistorsion {
     void prepareToPlay(double samplerate, int blockSize);
     void process(float *buffer, size_t nSamples);
 
-    SmoothParamLinear *preGain;
-    SmoothParamLinear *postGain;
+    SmoothParamLinear preGain;
+    SmoothParamLinear postGain;
     double samplerate;
     sample_t stageGain;
     sample_t outputAttenuation = (sample_t)DB_TO_GAIN(-20.0);
 
-    OnepoleFilter *inputFilter;
+    OnepoleFilter inputFilter;
 
-    OnepoleFilter *couplingFilter1;
-    OnepoleFilter *couplingFilter2;
-    OnepoleFilter *couplingFilter3;
+    OnepoleFilter couplingFilter1;
+    OnepoleFilter couplingFilter2;
+    OnepoleFilter couplingFilter3;
 
-    OnepoleFilter *stageOutputFilter1;
-    OnepoleFilter *stageOutputFilter2;
-
+    OnepoleFilter stageOutputFilter1;
+    OnepoleFilter stageOutputFilter2;
 
     Biquad *tubeBypassFilter1;
     Biquad *tubeBypassFilter2;

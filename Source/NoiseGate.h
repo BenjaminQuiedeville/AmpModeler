@@ -17,13 +17,10 @@
 
 struct NoiseGate {
     
-    NoiseGate() {
-        gateGain = new SmoothParamIIR();
-    }
+    NoiseGate() {}
     
     ~NoiseGate() {
     
-        delete gateGain;
         free(gateBuffer);
     }
 
@@ -44,7 +41,7 @@ struct NoiseGate {
             }
         }
         
-        gateGain->init(0.0);
+        gateGain.init(0.0);
     }
 
     void process(sample_t *input, sample_t *sidechain, size_t nSamples) {
@@ -59,11 +56,11 @@ struct NoiseGate {
             absoluteSum += std::abs(gateBuffer[gateBufferIndex]);
                     
             bool isOpen = (absoluteSum / gateBufferLength) > threshold;
-            gateGain->newTarget(isOpen ? 1.0 : 0.0, 
+            gateGain.newTarget(isOpen ? 1.0 : 0.0, 
                                 isOpen ? attackTimeMs : releaseTimeMs,
                                 samplerate);
             
-            input[i] *= (sample_t)gateGain->nextValue();
+            input[i] *= (sample_t)gateGain.nextValue();
                         
         }    
     }
@@ -77,7 +74,7 @@ struct NoiseGate {
     
     double absoluteSum = 0.0;
     
-    SmoothParamIIR *gateGain;
+    SmoothParamIIR gateGain;
     
     double attackTimeMs = 1.0;
     double releaseTimeMs = 15.0;

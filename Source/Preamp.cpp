@@ -78,16 +78,8 @@ PreampDistorsion::PreampDistorsion() {
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
 
-    preGain  = new SmoothParamLinear();
-    postGain = new SmoothParamLinear();
-
-    inputFilter     = new OnepoleFilter();
-    couplingFilter1 = new OnepoleFilter();
-    couplingFilter2 = new OnepoleFilter();
-    couplingFilter3 = new OnepoleFilter();
-
-    stageOutputFilter1 = new OnepoleFilter();
-    stageOutputFilter2 = new OnepoleFilter();
+    preGain  = SmoothParamLinear();
+    postGain = SmoothParamLinear();
 
     tubeBypassFilter1 = new Biquad(BIQUAD_HIGHSHELF);
     tubeBypassFilter2 = new Biquad(BIQUAD_HIGHSHELF);
@@ -96,17 +88,6 @@ PreampDistorsion::PreampDistorsion() {
 PreampDistorsion::~PreampDistorsion() {
     delete overSampler;
 
-    delete preGain;
-    delete postGain;
-
-    delete inputFilter;
-    delete couplingFilter1;
-    delete couplingFilter2;
-    delete couplingFilter3;
-
-    delete stageOutputFilter1;
-    delete stageOutputFilter2;
-
     delete tubeBypassFilter1;
     delete tubeBypassFilter2;
 }
@@ -114,21 +95,25 @@ PreampDistorsion::~PreampDistorsion() {
 void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     samplerate = _samplerate;
 
-    preGain->init(DB_TO_GAIN(0.0));
-    postGain->init(DB_TO_GAIN(-12.0));
+    preGain.init(DB_TO_GAIN(0.0));
+    postGain.init(DB_TO_GAIN(-12.0));
     
-    inputFilter->prepareToPlay();
-    couplingFilter1->prepareToPlay();
-    couplingFilter2->prepareToPlay();
-    couplingFilter3->prepareToPlay();
+    inputFilter.prepareToPlay();
+    couplingFilter1.prepareToPlay();
+    couplingFilter2.prepareToPlay();
+    couplingFilter3.prepareToPlay();
+    
+    stageOutputFilter1.prepareToPlay();
+    stageOutputFilter2.prepareToPlay();
+    
 
-    inputFilter->setCoefficients(40.0, samplerate*upSampleFactor);
-    couplingFilter1->setCoefficients(50.0, samplerate*upSampleFactor);
-    couplingFilter2->setCoefficients(50.0, samplerate*upSampleFactor);
-    couplingFilter3->setCoefficients(50.0, samplerate*upSampleFactor);
+    inputFilter.setCoefficients(40.0, samplerate*upSampleFactor);
+    couplingFilter1.setCoefficients(50.0, samplerate*upSampleFactor);
+    couplingFilter2.setCoefficients(50.0, samplerate*upSampleFactor);
+    couplingFilter3.setCoefficients(50.0, samplerate*upSampleFactor);
 
-    stageOutputFilter1->setCoefficients(2000.0, samplerate*upSampleFactor);
-    stageOutputFilter2->setCoefficients(2000.0, samplerate*upSampleFactor);
+    stageOutputFilter1.setCoefficients(2000.0, samplerate*upSampleFactor);
+    stageOutputFilter2.setCoefficients(2000.0, samplerate*upSampleFactor);
 
     tubeBypassFilter1->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
     tubeBypassFilter2->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
@@ -166,17 +151,17 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample *= stageGain;
         sample = waveShaping(sample, 2*headroom);
         
-        sample = inputFilter->processHighPass(sample);
+        sample = inputFilter.processHighPass(sample);
         sample *= 0.9f;
 
-        sample = std::pow((sample_t)preGain->nextValue() * 0.1f, 2.0f) * sample;
+        sample = std::pow((sample_t)preGain.nextValue() * 0.1f, 2.0f) * sample;
 
 
         // Second Tube first stage of saturation, stop there for clean tone
         sample *= stageGain;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
-        sample = couplingFilter1->processHighPass(sample);
+        sample = couplingFilter1.processHighPass(sample);
 
 
         // Third tube stage
@@ -184,20 +169,20 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample *= stageGain;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
-        sample = couplingFilter2->processHighPass(sample);
-        sample = stageOutputFilter1->processLowPass(sample);
+        sample = couplingFilter2.processHighPass(sample);
+        sample = stageOutputFilter1.processLowPass(sample);
 
 
         // Fourth tube stage
         sample *= stageGain;
         sample = waveShaping(sample, headroom);
         // sample *= 0.5f;
-        sample = couplingFilter3->processHighPass(sample);
-        sample = stageOutputFilter2->processLowPass(sample);
+        sample = couplingFilter3.processHighPass(sample);
+        sample = stageOutputFilter2.processLowPass(sample);
 
         sample *= outputAttenuation;
         
-        sample *= (sample_t)DB_TO_GAIN(postGain->nextValue());
+        sample *= (sample_t)DB_TO_GAIN(postGain.nextValue());
         sample /= headroom;
 
         upSampledData[index] = sample;

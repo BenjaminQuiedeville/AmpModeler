@@ -146,9 +146,9 @@ public:
     Biquad *resonanceFilter;
     Biquad *presenceFilter;
 
-	SmoothParamLinear *masterVolume;
+	SmoothParamLinear masterVolume;
 
-    TestOsc *testOsc;
+    TestOsc testOsc;
 
     double samplerate = 44100.0;
 

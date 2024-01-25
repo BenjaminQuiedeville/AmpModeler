@@ -22,36 +22,33 @@
 struct Boost {
 
     Boost() {
-        tightFilter = new OnepoleFilter();
         biteFilter = new Biquad(FilterType::BIQUAD_PEAK);
-        level = new SmoothParamLinear();
     }
 
     ~Boost() {
-        delete tightFilter;
         delete biteFilter;
-        delete level;
     }
 
     void prepareToPlay(double _samplerate) {
         samplerate = _samplerate;
+        tightFilter.prepareToPlay();
         biteFilter->prepareToPlay();
-        level->init(0.0);
+        level.init(0.0);
     }
 
     inline void process(float *buffer, size_t nSamples) {
 
         for (size_t i = 0; i<nSamples; i++) {
             sample_t sample = buffer[i];
-            sample = tightFilter->processHighPass(sample);
+            sample = tightFilter.processHighPass(sample);
             sample = biteFilter->process(sample);
-            buffer[i] = sample * (sample_t)DB_TO_GAIN(level->nextValue());
+            buffer[i] = sample * (sample_t)DB_TO_GAIN(level.nextValue());
         }
     }
 
-    OnepoleFilter *tightFilter;
+    OnepoleFilter tightFilter;
     Biquad *biteFilter;
-    SmoothParamLinear *level;
+    SmoothParamLinear level;
     double samplerate;
 
 };

@@ -51,7 +51,7 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     }; 
 
     testOscNoiseToggle.onClick = [&]() { 
-        audioProcessor.testOsc->doNoise = testOscNoiseToggle.getToggleState(); 
+        audioProcessor.testOsc.doNoise = testOscNoiseToggle.getToggleState(); 
     };
 
     addAndMakeVisible(testOscToggle);

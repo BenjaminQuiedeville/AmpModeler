@@ -59,7 +59,6 @@ struct IRLoader {
     
     bool initIR;
 
-    SmoothParamLinear *outLevel; 
 };
 
 static size_t parseWavFile(const std::string& filepath, float **buffer);
