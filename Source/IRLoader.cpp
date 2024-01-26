@@ -57,7 +57,7 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     //     || riffString[2] == 'F' || riffString[3] == 'F');
 
     assert(memcmp(riffString, "RIFF", 4) == 0);
-    if ((riffString, "RIFF", 4) != 0) {
+    if (memcmp(riffString, "RIFF", 4) != 0) {
         fclose(wavFile);
         return 0;
     }
@@ -100,16 +100,16 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     //  || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a')
     assert(memcmp(SubChunk2ID, "data", 4) == 0);
 
-    if (memcmp(SubChunk2ID, "data", 4) == 0)
-    {
-        while (temp[0] != 'd') {
-            fread(temp, 1, 1, wavFile);
-        }
+    //if (memcmp(SubChunk2ID, "data", 4) == 0)
+    //{
+    //    while (temp[0] != 'd') {
+    //        fread(temp, 1, 1, wavFile);
+    //    }
 
-        SubChunk2ID[0] = temp[0];
-        fread(SubChunk2ID+1, 1, 3, wavFile);
+    //    SubChunk2ID[0] = temp[0];
+    //    fread(SubChunk2ID+1, 1, 3, wavFile);
 
-    }
+    //}
     
     fread(&signalSizeBytes, 4, 1, wavFile);
     
