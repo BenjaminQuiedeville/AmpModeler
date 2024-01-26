@@ -3,15 +3,17 @@ using DelimitedFiles
 
 function main()
 
-    filepath :: String = "SinMix_Hesu412.wav"
+    filepath :: String = "TestImpulseResponsesAuroraDSP/SinMix_Hesu412.wav"
+    
 
-    (IR, _, _, _) = WAV.wavread(filepath, format = "single")
+    (IR, _, _, _) = WAV.wavread(filepath, format = "double")
 
 
     IR = Float32.(IR)
     @show size(IR)
     @show typeof(IR)
-    writedlm("baseIR.txt", IR', ',')
+    @show IR[1]
+    writedlm("experiments/baseIR.txt", IR', ',')
 
 end 
 main()
