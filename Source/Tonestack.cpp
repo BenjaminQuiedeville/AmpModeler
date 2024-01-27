@@ -10,7 +10,7 @@
 
 #include "Tonestack.h"
 
-void Tonestack::updateCoefficients(float t, float m, float l) {
+void Tonestack::updateCoefficients(float t, float m, float l, double samplerate) {
 
     double L = std::exp((l-1.0)*3.4);
 

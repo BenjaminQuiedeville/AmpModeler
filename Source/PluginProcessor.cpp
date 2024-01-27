@@ -128,7 +128,7 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     samplerate = sampleRate;
 
     noiseGate->prepareToPlay(sampleRate);
-    preBoost->prepareToPlay(sampleRate);
+    preBoost->prepareToPlay();
 
     preamp->prepareToPlay(sampleRate, samplesPerBlock);
 
@@ -256,9 +256,6 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
 void AmpModelerAudioProcessor::initParameters() {
 
     noiseGate->threshold = *apvts->getRawParameterValue(ParamIDs[GATE_THRESH]);
-
-    preBoost->level.newTarget(*apvts->getRawParameterValue(ParamIDs[PRE_BOOST]), 
-                               SMOOTH_PARAM_TIME, samplerate);
                                
     preBoost->tightFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[TIGHT]), samplerate);
     preBoost->biteFilter->setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, 
@@ -271,7 +268,7 @@ void AmpModelerAudioProcessor::initParameters() {
     float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
     float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
     float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
-    toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain);
+    toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
 
 
     preamp->inputFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[INPUT_FILTER]), 
@@ -316,11 +313,6 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
         return;
     }
 
-    if (parameterID == ParamIDs[PRE_BOOST]) {
-        preBoost->level.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
-        return;
-    }
-
     if (parameterID == ParamIDs[INPUT_FILTER]) {
         preamp->inputFilter.setCoefficients(newValue, samplerate*(preamp->upSampleFactor));
         return;
@@ -343,7 +335,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
         float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
         float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
         float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
-        toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain);
+        toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
         return;
     }
 
@@ -374,17 +366,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[BITE], "Bite", 0.0f, 20.0f, 0.0f
+        ParamIDs[BITE], "Bite", 0.0f, 30.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[TIGHT], "Tight", 20.0f, 1000.0f, 0.0f
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PRE_BOOST], "Boost", 0.0f, 20.0f, 0.0f
-    ));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PREAMP_GAIN], "Pre Gain", 0.0f, 10.0f, 0.0f
+        ParamIDs[PREAMP_GAIN], "Pre Gain", 0.0f, 10.0f, 5.0f
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

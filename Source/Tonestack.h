@@ -51,8 +51,7 @@ struct Tonestack {
 
     void prepareToPlay(double _samplerate) {
 
-        samplerate = _samplerate;
-        updateCoefficients(0.5, 0.5, 0.5);
+        updateCoefficients(0.5, 0.5, 0.5, _samplerate);
 
         x1 = 0.0;
         x2 = 0.0;
@@ -63,7 +62,7 @@ struct Tonestack {
         y3 = 0.0;
     }
 
-    void updateCoefficients(float t, float m, float l);
+    void updateCoefficients(float t, float m, float l, double samplerate);
 
     void process(sample_t *signal, size_t nSamples) {
         for (size_t i = 0; i < nSamples; i++) {
@@ -92,25 +91,24 @@ struct Tonestack {
         return outputSample;
     }
 
-    double b0;
-    double b1;
-    double b2;
-    double b3;
+    double b0 = 1.0;
+    double b1 = 0.0;
+    double b2 = 0.0;
+    double b3 = 0.0;
 
-    double a1;
-    double a2;
-    double a3;
+    double a1 = 0.0;
+    double a2 = 0.0;
+    double a3 = 0.0;
 
-    sample_t x1;
-    sample_t x2;
-    sample_t x3;
+    sample_t x1 = 0.0;
+    sample_t x2 = 0.0;
+    sample_t x3 = 0.0;
 
-    sample_t y1;
-    sample_t y2;
-    sample_t y3;
+    sample_t y1 = 0.0;
+    sample_t y2 = 0.0;
+    sample_t y3 = 0.0;
 
     EQComponents *comp;
-    double samplerate;
 };
 
 #endif // TONE_STACK_H

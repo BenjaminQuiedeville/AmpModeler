@@ -16,7 +16,7 @@
 #include "OnepoleFilter.h"
 #include "SmoothParam.h"
 
-#define BOOST_BITE_Q     0.5
+#define BOOST_BITE_Q     0.4
 #define BOOST_BITE_FREQ  1700.0
 
 struct Boost {
@@ -29,11 +29,9 @@ struct Boost {
         delete biteFilter;
     }
 
-    void prepareToPlay(double _samplerate) {
-        samplerate = _samplerate;
+    void prepareToPlay() {
         tightFilter.prepareToPlay();
         biteFilter->prepareToPlay();
-        level.init(0.0);
     }
 
     inline void process(float *buffer, size_t nSamples) {
@@ -42,15 +40,12 @@ struct Boost {
             sample_t sample = buffer[i];
             sample = tightFilter.processHighPass(sample);
             sample = biteFilter->process(sample);
-            buffer[i] = sample * (sample_t)DB_TO_GAIN(level.nextValue());
+            buffer[i] = sample;
         }
     }
 
     OnepoleFilter tightFilter;
     Biquad *biteFilter;
-    SmoothParamLinear level;
-    double samplerate;
-
 };
 
 #endif // PREBOOST_H

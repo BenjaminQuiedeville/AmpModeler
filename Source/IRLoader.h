@@ -42,12 +42,12 @@ struct IRLoader {
     void prepareConvolution(const float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
-    size_t blockSize;
-    size_t convolutionResultSize;
+    size_t blockSize = 0;
+    size_t convolutionResultSize = 0;
 
-    double samplerate;
+    double samplerate = 0.0;
 
-    int overlapAddIndex;
+    int overlapAddIndex = 0;
 
     FFT::FreqVector inputDftBuffer;
     FFT::FreqVector irDftBuffer;
@@ -57,7 +57,7 @@ struct IRLoader {
 
     FFT *fftEngine;
     
-    bool initIR;
+    bool initIR = true;
 
 };
 

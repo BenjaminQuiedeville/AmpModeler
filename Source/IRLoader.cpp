@@ -48,6 +48,7 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     FILE *wavFile = fopen(filepath.data(), "rb");
     
     if (ferror(wavFile)) {
+        fclose(wavFile);
         return 0;
     }
 
@@ -192,11 +193,11 @@ IRLoader::IRLoader() {
 
     fftEngine = new FFT(false);
 
-    inputBufferPadded = fftEngine->createTimeVector();
-    inputDftBuffer = fftEngine->createFreqVector();
-    irDftBuffer = fftEngine->createFreqVector();
-    convolutionResultBuffer = fftEngine->createTimeVector();
-    overlapAddBuffer = fftEngine->createTimeVector();
+    inputBufferPadded          = fftEngine->createTimeVector();
+    inputDftBuffer             = fftEngine->createFreqVector();
+    irDftBuffer                = fftEngine->createFreqVector();
+    convolutionResultBuffer    = fftEngine->createTimeVector();
+    overlapAddBuffer           = fftEngine->createTimeVector();
 
 }
 

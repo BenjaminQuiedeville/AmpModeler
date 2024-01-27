@@ -17,8 +17,6 @@
 
 struct NoiseGate {
     
-    NoiseGate() {}
-    
     ~NoiseGate() {
     
         free(gateBuffer);
@@ -65,7 +63,7 @@ struct NoiseGate {
         }    
     }
 
-    double samplerate;
+    double samplerate = 0.0;
     double threshold = 0.0;
     
     sample_t *gateBuffer = nullptr;

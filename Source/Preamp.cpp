@@ -72,14 +72,10 @@ void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampl
 
 PreampDistorsion::PreampDistorsion() {
     
-    upSampleFactor = 4;
     overSampler = new juce::dsp::Oversampling<sample_t>(
         1, upSampleFactor, 
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
-
-    preGain  = SmoothParamLinear();
-    postGain = SmoothParamLinear();
 
     tubeBypassFilter1 = new Biquad(BIQUAD_HIGHSHELF);
     tubeBypassFilter2 = new Biquad(BIQUAD_HIGHSHELF);
