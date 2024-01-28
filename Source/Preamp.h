@@ -26,20 +26,16 @@
 
 struct OverSampler {
 
-    OverSampler();
-
-    ~OverSampler();
-
     void prepareToPlay(double _samplerate);
 
     void upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize);
     void downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize);
 
-    Biquad *upSampleFilter1;
-    Biquad *upSampleFilter2;
+    Biquad upSampleFilter1 {BIQUAD_LOWPASS};
+    Biquad upSampleFilter2 {BIQUAD_LOWPASS};
     
-    Biquad *downSampleFilter1;
-    Biquad *downSampleFilter2;
+    Biquad downSampleFilter1 {BIQUAD_LOWPASS};
+    Biquad downSampleFilter2 {BIQUAD_LOWPASS};
 
     uint8_t upSampleFactor = 4;
 
@@ -68,8 +64,8 @@ struct PreampDistorsion {
     OnepoleFilter stageOutputFilter1;
     OnepoleFilter stageOutputFilter2;
 
-    Biquad *tubeBypassFilter1 = nullptr;
-    Biquad *tubeBypassFilter2 = nullptr;
+    Biquad tubeBypassFilter1 {BIQUAD_HIGHSHELF};
+    Biquad tubeBypassFilter2 {BIQUAD_HIGHSHELF};
 
     juce::dsp::Oversampling<sample_t> *overSampler;
     AudioBlock overSampledBlock;

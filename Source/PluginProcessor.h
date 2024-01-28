@@ -141,8 +141,8 @@ public:
     Tonestack *toneStack;
     IRLoader *irLoader;
 
-    Biquad *resonanceFilter;
-    Biquad *presenceFilter;
+    Biquad resonanceFilter {BIQUAD_LOWSHELF};
+    Biquad presenceFilter {BIQUAD_HIGHSHELF};
 
 	SmoothParamLinear masterVolume;
 

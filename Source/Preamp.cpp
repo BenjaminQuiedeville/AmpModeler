@@ -12,33 +12,18 @@
 #include <memory>
 #include <assert.h>
 
-OverSampler::OverSampler() {
-    upSampleFilter1 = new Biquad(BIQUAD_LOWPASS);
-    upSampleFilter2 = new Biquad(BIQUAD_LOWPASS);
-
-    downSampleFilter1 = new Biquad(BIQUAD_LOWPASS);
-    downSampleFilter2 = new Biquad(BIQUAD_LOWPASS);
-}
-
-OverSampler::~OverSampler() {
-    delete upSampleFilter1;
-    delete upSampleFilter2;
-
-    delete downSampleFilter1;
-    delete downSampleFilter2;
-}
 
 void OverSampler::prepareToPlay(double _samplerate) {
 
-    upSampleFilter1->prepareToPlay();
-    upSampleFilter2->prepareToPlay();
-    downSampleFilter1->prepareToPlay();
-    downSampleFilter2->prepareToPlay();
+    upSampleFilter1.prepareToPlay();
+    upSampleFilter2.prepareToPlay();
+    downSampleFilter1.prepareToPlay();
+    downSampleFilter2.prepareToPlay();
 
-    upSampleFilter1->setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
-    upSampleFilter2->setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
-    downSampleFilter1->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
-    downSampleFilter2->setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
+    upSampleFilter1.setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
+    upSampleFilter2.setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
+    downSampleFilter1.setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
+    downSampleFilter2.setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
 
 }
 
@@ -52,8 +37,8 @@ void OverSampler::upSample(sample_t *source, sample_t *upSampled, size_t sourceS
         upSampled[upSampleFactor*i] = source[i];
     }
 
-    upSampleFilter1->processBuffer(upSampled, upSampledSize);    
-    upSampleFilter2->processBuffer(upSampled, upSampledSize);    
+    upSampleFilter1.processBuffer(upSampled, upSampledSize);    
+    upSampleFilter2.processBuffer(upSampled, upSampledSize);    
 
 }
 
@@ -61,8 +46,8 @@ void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampl
 
     assert(upSampledSize == destSize*upSampleFactor);
 
-    downSampleFilter1->processBuffer(upSampled, upSampledSize);
-    downSampleFilter2->processBuffer(upSampled, upSampledSize);
+    downSampleFilter1.processBuffer(upSampled, upSampledSize);
+    downSampleFilter2.processBuffer(upSampled, upSampledSize);
 
     for (size_t i = 0; i < destSize; i++) {
         dest[i] = upSampled[i*upSampleFactor];
@@ -77,15 +62,11 @@ PreampDistorsion::PreampDistorsion() {
         juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
     );
 
-    tubeBypassFilter1 = new Biquad(BIQUAD_HIGHSHELF);
-    tubeBypassFilter2 = new Biquad(BIQUAD_HIGHSHELF);
 }
 
 PreampDistorsion::~PreampDistorsion() {
     delete overSampler;
 
-    delete tubeBypassFilter1;
-    delete tubeBypassFilter2;
 }
 
 void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
@@ -111,8 +92,8 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter1.setCoefficients(2000.0, samplerate*upSampleFactor);
     stageOutputFilter2.setCoefficients(2000.0, samplerate*upSampleFactor);
 
-    tubeBypassFilter1->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
-    tubeBypassFilter2->setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter1.setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter2.setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
 
     overSampler->initProcessing(blockSize);
 
@@ -143,7 +124,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         // input Tube stage
 
-        sample = tubeBypassFilter1->process(sample);
+        sample = tubeBypassFilter1.process(sample);
         sample *= stageGain;
         sample = waveShaping(sample, 2*headroom);
         
@@ -161,7 +142,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
 
         // Third tube stage
-        sample = tubeBypassFilter2->process(sample);
+        sample = tubeBypassFilter2.process(sample);
         sample *= stageGain;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
