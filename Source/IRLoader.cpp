@@ -209,11 +209,10 @@ IRLoader::~IRLoader() {
 
 void IRLoader::init(double _samplerate, size_t _blockSize) {
     samplerate = _samplerate;
-    initIR = true;
     overlapAddIndex = 0;
     blockSize = _blockSize;
 
-    loadIR();
+    loadIR(true, nullptr);
 }
 
 void IRLoader::prepareConvolution(const float *irPtr, size_t irSize) {
@@ -236,11 +235,10 @@ void IRLoader::prepareConvolution(const float *irPtr, size_t irSize) {
 }
 
 
-void IRLoader::loadIR() {
+void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
 
     if (initIR) {
         prepareConvolution(baseIR, BASE_IR_SIZE);
-        initIR = false;
         return;
     }
 
@@ -253,18 +251,23 @@ void IRLoader::loadIR() {
         return; 
     }
 
-    const std::string filepath = chooser->getResult().getFullPathName().toStdString();
+    juce::File returnedFile = chooser->getResult();
+    const std::string filepath = returnedFile.getFullPathName().toStdString();
 
     if (filepath == "") { return; }
 
     size_t irSize = parseWavFile(filepath, &irBuffer);
 
-    if (irSize != 0) {
-        prepareConvolution(irBuffer, irSize);
-    }
+    if (irSize == 0) { return; }
+
+    prepareConvolution(irBuffer, irSize);
 
     if (irBuffer != nullptr) { free(irBuffer); }
     
+    assert(irNameLabel != nullptr);
+    irNameLabel->setText(returnedFile.getFileNameWithoutExtension(),
+                         juce::NotificationType::dontSendNotification);
+
     return;
 }
 

@@ -2,6 +2,8 @@
 
 #include "PluginProcessor.h"
 
+using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+
 
 struct Knob {
 
@@ -44,6 +46,8 @@ private:
 
 
     juce::TextButton irLoadButton {"Load IR"};
+    juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
+
     juce::ToggleButton testOscToggle {"Toggle Test Sound"};
     juce::ToggleButton testOscNoiseToggle {"Noise toggle"};
 

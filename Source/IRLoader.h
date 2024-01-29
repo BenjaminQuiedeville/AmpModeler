@@ -38,7 +38,7 @@ struct IRLoader {
 
     void init(double samplerate, size_t blockSize);
 
-    void loadIR();
+    void loadIR(bool initIR, juce::Label *irNameLabel);
     void prepareConvolution(const float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
@@ -57,8 +57,6 @@ struct IRLoader {
 
     FFT *fftEngine;
     
-    bool initIR = true;
-
 };
 
 static size_t parseWavFile(const std::string& filepath, float **buffer);

@@ -168,7 +168,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
     auto outputBlock = AudioBlock(&buffer, 1, nSamples);
 
     overSampler->processSamplesDown(outputBlock);
-
+    
+    // changer pour std::copy   (include algorithm)
     memcpy((void *)buffer, (void *)outputBlock.getChannelPointer(0), nSamples);
-
 }

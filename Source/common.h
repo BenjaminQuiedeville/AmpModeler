@@ -19,8 +19,6 @@ typedef float sample_t;
 
 using AudioBlock = juce::dsp::AudioBlock<sample_t>;
 
-using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-
 #define DB_TO_GAIN(value) (std::pow(10, value/20.0))
 #define GAIN_TO_DB(value) (20.0 * std::log10(value))
 
