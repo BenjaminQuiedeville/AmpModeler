@@ -29,14 +29,13 @@ struct NoiseGate {
         gateBufferLength = (size_t)(samplerate * GATE_BUFFER_LENGTH_SECONDS);
         gateBufferIndex = 0;
         absoluteSum = 0.0;
-        threshold = -70.0;
+        threshold = DB_TO_GAIN(-70.0);
 
         if (gateBuffer == nullptr) {
-            gateBuffer = (sample_t *)malloc(gateBufferLength *  sizeof(sample_t));
+            gateBuffer = (sample_t *)calloc(gateBufferLength, sizeof(sample_t));
+
         } else {
-            for (size_t i = 0; i < gateBufferLength; i++) {
-                gateBuffer[i] = 0.0f;
-            }
+            memset(gateBuffer, 0, gateBufferLength * sizeof(sample_t));
         }
         
         gateGain.init(0.0);
@@ -49,10 +48,10 @@ struct NoiseGate {
             absoluteSum -= std::abs(gateBuffer[gateBufferIndex]);
             
             gateBuffer[gateBufferIndex] = sidechain[i];
-            gateBufferIndex = (gateBufferIndex+1) % gateBufferLength;
-            
             absoluteSum += std::abs(gateBuffer[gateBufferIndex]);
-                    
+            
+            gateBufferIndex = (gateBufferIndex+1) % gateBufferLength;
+
             bool isOpen = (absoluteSum / gateBufferLength) > threshold;
             gateGain.newTarget(isOpen ? 1.0 : 0.0, 
                                 isOpen ? attackTimeMs : releaseTimeMs,

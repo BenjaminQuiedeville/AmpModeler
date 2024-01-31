@@ -199,13 +199,17 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         }
     }
 
-    memcpy(intputSignalCopy, audioPtr, numSamples);
+    memcpy(intputSignalCopy, audioPtr, numSamples * sizeof(sample_t));
 
     /******PROCESS********/
     preBoost->process(audioPtr, numSamples);
     preamp->process(audioPtr, numSamples);
-    // noiseGate->process(audioPtr, intputSignalCopy, numSamples);
+    noiseGate->process(audioPtr, intputSignalCopy, numSamples);
     toneStack->process(audioPtr, numSamples);
+    
+    resonanceFilter.processBuffer(audioPtr, numSamples);
+    presenceFilter.processBuffer(audioPtr, numSamples);
+    
     irLoader->process(audioPtr, numSamples);
     
     for (size_t i = 0; i < numSamples; i++) {
@@ -248,7 +252,7 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
 
 void AmpModelerAudioProcessor::initParameters() {
 
-    noiseGate->threshold = *apvts->getRawParameterValue(ParamIDs[GATE_THRESH]);
+    noiseGate->threshold = DB_TO_GAIN(*apvts->getRawParameterValue(ParamIDs[GATE_THRESH]));
                                
     preBoost->tightFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[TIGHT]), samplerate);
     preBoost->biteFilter.setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, 
@@ -291,7 +295,7 @@ void AmpModelerAudioProcessor::initParameters() {
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
 
     if (parameterID == ParamIDs[GATE_THRESH]) {
-        noiseGate->threshold = newValue;
+        noiseGate->threshold = DB_TO_GAIN(newValue);
         return;
     }
 

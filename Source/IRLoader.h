@@ -13,7 +13,6 @@
 
 
 #include "common.h"
-#include "SmoothParam.h"
 #include "pffft/pffft.hpp"
 
 #define FFT_SIZE (1 << 15)
