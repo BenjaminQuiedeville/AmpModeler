@@ -20,21 +20,21 @@ void OverSampler::prepareToPlay(double _samplerate) {
     downSampleFilter1.prepareToPlay();
     downSampleFilter2.prepareToPlay();
 
-    upSampleFilter1.setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
-    upSampleFilter2.setCoefficients(_samplerate/2 * 0.8, 0.7, GAIN_TO_DB(upSampleFactor), _samplerate*upSampleFactor);
-    downSampleFilter1.setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
-    downSampleFilter2.setCoefficients(_samplerate/2 * 0.8, 0.7, 0.0, _samplerate*upSampleFactor);
+    upSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.7, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    upSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 0.7, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    downSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.7, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    downSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 0.7, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
 }
 
 void OverSampler::upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize) {
 
-    assert(upSampledSize == sourceSize * upSampleFactor);
+    assert(upSampledSize == sourceSize * PREAMP_UP_SAMPLE_FACTOR);
 
     memset(upSampled, 0, upSampledSize * sizeof(sample_t));
 
     for (size_t i = 0; i < sourceSize; i++) {
-        upSampled[upSampleFactor*i] = source[i];
+        upSampled[PREAMP_UP_SAMPLE_FACTOR*i] = source[i];
     }
 
     upSampleFilter1.processBuffer(upSampled, upSampledSize);    
@@ -44,13 +44,13 @@ void OverSampler::upSample(sample_t *source, sample_t *upSampled, size_t sourceS
 
 void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize) {
 
-    assert(upSampledSize == destSize*upSampleFactor);
+    assert(upSampledSize == destSize*PREAMP_UP_SAMPLE_FACTOR);
 
     downSampleFilter1.processBuffer(upSampled, upSampledSize);
     downSampleFilter2.processBuffer(upSampled, upSampledSize);
 
     for (size_t i = 0; i < destSize; i++) {
-        dest[i] = upSampled[i*upSampleFactor];
+        dest[i] = upSampled[i*PREAMP_UP_SAMPLE_FACTOR];
     }
 }
 
@@ -82,27 +82,26 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter2.prepareToPlay();
     
 
-    inputFilter.setCoefficients(100.0, samplerate*upSampleFactor);
-    couplingFilter1.setCoefficients(20.0, samplerate*upSampleFactor);
-    couplingFilter2.setCoefficients(20.0, samplerate*upSampleFactor);
-    couplingFilter3.setCoefficients(20.0, samplerate*upSampleFactor);
+    inputFilter.setCoefficients(100.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter1.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter2.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter3.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    stageOutputFilter1.setCoefficients(10000.0, samplerate*upSampleFactor);
-    stageOutputFilter2.setCoefficients(10000.0, samplerate*upSampleFactor);
-    stageOutputFilter3.setCoefficients(10000.0, samplerate*upSampleFactor);
+    stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    tubeBypassFilter1.setCoefficients(200.0, 0.4, 6.0, samplerate*upSampleFactor);
-    tubeBypassFilter2.setCoefficients(200.0, 0.4, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter1.setCoefficients(200.0, 0.4, 6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    tubeBypassFilter2.setCoefficients(200.0, 0.4, 6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
-        upSampledBlock = (sample_t *)realloc(upSampledBlock, blockSize * upSampleFactor * sizeof(sample_t));
+        upSampledBlock = (sample_t *)realloc(upSampledBlock, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(sample_t));
     } else {
-        upSampledBlock = (sample_t *)calloc(blockSize * upSampleFactor, sizeof(sample_t));
+        upSampledBlock = (sample_t *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(sample_t));
     }
 
-    stageGain = (float)DB_TO_GAIN(25.0);
 }
 
 static inline sample_t waveShaping(sample_t sample, float headroom) {
@@ -119,27 +118,27 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
 void PreampDistorsion::process(float *buffer, size_t nSamples) {
         
 
-    overSampler->upSample(buffer, upSampledBlock, nSamples, nSamples * overSampler->upSampleFactor);
+    overSampler->upSample(buffer, upSampledBlock, nSamples, nSamples*PREAMP_UP_SAMPLE_FACTOR);
 
-    for (size_t index = 0; index < nSamples*(overSampler->upSampleFactor); index++) {
+    for (size_t index = 0; index < nSamples*PREAMP_UP_SAMPLE_FACTOR; index++) {
         
         sample_t sample = upSampledBlock[index];
 
         // input Tube stage
 
         sample = tubeBypassFilter1.process(sample);
-        sample *= stageGain;
+        sample *= STAGE_GAIN;
         sample = waveShaping(sample, 5*headroom);
         
         sample = inputFilter.processHighPass(sample);
         sample = stageOutputFilter1.processLowPass(sample);
         sample *= 0.9f;
 
-        sample = std::pow((sample_t)preGain.nextValue() * 0.1f, 2.0f) * sample;
+        sample *= (sample_t)preGain.nextValue();
 
 
         // Second Tube first stage of saturation, stop there for clean tone
-        sample *= stageGain;
+        sample *= STAGE_GAIN;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
         sample = couplingFilter1.processHighPass(sample);
@@ -147,7 +146,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
         // Third tube stage
         sample = tubeBypassFilter2.process(sample);
-        sample *= stageGain;
+        sample *= STAGE_GAIN;
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
         sample = couplingFilter2.processHighPass(sample);
@@ -155,13 +154,13 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
 
 
         // Fourth tube stage
-        sample *= stageGain;
+        sample *= STAGE_GAIN;
         sample = waveShaping(sample, headroom);
         // sample *= 0.5f;
         sample = couplingFilter3.processHighPass(sample);
         sample = stageOutputFilter3.processLowPass(sample);
 
-        sample *= outputAttenuation;
+        sample *= OUTPUT_ATTENUATION;
         
         sample *= (sample_t)DB_TO_GAIN(postGain.nextValue());
         sample /= headroom;
@@ -170,6 +169,6 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
     }
 
     
-    overSampler->downSample(upSampledBlock, buffer, nSamples * overSampler->upSampleFactor, nSamples);
+    overSampler->downSample(upSampledBlock, buffer, nSamples * PREAMP_UP_SAMPLE_FACTOR, nSamples);
 
 }

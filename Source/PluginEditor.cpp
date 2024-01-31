@@ -51,6 +51,11 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     irNameLabel.setFont(15.0f);
     addAndMakeVisible(irNameLabel);
 
+    irLoaderBypassToggle.onClick = [&]() {
+        audioProcessor.irLoader->bypass = irLoaderBypassToggle.getToggleState();
+    };
+
+    addAndMakeVisible(irLoaderBypassToggle);
 
     testOscToggle.onClick = [&]() { 
         audioProcessor.doTestOsc = testOscToggle.getToggleState(); 
@@ -59,6 +64,7 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     testOscNoiseToggle.onClick = [&]() { 
         audioProcessor.testOsc.doNoise = testOscNoiseToggle.getToggleState(); 
     };
+
 
     addAndMakeVisible(testOscToggle);
     addAndMakeVisible(testOscNoiseToggle);
@@ -172,6 +178,8 @@ void AmpModelerAudioProcessorEditor::resized() {
 
     irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
     irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 200, 20);
+
+    irLoaderBypassToggle.setBounds(computeXcoord(5), computeYcoord(0), 100, 50);
 
     testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
     testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);

@@ -260,7 +260,7 @@ void AmpModelerAudioProcessor::initParameters() {
                                           samplerate);
 
     preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_GAIN]), 
-                               SMOOTH_PARAM_TIME, samplerate * preamp->upSampleFactor);
+                               SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
     float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
     float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
@@ -269,12 +269,14 @@ void AmpModelerAudioProcessor::initParameters() {
 
 
     preamp->inputFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[INPUT_FILTER]), 
-                                        samplerate*(preamp->upSampleFactor));
+                                        samplerate*PREAMP_UP_SAMPLE_FACTOR);
                                         
-    preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_GAIN]), 
-                              SMOOTH_PARAM_TIME, 
-                              samplerate * preamp->upSampleFactor);
-                              
+    auto paramRange = apvts->getParameter(ParamIDs[PREAMP_GAIN])->getNormalisableRange();
+    float paramValue = *apvts->getRawParameterValue(ParamIDs[PREAMP_GAIN]);
+    preamp->preGain.newTarget(scale(paramValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
+                                SMOOTH_PARAM_TIME, 
+                                samplerate * PREAMP_UP_SAMPLE_FACTOR);
+
     preamp->postGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_VOLUME]), 
                                SMOOTH_PARAM_TIME, 
                                samplerate);
@@ -311,22 +313,22 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamIDs[INPUT_FILTER]) {
-        preamp->inputFilter.setCoefficients(newValue, samplerate*(preamp->upSampleFactor));
+        preamp->inputFilter.setCoefficients(newValue, samplerate*PREAMP_UP_SAMPLE_FACTOR);
         return;
     }
 
     if (parameterID == ParamIDs[PREAMP_GAIN]) {
-        preamp->preGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * preamp->upSampleFactor);
+        auto paramRange = apvts->getParameter(parameterID)->getNormalisableRange();
+
+        preamp->preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
+                                  SMOOTH_PARAM_TIME, 
+                                  samplerate * PREAMP_UP_SAMPLE_FACTOR);
         return;
     }
 
     if (parameterID == ParamIDs[PREAMP_VOLUME]) {
 
-        auto paramRange = apvts->getParameter(ParamIDs[PREAMP_GAIN])->getNormalisableRange();
-
-        preamp->postGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
-                                   SMOOTH_PARAM_TIME, 
-                                   samplerate * preamp->upSampleFactor);
+        preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
         return;
     }

@@ -21,7 +21,7 @@
 #endif
 
 #define RESONANCE_FREQUENCY 250.0
-#define RESONANCE_Q         0.7
+#define RESONANCE_Q         0.4
 #define PRESENCE_FREQUENCY  500.0
 #define PRESENCE_Q          0.4
 

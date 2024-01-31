@@ -16,6 +16,10 @@
 #include "Biquad.h"
 #include "SmoothParam.h"
 
+#define STAGE_GAIN                     (sample_t)DB_TO_GAIN(30.0)
+#define OUTPUT_ATTENUATION             (sample_t)DB_TO_GAIN(-20.0)
+#define PREAMP_UP_SAMPLE_FACTOR        4
+
 /*
     changer l'algo de distorsion pour une courbe asymétrique haute headroom
 */
@@ -33,8 +37,6 @@ struct OverSampler {
     Biquad downSampleFilter1 {BIQUAD_LOWPASS};
     Biquad downSampleFilter2 {BIQUAD_LOWPASS};
 
-    uint8_t upSampleFactor = 4;
-
 };
 
 
@@ -48,8 +50,6 @@ struct PreampDistorsion {
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
     double samplerate = 0.0;
-    sample_t stageGain = 0.0;
-    sample_t outputAttenuation = (sample_t)DB_TO_GAIN(-20.0);
 
     OnepoleFilter inputFilter;
 
@@ -67,7 +67,6 @@ struct PreampDistorsion {
     OverSampler *overSampler;
     sample_t *upSampledBlock = nullptr;
 
-    uint8_t upSampleFactor = 4;
     sample_t headroom = 15.0f;
 
 };

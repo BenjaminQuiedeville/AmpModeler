@@ -50,7 +50,7 @@ private:
 
     juce::ToggleButton testOscToggle {"Toggle Test Sound"};
     juce::ToggleButton testOscNoiseToggle {"Noise toggle"};
-
+    juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
 
     AmpModelerAudioProcessor& audioProcessor;
 

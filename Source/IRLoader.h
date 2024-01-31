@@ -45,6 +45,7 @@ struct IRLoader {
     size_t blockSize = 0;
     size_t convolutionResultSize = 0;
 
+    bool bypass = false;
     bool updateIR = false;
     float *irBuffer = nullptr;
     size_t irBufferSize;

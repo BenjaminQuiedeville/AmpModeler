@@ -295,6 +295,8 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
 
 void IRLoader::process(float *input, size_t nSamples) {
 
+    if (bypass) { return; }
+
     for (size_t i = 0; i < nSamples; i++) {
         inputBufferPadded[i] = input[i];
     }
