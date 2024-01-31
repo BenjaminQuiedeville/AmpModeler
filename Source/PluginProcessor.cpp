@@ -321,7 +321,13 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
     }
 
     if (parameterID == ParamIDs[PREAMP_VOLUME]) {
-        preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * preamp->upSampleFactor);
+
+        auto paramRange = apvts->getParameter(ParamIDs[PREAMP_GAIN])->getNormalisableRange();
+
+        preamp->postGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
+                                   SMOOTH_PARAM_TIME, 
+                                   samplerate * preamp->upSampleFactor);
+
         return;
     }
 
@@ -374,7 +380,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 40.0f
+        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 100.0f
     ));
     
 

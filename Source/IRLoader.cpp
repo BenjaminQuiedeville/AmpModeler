@@ -326,7 +326,7 @@ void IRLoader::process(float *input, size_t nSamples) {
     // mettre les samples dans le buffer de sortie
     for (size_t i = 0; i < nSamples; i++) {
         size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
-        input[i] = CLIP(overlapAddBuffer[index], -0.5f, 0.5f);
+        input[i] = overlapAddBuffer[index];
         overlapAddBuffer[index] = 0.0f;
     }
 
