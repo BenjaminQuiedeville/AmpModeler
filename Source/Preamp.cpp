@@ -57,15 +57,13 @@ void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampl
 
 PreampDistorsion::PreampDistorsion() {
     
-    overSampler = new juce::dsp::Oversampling<sample_t>(
-        1, upSampleFactor, 
-        juce::dsp::Oversampling<sample_t>::FilterType::filterHalfBandPolyphaseIIR
-    );
-
+    overSampler = new OverSampler();
 }
 
 PreampDistorsion::~PreampDistorsion() {
     delete overSampler;
+
+    if (upSampledBlock) { free(upSampledBlock); }
 
 }
 
@@ -84,18 +82,25 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter2.prepareToPlay();
     
 
-    inputFilter.setCoefficients(40.0, samplerate*upSampleFactor);
-    couplingFilter1.setCoefficients(50.0, samplerate*upSampleFactor);
-    couplingFilter2.setCoefficients(50.0, samplerate*upSampleFactor);
-    couplingFilter3.setCoefficients(50.0, samplerate*upSampleFactor);
+    inputFilter.setCoefficients(100.0, samplerate*upSampleFactor);
+    couplingFilter1.setCoefficients(20.0, samplerate*upSampleFactor);
+    couplingFilter2.setCoefficients(20.0, samplerate*upSampleFactor);
+    couplingFilter3.setCoefficients(20.0, samplerate*upSampleFactor);
 
-    stageOutputFilter1.setCoefficients(2000.0, samplerate*upSampleFactor);
-    stageOutputFilter2.setCoefficients(2000.0, samplerate*upSampleFactor);
+    stageOutputFilter1.setCoefficients(10000.0, samplerate*upSampleFactor);
+    stageOutputFilter2.setCoefficients(10000.0, samplerate*upSampleFactor);
+    stageOutputFilter3.setCoefficients(10000.0, samplerate*upSampleFactor);
 
-    tubeBypassFilter1.setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
-    tubeBypassFilter2.setCoefficients(100.0, 0.6, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter1.setCoefficients(200.0, 0.4, 6.0, samplerate*upSampleFactor);
+    tubeBypassFilter2.setCoefficients(200.0, 0.4, 6.0, samplerate*upSampleFactor);
 
-    overSampler->initProcessing(blockSize);
+    overSampler->prepareToPlay(_samplerate);
+
+    if (upSampledBlock) {
+        upSampledBlock = (sample_t *)realloc(upSampledBlock, blockSize * upSampleFactor * sizeof(sample_t));
+    } else {
+        upSampledBlock = (sample_t *)calloc(blockSize * upSampleFactor, sizeof(sample_t));
+    }
 
     stageGain = (float)DB_TO_GAIN(25.0);
 }
@@ -113,22 +118,21 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
 
 void PreampDistorsion::process(float *buffer, size_t nSamples) {
         
-    AudioBlock upSampledBlock = 
-        overSampler->processSamplesUp(AudioBlock(&buffer, 1, nSamples));
 
-    sample_t *upSampledData = upSampledBlock.getChannelPointer(0);
+    overSampler->upSample(buffer, upSampledBlock, nSamples, nSamples * overSampler->upSampleFactor);
 
-    for (size_t index = 0; index < nSamples*(overSampler->getOversamplingFactor()); index++) {
+    for (size_t index = 0; index < nSamples*(overSampler->upSampleFactor); index++) {
         
-        sample_t sample = upSampledData[index];
+        sample_t sample = upSampledBlock[index];
 
         // input Tube stage
 
         sample = tubeBypassFilter1.process(sample);
         sample *= stageGain;
-        sample = waveShaping(sample, 2*headroom);
+        sample = waveShaping(sample, 5*headroom);
         
         sample = inputFilter.processHighPass(sample);
+        sample = stageOutputFilter1.processLowPass(sample);
         sample *= 0.9f;
 
         sample = std::pow((sample_t)preGain.nextValue() * 0.1f, 2.0f) * sample;
@@ -147,7 +151,7 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample = waveShaping(sample, headroom);
         sample *= 0.5f;
         sample = couplingFilter2.processHighPass(sample);
-        sample = stageOutputFilter1.processLowPass(sample);
+        sample = stageOutputFilter2.processLowPass(sample);
 
 
         // Fourth tube stage
@@ -155,20 +159,17 @@ void PreampDistorsion::process(float *buffer, size_t nSamples) {
         sample = waveShaping(sample, headroom);
         // sample *= 0.5f;
         sample = couplingFilter3.processHighPass(sample);
-        sample = stageOutputFilter2.processLowPass(sample);
+        sample = stageOutputFilter3.processLowPass(sample);
 
         sample *= outputAttenuation;
         
         sample *= (sample_t)DB_TO_GAIN(postGain.nextValue());
         sample /= headroom;
 
-        upSampledData[index] = sample;
+        upSampledBlock[index] = sample;
     }
 
-    auto outputBlock = AudioBlock(&buffer, 1, nSamples);
-
-    overSampler->processSamplesDown(outputBlock);
     
-    // changer pour std::copy   (include algorithm)
-    memcpy((void *)buffer, (void *)outputBlock.getChannelPointer(0), nSamples);
+    overSampler->downSample(upSampledBlock, buffer, nSamples * overSampler->upSampleFactor, nSamples);
+
 }

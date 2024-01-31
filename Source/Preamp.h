@@ -11,16 +11,12 @@
 #ifndef PREAMP_H
 #define PREAMP_H
 
-#include "juce_dsp/juce_dsp.h"
-
 #include "common.h"
 #include "OnepoleFilter.h"
 #include "Biquad.h"
 #include "SmoothParam.h"
 
 /*
-
-    faire mon propre algo d'oversampling avec la sincTable
     changer l'algo de distorsion pour une courbe asymétrique haute headroom
 */
 
@@ -63,12 +59,14 @@ struct PreampDistorsion {
 
     OnepoleFilter stageOutputFilter1;
     OnepoleFilter stageOutputFilter2;
+    OnepoleFilter stageOutputFilter3;
 
     Biquad tubeBypassFilter1 {BIQUAD_HIGHSHELF};
     Biquad tubeBypassFilter2 {BIQUAD_HIGHSHELF};
 
-    juce::dsp::Oversampling<sample_t> *overSampler;
-    AudioBlock overSampledBlock;
+    OverSampler *overSampler;
+    sample_t *upSampledBlock = nullptr;
+
     uint8_t upSampleFactor = 4;
     sample_t headroom = 15.0f;
 
