@@ -99,7 +99,7 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     
     // if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a'
     //  || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a')
-    assert(memcmp(SubChunk2ID, "data", 4) == 0);
+    assert(memcmp(SubChunk2ID, "data", 4) == 0 && "le fichier contient des métadonnées chiantes");
 
     //if (memcmp(SubChunk2ID, "data", 4) == 0)
     //{
@@ -117,19 +117,26 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     size_t sampleSizeBytes = BlockAlign/NumChannels;
     size_t numSamples = signalSizeBytes/sampleSizeBytes;
 
+    // allocate the IR buffer
+    if (*buffer != nullptr) {
+        *buffer = (float *)realloc(*buffer, numSamples * sizeof(float));
+        memset(*buffer, 0, numSamples * sizeof(float));
 
-    *buffer = (float *)calloc(numSamples, sizeof(float));
-    assert(buffer != nullptr);
+    } else {
+        *buffer = (float *)calloc(numSamples, sizeof(float));
+    }
+
 
     uint32_t counter = 0;
-    if (bitsPerSample == 16) {
+    switch (bitsPerSample) {
+    case 16: {
 
         int8_t sampleChar[2] = {0x00, 0x00};
 
         while (!feof(wavFile) && counter < numSamples) {
             fread(sampleChar, 1, 2, wavFile);
             
-            int32_t mask = (int32_t)1 << (bitsPerSample - 1);
+            int32_t mask = (int32_t)(1 << (bitsPerSample - 1));
             int16_t sampleInt = *(int16_t *)sampleChar;
 
             if (sampleInt & mask) {
@@ -141,8 +148,8 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
             (*buffer)[counter] = sample;
             counter++;
         }
-
-    } else if (bitsPerSample == 24) {
+    }
+    case 24: {
     
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
         while (!feof(wavFile) && counter < numSamples) {
@@ -160,8 +167,8 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
             (*buffer)[counter] = sample;
             counter++;
         }
-
-    } else if (bitsPerSample == 32) {
+    }
+    case 32: {
         
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
 
@@ -181,6 +188,19 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
             (*buffer)[counter] = sample;
             counter++;
         }
+    }
+    }
+
+    float irMax = 0.0f;
+
+    for (size_t i = 0; i < (size_t)(numSamples/4); i++) {
+        if (abs((*buffer)[i]) > abs(irMax)) {
+            irMax = abs((*buffer)[i]);
+        }
+    }
+
+    for (size_t i = 0; i < numSamples; i++) {
+        (*buffer)[i] /= irMax;
     }
 
     fclose(wavFile);
@@ -215,8 +235,7 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
     loadIR(true, nullptr);
 }
 
-void IRLoader::prepareConvolution(const float *irPtr, size_t irSize) {
-
+void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
 
     FFT::TimeVector irTimeVec = fftEngine->createTimeVector();
     
@@ -230,8 +249,9 @@ void IRLoader::prepareConvolution(const float *irPtr, size_t irSize) {
     fftEngine->scale(irDftBuffer);
 
     convolutionResultSize = irSize + blockSize - 1;
-    return;
+    updateIR = false;
 
+    return;
 }
 
 
@@ -242,7 +262,6 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
         return;
     }
 
-    float *irBuffer = nullptr;
 
     auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
 
@@ -260,9 +279,11 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
 
     if (irSize == 0) { return; }
 
-    prepareConvolution(irBuffer, irSize);
+    // prepareConvolution(irBuffer, irSize);
+    irBufferSize = irSize;
+    updateIR = true;
 
-    if (irBuffer != nullptr) { free(irBuffer); }
+    // if (irBuffer != nullptr) { free(irBuffer); }
     
     assert(irNameLabel != nullptr);
     irNameLabel->setText(returnedFile.getFileNameWithoutExtension(),
@@ -281,7 +302,7 @@ void IRLoader::process(float *input, size_t nSamples) {
     // memcpy(inputBufferPadded.data(), input, nSamples*sizeof(sample_t));
 
     fftEngine->forward(inputBufferPadded, inputDftBuffer);
-    fftEngine->scale(inputDftBuffer);
+    // fftEngine->scale(inputDftBuffer);
 
     for (size_t i = 0; i < fftEngine->spectrum_size; i++) {
         inputDftBuffer[i] *= irDftBuffer[i];
@@ -294,34 +315,26 @@ void IRLoader::process(float *input, size_t nSamples) {
     // pffft_zconvolve_accumulate(fftSetup, inputDftBuffer, irDftBuffer, convolutionResultBuffer, 1/fftSize);    
     // pffft_transform(fftSetup, inputDftBuffer, inputBufferPadded, nullptr, PFFFT_BACKWARD);
 
-    // clear les samples précédents pour éviter le recouvrement avec des samples passés
-    for (int i = 0; i < nSamples; i++) {
-        int index = overlapAddIndex - i - 1;
-        if (index < 0) { index += nSamples; }
-        index %= nSamples;
-        overlapAddBuffer[i] = 0.0f;
-    }
-
+    size_t overlapAddBufferSize = overlapAddBuffer.size();
 
     // mettre les samples dans l'overlap add
     for (size_t i = 0; i < convolutionResultSize; i++) {
-        size_t index = (overlapAddIndex + i) % convolutionResultSize;
+        size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
         overlapAddBuffer[index] += convolutionResultBuffer[i];
     }
 
     // mettre les samples dans le buffer de sortie
-    for (int i = 0; i < nSamples; i++) {
-        int index = (overlapAddIndex + i) % convolutionResultSize;
-        input[i] = overlapAddBuffer[index];
+    for (size_t i = 0; i < nSamples; i++) {
+        size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
+        input[i] = CLIP(overlapAddBuffer[index], -0.5f, 0.5f);
+        overlapAddBuffer[index] = 0.0f;
     }
 
-    for (int i = 0; i < nSamples; i++) {
-        input[i] = inputBufferPadded[i];
+    overlapAddIndex = (overlapAddIndex + nSamples) % overlapAddBufferSize;
+
+    if (updateIR) { 
+        prepareConvolution(irBuffer, irBufferSize); 
     }
-
-    // memcpy(input, inputBufferPadded.data(), nSamples * sizeof(sample_t));
-
-    overlapAddIndex = (overlapAddIndex + nSamples) % (FFT_SIZE);
 
     return;
 }

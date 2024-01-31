@@ -31,6 +31,7 @@ libérer le buffer temporaire
 
 */
 
+
 struct IRLoader {
 
     IRLoader();
@@ -39,11 +40,15 @@ struct IRLoader {
     void init(double samplerate, size_t blockSize);
 
     void loadIR(bool initIR, juce::Label *irNameLabel);
-    void prepareConvolution(const float* irPtr, size_t irSize);
+    void prepareConvolution(float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
     size_t blockSize = 0;
     size_t convolutionResultSize = 0;
+
+    bool updateIR = false;
+    float *irBuffer = nullptr;
+    size_t irBufferSize;
 
     double samplerate = 0.0;
 
