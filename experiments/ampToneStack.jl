@@ -204,13 +204,14 @@ function main()::Nothing
     m::Float64 = 0.5
     l::Float64 = 0.5
 
-    toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
-    toneStackBassman    = Components{Float64}(250e3, 1e6, 25e3, 56e3, 0.25e-9, 20e-9, 20e-9)
-    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
+    toneStackCustom     = Components{Float64}(250e3, 1e6, 20e3, 60e3, 0.60e-9, 35e-9, 40e-9)
     toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
+    toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
+    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
+    toneStackRectifier  = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
     samplerate::Float64 = 48000.0
-    model = DiscreteModel(toneStack(toneStackBassman, t, m, l), 1/samplerate)
+    model = DiscreteModel(toneStack(toneStackCustom, t, m, l), 1/samplerate)
     
     nFreq = 2^14
     signal = [1; zeros(nFreq - 1)]'
@@ -224,6 +225,8 @@ function main()::Nothing
     toneJCM = toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
     toneSoldano = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
     toneEngl = toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
+    toneCustom = toneStackRational(toneStackCustom, t, m, l, samplerate, Float64)
+    toneRectifier = toneStackRational(toneStackRectifier, t, m, l, samplerate, Float64)
     testFilter = Onepole(1000, samplerate)
 
     signal = zeros(nFreq)
@@ -231,11 +234,15 @@ function main()::Nothing
     yJCM = filter!(signal, toneJCM)
     ySoldano = filter!(signal, toneSoldano)
     yEngl = filter!(signal, toneEngl)
+    yCustom = filter!(signal, toneCustom)
+    yRectifier = filter!(signal, toneRectifier)
     @show toneJCM
 
     yJCMSpectre = 20 * log10.((yJCM |> rfft .|> abs).^2)
     ySoldanoSpectre = 20 * log10.((ySoldano |> rfft .|> abs).^2)
     yEnglSpectre = 20 * log10.((yEngl |> rfft .|> abs).^2)
+    yCustomSpectre = 20 * log10.((yCustom |> rfft .|> abs).^2)
+    yRectifierSpectre = 20 * log10.((yRectifier |> rfft .|> abs).^2)
 
 
     # p1 = begin
@@ -248,15 +255,24 @@ function main()::Nothing
 
     p2 = begin
         plot()
-        plot!(yFreqs .+ 1, yJCMSpectre, 
-              xaxis = :log, 
-              ylims = [-40, 10],
-              xlims = [10, 20000],
-              label = "JCM")
+        # plot!(yFreqs .+ 1, yJCMSpectre, 
+        #       label = "JCM800")
         plot!(yFreqs .+ 1, ySoldanoSpectre,
               label = "Soldano")
-        plot!(yFreqs .+ 1, yEnglSpectre,
-              label = "Engl")
+        # plot!(yFreqs .+ 1, yEnglSpectre,
+        #       label = "Engl")
+        # plot!(yFreqs .+ 1, yCustomSpectre,
+        #       label = "Custom settings")
+        plot!(yFreqs .+ 1, yRectifierSpectre, 
+              label = "Rectifier")
+        
+        plot!(xaxis = :log, 
+              ylims = [-40, 10],
+              xlims = [10, 10000],
+              minorticks = 10,
+              minorgrid = true,
+              xlabel = "Frequence Hz", 
+              ylabel = "Amplitude dB")
         # plot!(y2)
     end 
 
