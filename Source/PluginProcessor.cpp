@@ -340,7 +340,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
     if (parameterID == ParamIDs[CHANNEL]) {
         
-        preamp->channel = newValue;
+        preamp->channel = (uint8_t)newValue;
         return;
     }
 

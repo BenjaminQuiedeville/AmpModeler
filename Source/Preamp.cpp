@@ -141,6 +141,7 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
     sample = couplingFilter1.processHighPass(sample);
 
     if (channel == 1) {
+        sample *= (sample_t)DB_TO_GAIN(18.0);
         return sample;        
     }
 
@@ -154,6 +155,7 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
     sample = stageOutputFilter2.processLowPass(sample);
 
     if (channel == 2) {
+        sample *= (sample_t)DB_TO_GAIN(3.0);
         return sample;        
     }
 
