@@ -3,6 +3,7 @@
 #include "PluginProcessor.h"
 
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
 
 
 struct Knob {
@@ -14,8 +15,20 @@ struct Knob {
     juce::Slider slider;
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
-
 };
+
+
+struct ComboBox {
+    
+    ComboBox(juce::String labelID, juce::String name) : label {labelID, name}
+    {
+    }
+
+    juce::ComboBox box;
+    juce::Label label;
+    std::unique_ptr<ComboBoxAttachment> boxAttachment;
+};
+
 
 class AmpModelerAudioProcessorEditor : public juce::AudioProcessorEditor
 {
@@ -44,6 +57,7 @@ private:
 
     std::unique_ptr<Knob> volumeKnob;
 
+    std::unique_ptr<ComboBox> ampChannelBox;
 
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
@@ -55,6 +69,6 @@ private:
     AmpModelerAudioProcessor& audioProcessor;
 
     void createKnob(Knob *knob, const juce::String& paramID);
-
+    void createComboBox(ComboBox *comboBox, const juce::String& paramID);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmpModelerAudioProcessorEditor)
 };

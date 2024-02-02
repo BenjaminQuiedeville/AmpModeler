@@ -338,6 +338,12 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
         return;
     }
 
+    if (parameterID == ParamIDs[CHANNEL]) {
+        
+        preamp->channel = newValue;
+        return;
+    }
+
     if (parameterID == ParamIDs[PREAMP_VOLUME]) {
 
         preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
@@ -395,6 +401,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 100.0f
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        ParamIDs[CHANNEL], "Amp Channel", 1, 4, 2
     ));
     
 

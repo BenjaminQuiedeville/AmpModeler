@@ -20,9 +20,6 @@
 #define OUTPUT_ATTENUATION             (sample_t)DB_TO_GAIN(-20.0)
 #define PREAMP_UP_SAMPLE_FACTOR        4
 
-/*
-    changer l'algo de distorsion pour une courbe asymétrique haute headroom
-*/
 
 struct OverSampler {
 
@@ -45,7 +42,8 @@ struct PreampDistorsion {
     ~PreampDistorsion();
     
     void prepareToPlay(double samplerate, int blockSize);
-    void process(float *buffer, size_t nSamples);
+    sample_t processGainStages(sample_t sample);
+    void process(sample_t *buffer, size_t nSamples);
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
@@ -56,10 +54,12 @@ struct PreampDistorsion {
     OnepoleFilter couplingFilter1;
     OnepoleFilter couplingFilter2;
     OnepoleFilter couplingFilter3;
+    OnepoleFilter couplingFilter4;
 
     OnepoleFilter stageOutputFilter1;
     OnepoleFilter stageOutputFilter2;
     OnepoleFilter stageOutputFilter3;
+    OnepoleFilter stageOutputFilter4;
 
     Biquad tubeBypassFilter1 {BIQUAD_HIGHSHELF};
     Biquad tubeBypassFilter2 {BIQUAD_HIGHSHELF};
@@ -68,6 +68,7 @@ struct PreampDistorsion {
     sample_t *upSampledBlock = nullptr;
 
     sample_t headroom = 15.0f;
+    uint8_t channel = 2;
 
 };
 

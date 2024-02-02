@@ -23,6 +23,8 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 
     volumeKnob       = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
 
+    ampChannelBox    = std::make_unique<ComboBox>("AMP_CHANNEL_BOX_LABEL", "Amp Channel");
+
 
     createKnob(gateKnob.get(), ParamIDs[GATE_THRESH]);
     createKnob(boostTopKnob.get(), ParamIDs[BITE]);
@@ -42,6 +44,12 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     createKnob(presenceKnob.get(), ParamIDs[PRESENCE]);
 
     createKnob(volumeKnob.get(), ParamIDs[MASTER_VOLUME]);
+    
+    createComboBox(ampChannelBox.get(), ParamIDs[CHANNEL]);
+
+    ampChannelBox->box.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
+    ampChannelBox->box.setSelectedId(2, juce::NotificationType::dontSendNotification);
+
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(false, &irNameLabel); };
     addAndMakeVisible(irLoadButton);
@@ -147,13 +155,13 @@ void AmpModelerAudioProcessorEditor::resized() {
                                    trebbleEQKnob->slider.getWidth(), 
                                    20);
 
-    resonanceKnob->slider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    resonanceKnob->slider.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
     resonanceKnob->label.setBounds(resonanceKnob->slider.getX(),
                                    resonanceKnob->slider.getY() - 20,
                                    resonanceKnob->slider.getWidth(), 
                                    20);
 
-    presenceKnob->slider.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
+    presenceKnob->slider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
     presenceKnob->label.setBounds(presenceKnob->slider.getX(),
                                    presenceKnob->slider.getY() - 20,
                                    presenceKnob->slider.getWidth(), 
@@ -176,6 +184,13 @@ void AmpModelerAudioProcessorEditor::resized() {
                                 volumeKnob->slider.getWidth(), 
                                 20);
 
+    ampChannelBox->box.setBounds(computeXcoord(2), computeYcoord(2) + 30, 120, 30);
+    ampChannelBox->label.setBounds(ampChannelBox->box.getX(),
+                                   ampChannelBox->box.getY() - 20,
+                                   ampChannelBox->box.getWidth(), 
+                                   20);
+
+
     irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
     irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 200, 20);
 
@@ -196,6 +211,27 @@ void AmpModelerAudioProcessorEditor::createKnob(Knob *knob, const juce::String& 
     knob->label.setJustificationType(juce::Justification::centred);
     knob->label.setFont(15.0f);
     addAndMakeVisible(knob->label);
+    
+    knob->sliderAttachment = std::make_unique<SliderAttachment>(
+        *(audioProcessor.apvts), paramID, knob->slider
+    );
+}
 
-    knob->sliderAttachment = std::make_unique<SliderAttachment>(*(audioProcessor.apvts), paramID, knob->slider);
+
+void AmpModelerAudioProcessorEditor::createComboBox(ComboBox *comboBox, const juce::String& paramID)  {
+    
+    comboBox->box.setEditableText(false);
+    comboBox->box.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(comboBox->box);
+    
+    comboBox->label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    comboBox->label.setJustificationType(juce::Justification::centred);
+    comboBox->label.setFont(15.0f);
+    
+    addAndMakeVisible(comboBox->label);
+    
+    comboBox->boxAttachment = std::make_unique<ComboBoxAttachment>(
+        *(audioProcessor.apvts), paramID, comboBox->box
+    );
+
 }
