@@ -296,6 +296,18 @@ void AmpModelerAudioProcessor::initParameters() {
 
 void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
 
+    // int paramIndex = 0;
+
+    // for(int i = 0; i < ParamIDs.size(); i++) {
+    //     if (parameterID == ParamIDs[i]) {
+    //         paramIndex = i;
+    //         break;
+    //     }
+    // }
+    //
+    // switch (paramIndex) {}
+
+
     if (parameterID == ParamIDs[GATE_THRESH]) {
         noiseGate->threshold = DB_TO_GAIN(newValue);
         return;
