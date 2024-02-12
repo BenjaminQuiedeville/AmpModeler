@@ -26,6 +26,7 @@ static float baseIR[BASE_IR_SIZE] = {
 #include "baseIR.inc"
 };
 
+
 static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
     char temp[1] = {0};
@@ -45,7 +46,9 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     char SubChunk2ID[4];
     int32_t signalSizeBytes;
     
-    FILE *wavFile = fopen(filepath.data(), "rb");
+    // FILE *wavFile = fopen(filepath.data(), "rb");
+    FILE *wavFile = nullptr;
+    fopen_s(&wavFile, filepath.data(), "rb");
     
     if (ferror(wavFile)) {
         fclose(wavFile);
@@ -332,7 +335,7 @@ void IRLoader::process(float *input, size_t nSamples) {
         overlapAddBuffer[index] = 0.0f;
     }
 
-    overlapAddIndex = (overlapAddIndex + nSamples) % overlapAddBufferSize;
+    overlapAddIndex = (overlapAddIndex + (int)nSamples) % overlapAddBufferSize;
 
     if (updateIR) { 
         prepareConvolution(irBuffer, irBufferSize); 

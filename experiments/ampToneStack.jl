@@ -202,12 +202,12 @@ function main()::Nothing
     
     t::Float64 = 0.5
     m::Float64 = 0.5
-    l::Float64 = 0.5
+    l::Float64 = 0.3
 
-    toneStackCustom     = Components{Float64}(250e3, 1e6, 20e3, 60e3, 0.60e-9, 35e-9, 40e-9)
+    toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 40e-9)
+    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
     toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
-    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackRectifier  = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
     samplerate::Float64 = 48000.0
@@ -261,10 +261,10 @@ function main()::Nothing
               label = "Soldano")
         # plot!(yFreqs .+ 1, yEnglSpectre,
         #       label = "Engl")
-        # plot!(yFreqs .+ 1, yCustomSpectre,
-        #       label = "Custom settings")
-        plot!(yFreqs .+ 1, yRectifierSpectre, 
-              label = "Rectifier")
+        plot!(yFreqs .+ 1, yCustomSpectre,
+              label = "Custom settings")
+        # plot!(yFreqs .+ 1, yRectifierSpectre, 
+        #       label = "Rectifier")
         
         plot!(xaxis = :log, 
               ylims = [-40, 10],
@@ -287,5 +287,5 @@ import .toneStackSim as T
 
 DEBUG::Bool = false
 
-DEBUG && VSCodeServer.@run T.main()
+# DEBUG && VSCodeServer.@run T.main()
 !DEBUG && T.main()

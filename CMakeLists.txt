@@ -12,7 +12,7 @@ add_subdirectory(${JUCE_SOURCE_DIR})
 if (MSVC)
     add_compile_options(/Wall)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra)
 endif()
 
 juce_add_plugin(${PROJECT_NAME}
