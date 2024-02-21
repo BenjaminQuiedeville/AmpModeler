@@ -152,5 +152,5 @@ end # Convolution
 import .Convolution as C
 
 
-# @run C.main()
+@run C.main()
 C.main()

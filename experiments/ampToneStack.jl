@@ -1,18 +1,8 @@
-module toneStackSim
-
-# David Te-Mao Yeh Thesis 2009
-
-using ACME 
-using Plots
+using GLMakie
 using DSP
-using Statistics
 using FFTW 
-using Debugger
 
-
-abstract type Filter end
-
-mutable struct Filter3{T <: Number} <: Filter
+mutable struct Filter3{T <: Number}
 
     B0::T
     B1::T
@@ -33,15 +23,6 @@ mutable struct Filter3{T <: Number} <: Filter
 
 end 
 
-mutable struct Onepole <: Filter
-
-    B0::Number
-    A1::Number 
-
-    Y1::Number
-end
-
-Onepole(freq::Number, samplerate::Number) = Onepole(sin(π/samplerate * freq), sin(π/samplerate * freq) - 1, 0.0)
 
 Filter3{T}(B0, B1, B2, B3, A0, A1, A2, A3) where {T <: Number} = 
     Filter3{T}(B0/A0, B1/A0, B2/A0, B3/A0, A1/A0, A2/A0, A3/A0,
@@ -51,7 +32,7 @@ num(filter::Filter3)::Vector{Number}   = [filter.B0, filter.B1, filter.B2, filte
 denum(filter::Filter3)::Vector{Number} = [1.0, filter.A1, filter.A2, filter.A3]
 
 
-struct Components{T <: Number}
+mutable struct Components{T <: Number}
 
     R1::T
     R2::T
@@ -61,17 +42,6 @@ struct Components{T <: Number}
     C1::T
     C2::T
     C3::T
-end 
-
-function filter!(signal::Array, filter::Onepole)::Array
-    output = zeros(size(signal))
-
-    for i in 1:size(signal)[1]
-        output[i] = (filter.B0 * signal[i] 
-                  -  filter.A1 * filter.Y1)
-        filter.Y1 = output[i]
-    end 
-    return output
 end 
 
 function filter!(signal::Vector, filter::Filter3)::Array
@@ -100,7 +70,7 @@ function filter!(signal::Vector, filter::Filter3)::Array
 end
 
 
-function toneStackRational(cp::Components, t::Number, m::Number, L::Number, samplerate::Number, T::Type = Float64)::Filter
+function toneStackRational(cp::Components, t::Number, m::Number, L::Number, samplerate::Number, T::Type = Float64)::Filter3
 
     l :: Float64 = exp((L-1)*3.4)
 
@@ -164,128 +134,104 @@ function toneStackRational(cp::Components, t::Number, m::Number, L::Number, samp
 end 
 
 
-function toneStack(cp::Components, t = 0.5, m = 0.5, l = 0.5)
 
-    circ = @circuit begin
-        Vi = voltagesource()
-        R11 = resistor((1 - t)*cp.R1)
-        R12 = resistor(t*cp.R1)
-        R2 = resistor(l*cp.R2)
-        R31 = resistor((1-m)*cp.R3)
-        R32 = resistor(m*cp.R3)
-        R4 = resistor(cp.R4)
-
-        C1 = capacitor(cp.C1)
-        C2 = capacitor(cp.C2)
-        C3 = capacitor(cp.C3)
-
-        Vout = voltageprobe()
-
-        Vi[+] == R4[1] == C1[1]
-        Vi[-] == gnd
-
-        C1[2] == R11[1]
-        R11[2] == R12[1] == Vout[+]
-        Vout[-] == gnd
-
-        R4[2] == C2[1] == C3[1]
-        C2[2] == R12[2] == R2[1]
-        R2[2] == R31[1]
-        C3[2] == R31[2] == R32[1]
-        R32[2] == gnd
-    end
-    return circ
-end
-
-
-function main()::Nothing
-    
-    t::Float64 = 0.5
-    m::Float64 = 0.5
-    l::Float64 = 0.3
+function main() :: Nothing
+    t :: Float64 = 0.5
+    m :: Float64 = 0.5
+    l :: Float64 = 0.5
 
     toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 40e-9)
     toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
     toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
     toneStackRectifier  = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
+    toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
     samplerate::Float64 = 48000.0
-    model = DiscreteModel(toneStack(toneStackCustom, t, m, l), 1/samplerate)
-    
+
     nFreq = 2^14
     signal = [1; zeros(nFreq - 1)]'
-    y = run!(model, signal)[1, :]
 
-    ySpectre = 20 * log10.((y |> rfft .|> abs).^2)
-    yFreqs = rfftfreq(size(y)[1], samplerate)
-
-    ###
 
     toneJCM = toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
     toneSoldano = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
     toneEngl = toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
-    toneCustom = toneStackRational(toneStackCustom, t, m, l, samplerate, Float64)
     toneRectifier = toneStackRational(toneStackRectifier, t, m, l, samplerate, Float64)
-    testFilter = Onepole(1000, samplerate)
 
     signal = zeros(nFreq)
     signal[1] = 1
     yJCM = filter!(signal, toneJCM)
     ySoldano = filter!(signal, toneSoldano)
     yEngl = filter!(signal, toneEngl)
-    yCustom = filter!(signal, toneCustom)
     yRectifier = filter!(signal, toneRectifier)
-    @show toneJCM
+
+    yFreqs = rfftfreq(size(yJCM)[1], samplerate) .+ 1.0
 
     yJCMSpectre = 20 * log10.((yJCM |> rfft .|> abs).^2)
     ySoldanoSpectre = 20 * log10.((ySoldano |> rfft .|> abs).^2)
     yEnglSpectre = 20 * log10.((yEngl |> rfft .|> abs).^2)
-    yCustomSpectre = 20 * log10.((yCustom |> rfft .|> abs).^2)
     yRectifierSpectre = 20 * log10.((yRectifier |> rfft .|> abs).^2)
 
 
-    # p1 = begin
-    #     plot()
-    #     plot!(yFreqs .+ 1, ySpectre, 
-    #           xaxis = :log, 
-    #           ylims = [-50, 10])
-    #     # plot!(y)
-    # end
+    fig = Figure(size = (1200, 400))
+    ax1 = Axis(fig[1, 1:2], xscale = log10)
 
-    p2 = begin
-        plot()
-        # plot!(yFreqs .+ 1, yJCMSpectre, 
-        #       label = "JCM800")
-        plot!(yFreqs .+ 1, ySoldanoSpectre,
-              label = "Soldano")
-        # plot!(yFreqs .+ 1, yEnglSpectre,
-        #       label = "Engl")
-        plot!(yFreqs .+ 1, yCustomSpectre,
-              label = "Custom settings")
-        # plot!(yFreqs .+ 1, yRectifierSpectre, 
-        #       label = "Rectifier")
+    controlSliders = SliderGrid(fig[1, 3],
+        (label = "trebble", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
+        (label = "middle", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
+        (label = "bass", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
+
+        (label = "R1", range = 200e3:10e3:300e3, startvalue = 250e3),
+        (label = "R2", range = 500e3:100e3:2e6, startvalue = 1e6),
+        (label = "R3", range = 10e3:1e3:30e3, startvalue = 25e3),
+        (label = "R4", range = 30e3:1e3:50e3, startvalue = 40e3),
+            
+
+        (label = "C1", range = 0.4e-9:0.01e-9:0.6e-9, startvalue = 0.5e-9),
+        (label = "C2", range = 15e-9:1e-9:25e-9, startvalue = 20e-9),
+        (label = "C3", range = 15e-9:1e-9:25e-9, startvalue = 20e-9),
+    )
+
+    obs = [s.value for s in controlSliders.sliders]
+
+    otherToneStack = toneStackJCM800
+
+    customCurve = lift(obs...) do slvalues...
         
-        plot!(xaxis = :log, 
-              ylims = [-40, 10],
-              xlims = [10, 10000],
-              minorticks = 10,
-              minorgrid = true,
-              xlabel = "Frequence Hz", 
-              ylabel = "Amplitude dB")
-        # plot!(y2)
+        t, m, l = slvalues[1:3]
+        components = slvalues[4:end]
+
+        toneStackCustom = Components{Float64}(components...)
+
+        toneFilter = toneStackRational(toneStackCustom, t, m, l, samplerate, Float64)
+        
+        y = filter!(signal, toneFilter)
+        ySpectre = 20 * log10.((y |> rfft .|> abs).^2)
+
+        [ySpectre...]
     end 
 
-    # p3 = plot(p1, p2, layout = (2, 1)) |> display
-    display(p2)
+    otherCurve = lift(obs[1:3]...) do slvalues...
+        t, m, l = slvalues
+        otherToneFilter = toneStackRational(otherToneStack, t, m, l, samplerate, Float64)
+
+
+        y = filter!(signal, otherToneFilter)
+        ySpectre = 20 * log10.((y |> rfft .|> abs).^2)
+        
+        [ySpectre...]
+    end
+
+    lines!(ax1, yFreqs, customCurve)
+    lines!(ax1, yFreqs, otherCurve)
+    limits!(ax1, 20, 20000, -30, 0)
+
+    display(fig)
 
     return nothing
-end
+end 
 
-end # toneStackSim
-import .toneStackSim as T
+DEBUG = false
 
-DEBUG::Bool = false
-
-# DEBUG && VSCodeServer.@run T.main()
-!DEBUG && T.main()
+DEBUG && @run main()
+DEBUG || main()
