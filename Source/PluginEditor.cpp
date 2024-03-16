@@ -6,24 +6,25 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
 
-    gateKnob         = std::make_unique<Knob>("GATE_KNOB_LABEL", "Gate Thresh");
-    boostTopKnob     = std::make_unique<Knob>("BOOST_TOP_KNOB_LABEL" , "Boost Top");
-    boostTightKnob   = std::make_unique<Knob>("BOOST_TIGHT_KNOB_LABEL", "Boost Tight");
+    gateKnob             = std::make_unique<Knob>("GATE_KNOB_LABEL", "Gate Thresh");
+    boostTopKnob         = std::make_unique<Knob>("BOOST_TOP_KNOB_LABEL" , "Boost Top");
+    boostTightKnob       = std::make_unique<Knob>("BOOST_TIGHT_KNOB_LABEL", "Boost Tight");
     
-    gainKnob         = std::make_unique<Knob>("GAIN_KNOB_LABEL", "Pre Gain");
-    inputFilterKnob  = std::make_unique<Knob>("INPUT_KNOB_FILTER_LABEL", "Input Filter");
+    gainKnob             = std::make_unique<Knob>("GAIN_KNOB_LABEL", "Pre Gain");
+    inputFilterKnob      = std::make_unique<Knob>("INPUT_KNOB_FILTER_LABEL", "Input Filter");
     
-    bassEQKnob       = std::make_unique<Knob>("BASS_EQ_KNOB_LABEL", "Bass");
-    midEQKnob        = std::make_unique<Knob>("MIDDLE_EQ_KNOB_LABEL", "Mid");
-    trebbleEQKnob    = std::make_unique<Knob>("TREBBLE_EQ_KNOB_LABEL", "Trebble");
-    preampVolumeKnob = std::make_unique<Knob>("PREMP_VOLUME_KNOB_LABEL", "Post Gain");
+    bassEQKnob           = std::make_unique<Knob>("BASS_EQ_KNOB_LABEL", "Bass");
+    midEQKnob            = std::make_unique<Knob>("MIDDLE_EQ_KNOB_LABEL", "Mid");
+    trebbleEQKnob        = std::make_unique<Knob>("TREBBLE_EQ_KNOB_LABEL", "Trebble");
+    preampVolumeKnob     = std::make_unique<Knob>("PREMP_VOLUME_KNOB_LABEL", "Post Gain");
 
-    resonanceKnob    = std::make_unique<Knob>("RESONANCE_KNOB_LABEL", "Resonance");
-    presenceKnob     = std::make_unique<Knob>("PRESENCE_KNOB_LABEL", "Presence");
+    resonanceKnob        = std::make_unique<Knob>("RESONANCE_KNOB_LABEL", "Resonance");
+    presenceKnob         = std::make_unique<Knob>("PRESENCE_KNOB_LABEL", "Presence");
 
-    volumeKnob       = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
+    volumeKnob           = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
 
-    ampChannelBox    = std::make_unique<ComboBox>("AMP_CHANNEL_BOX_LABEL", "Amp Channel");
+    ampChannelBox        = std::make_unique<ComboBox>("AMP_CHANNEL_BOX_LABEL", "Amp Channel");
+    toneStackModelBox    = std::make_unique<ComboBox>("TONE_MODEL_BOX_LABEL", "Tonestack Model");
 
 
     createKnob(gateKnob.get(), ParamIDs[GATE_THRESH]);
@@ -46,9 +47,13 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     createKnob(volumeKnob.get(), ParamIDs[MASTER_VOLUME]);
     
     createComboBox(ampChannelBox.get(), ParamIDs[CHANNEL]);
+    createComboBox(toneStackModelBox.get(), ParamIDs[TONESTACK_MODEL]);
 
     ampChannelBox->box.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox->box.setSelectedId(2, juce::NotificationType::dontSendNotification);
+
+    toneStackModelBox->box.addItemList({"Savage", "JCM", "SLO", "Recto"}, 1);
+    toneStackModelBox->box.setSelectedId(1, juce::NotificationType::dontSendNotification);
 
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(false, &irNameLabel); };
@@ -76,7 +81,6 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
 
     addAndMakeVisible(testOscToggle);
     addAndMakeVisible(testOscNoiseToggle);
-
 
 
     setSize (1200, 600);
@@ -189,6 +193,13 @@ void AmpModelerAudioProcessorEditor::resized() {
                                    ampChannelBox->box.getY() - 20,
                                    ampChannelBox->box.getWidth(), 
                                    20);
+
+    toneStackModelBox->box.setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
+    toneStackModelBox->label.setBounds(toneStackModelBox->box.getX(),
+                                       toneStackModelBox->box.getY() - 20,
+                                       toneStackModelBox->box.getWidth(), 
+                                       20);
+
 
 
     irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);

@@ -267,6 +267,9 @@ void AmpModelerAudioProcessor::initParameters() {
     float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
     toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
 
+    ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+    toneStack->comp->setModel(model);
+
 
     preamp->inputFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[INPUT_FILTER]), 
                                         samplerate*PREAMP_UP_SAMPLE_FACTOR);
@@ -351,6 +354,14 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
         return;
     }
 
+    if (parameterID == ParamIDs[TONESTACK_MODEL]) {
+        
+        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+        toneStack->comp->setModel(model);
+        
+        return;
+    }
+
     if (parameterID == ParamIDs[TONESTACK_BASS]
         || parameterID == ParamIDs[TONESTACK_MIDDLE]
         || parameterID == ParamIDs[TONESTACK_TREBBLE])
@@ -385,7 +396,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[GATE_THRESH], "Gate Thresh", -80.0f, -40.0f, -75.0f
+        ParamIDs[GATE_THRESH], "Gate Thresh", -90.0f, -40.0f, -75.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -400,7 +411,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 100.0f
+        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 50.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(
@@ -417,15 +428,19 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[TONESTACK_TREBBLE], "Trebble", 0.0f, 1.0f, 0.5f
     ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        ParamIDs[TONESTACK_MODEL], "Tonestack model", 1, 4, 1
+    ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[PREAMP_VOLUME], "Post Gain", -36.0f, 12.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[RESONANCE], "Reson", 0.0f, 6.0f, 0.0f
+        ParamIDs[RESONANCE], "Reson", 0.0f, 6.0f, 3.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PRESENCE], "Presence", 0.0f, 6.0f, 0.0f
+        ParamIDs[PRESENCE], "Presence", 0.0f, 6.0f, 3.0f
     ));
 
 

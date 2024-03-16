@@ -28,9 +28,39 @@
 
 /*
 RESTANT : 
-    gate 
 
-    test sample player ? 
+général 
+    presets
+
+boost 
+    frequence de boost
+
+tonestack
+    modèles de tonestack
+    composants custom
+    
+preamp 
+    modèle de lampe
+    ajuster les niveaux des channels
+
+
+    filtres custom ?
+
+
+irloader 
+
+    écrire le path de l'ir dans le apvts, pour conserver l'ir entre instance si possible
+
+    wavread
+        ignorer les chunks inutils
+        ajouter des conditions d'erreur 
+
+    double IR mixable
+    alignement de phase
+
+    algorithme partitionné
+
+
 */
 
 struct TestOsc {
@@ -65,6 +95,7 @@ enum Params {
     PREAMP_GAIN,
     CHANNEL,
     INPUT_FILTER,
+    TONESTACK_MODEL,
     TONESTACK_BASS,
     TONESTACK_MIDDLE,
     TONESTACK_TREBBLE,
@@ -82,9 +113,10 @@ const std::vector<juce::String> ParamIDs = {
     "PREAMP_GAIN",
     "INPUT_FILTER",
     "CHANNEL",
-    "TONESTACK_BASS",
-    "TONESTACK_MIDDLE",
-    "TONESTACK_TREBBLE",
+    "TONE_MODEL",
+    "TONE_BASS",
+    "TONE_MID",
+    "TONE_TREB",
     "PREAMP_VOLUME",
     "RESONANCE",
     "PRESENCE",

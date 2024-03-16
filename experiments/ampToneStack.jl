@@ -179,7 +179,7 @@ function main() :: Nothing
     controlSliders = SliderGrid(fig[1, 3],
         (label = "trebble", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
         (label = "middle", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
-        (label = "bass", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
+        (label = "bass", range = -1:0.01:1, startvalue = 0.5, horizontal = true),
 
         (label = "R1", range = 200e3:10e3:300e3, startvalue = 250e3),
         (label = "R2", range = 500e3:100e3:2e6, startvalue = 1e6),

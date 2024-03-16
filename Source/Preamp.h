@@ -67,7 +67,7 @@ struct PreampDistorsion {
     OverSampler *overSampler;
     sample_t *upSampledBlock = nullptr;
 
-    sample_t headroom = 15.0f;
+    sample_t headroom = 20.0f;
     uint8_t channel = 2;
 
 };

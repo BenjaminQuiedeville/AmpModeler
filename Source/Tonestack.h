@@ -13,19 +13,79 @@
 
 #include "Biquad.h"
 
+
+enum class ToneStackModel {
+    EnglSavage = 0,
+    JCM800,
+    Soldano,
+    Rectifier,
+    Custom,
+    N_MODELS
+};
+
 struct EQComponents {
 
-    EQComponents() {
-        // ajouter plus de choix pour les composants du toneStack
+    EQComponents(ToneStackModel ) {
+        setModel(ToneStackModel::EnglSavage);
+    }
 
-        // Composants du Soldano SLO
-        R1 = 250e3;
-        R2 = 1e6;
-        R3 = 25e3;
-        R4 = 47e3;
-        C1 = 0.47e-9;
-        C2 = 20e-9;
-        C3 = 20e-9;    
+    void setModel(ToneStackModel model) {
+        
+        
+        switch (model) {
+        case ToneStackModel::EnglSavage:
+
+            R1 = 250e3;
+            R2 = 1e6;
+            R3 = 20e3;
+            R4 = 47e3;
+            C1 = 0.47e-9;
+            C2 = 47e-9;
+            C3 = 22e-9;    
+            break;
+        
+        case ToneStackModel::JCM800:
+            R1 = 220e3;
+            R2 = 1e6;
+            R3 = 22e3;
+            R4 = 33e3;
+            C1 = 0.47e-9;
+            C2 = 22e-9;
+            C3 = 22e-9;    
+            break; 
+
+        case ToneStackModel::Rectifier:
+            R1 = 250e3;
+            R2 = 1e6;
+            R3 = 25e3;
+            R4 = 47e3;
+            C1 = 0.50e-9;
+            C2 = 20e-9;
+            C3 = 20e-9;    
+            break; 
+
+        case ToneStackModel::Soldano:
+            R1 = 250e3;
+            R2 = 1e6;
+            R3 = 25e3;
+            R4 = 47e3;
+            C1 = 0.47e-9;
+            C2 = 20e-9;
+            C3 = 20e-9;    
+            break; 
+
+        case ToneStackModel::Custom:
+
+            R1 = 250e3;
+            R2 = 1e6;
+            R3 = 20e3;
+            R4 = 47e3;
+            C1 = 0.47e-9;
+            C2 = 47e-9;
+            C3 = 22e-9;    
+            break;
+
+        }
     }
 
     double R1;
@@ -42,7 +102,8 @@ struct EQComponents {
 struct Tonestack {
 
     Tonestack() {
-        comp = new EQComponents();
+        ToneStackModel model = ToneStackModel::EnglSavage;
+        comp = new EQComponents(model);
     }
 
     ~Tonestack() {

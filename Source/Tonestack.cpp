@@ -12,6 +12,8 @@
 
 void Tonestack::updateCoefficients(float t, float m, float l, double samplerate) {
 
+    l = scale(l, 0.0f, 1.0f, -1.0f, 2.0f, 1.0f);
+
     double L = std::exp((l-1.0)*3.4);
 
     double B1 = (t*comp->C1*comp->R1 + m*comp->C3*comp->R3 + L*(comp->C1*comp->R2 + comp->C2*comp->R2) + (comp->C1*comp->R3 + comp->C2*comp->R3));

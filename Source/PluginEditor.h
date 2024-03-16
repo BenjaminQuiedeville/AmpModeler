@@ -58,6 +58,7 @@ private:
     std::unique_ptr<Knob> volumeKnob;
 
     std::unique_ptr<ComboBox> ampChannelBox;
+    std::unique_ptr<ComboBox> toneStackModelBox;
 
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};

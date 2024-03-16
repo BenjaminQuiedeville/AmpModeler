@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
+# set(ASIO_DIR C:/Users/benjamin/Dev/libs/asiosdk)
 
 add_subdirectory(${JUCE_SOURCE_DIR})
 
@@ -39,6 +40,7 @@ target_sources(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${JUCE_SOURCE_DIR}/modules
+        # ${ASIO_DIR}/common
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -47,6 +49,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_USE_CURL=0
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_MODAL_LOOPS_PERMITTED=1
+        JUCE_ASIO=0
 
 )
 
