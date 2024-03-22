@@ -16,9 +16,8 @@
 #include "Biquad.h"
 #include "SmoothParam.h"
 
-#define STAGE_GAIN                     (sample_t)DB_TO_GAIN(30.0)
-#define OUTPUT_ATTENUATION             (sample_t)DB_TO_GAIN(-20.0)
 #define PREAMP_UP_SAMPLE_FACTOR        4
+
 
 
 struct OverSampler {
@@ -33,7 +32,6 @@ struct OverSampler {
     
     Biquad downSampleFilter1 {BIQUAD_LOWPASS};
     Biquad downSampleFilter2 {BIQUAD_LOWPASS};
-
 };
 
 
@@ -61,8 +59,8 @@ struct PreampDistorsion {
     OnepoleFilter stageOutputFilter3;
     OnepoleFilter stageOutputFilter4;
 
-    Biquad tubeBypassFilter1 {BIQUAD_HIGHSHELF};
-    Biquad tubeBypassFilter2 {BIQUAD_HIGHSHELF};
+    Biquad tubeBypassFilter1 {BIQUAD_LOWSHELF};
+    Biquad tubeBypassFilter2 {BIQUAD_LOWSHELF};
 
     OverSampler *overSampler;
     sample_t *upSampledBlock = nullptr;
