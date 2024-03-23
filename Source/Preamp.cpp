@@ -157,24 +157,24 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
     sample = couplingFilter2.processHighPass(sample);
-    sample = stageOutputFilter2.processLowPass(sample);
 
     if (channel == 2) {
         sample *= STAGE_TWO_COMPENSATION;
         return sample;        
     }
 
+    sample = stageOutputFilter2.processLowPass(sample);
     sample *= 0.5f;
 
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
     sample = couplingFilter3.processHighPass(sample);
-    sample = stageOutputFilter3.processLowPass(sample);
 
     if (channel == 3) {
         return sample;        
     }
 
+    sample = stageOutputFilter3.processLowPass(sample);
     sample *= 0.5f;
 
     sample *= STAGE_GAIN;
