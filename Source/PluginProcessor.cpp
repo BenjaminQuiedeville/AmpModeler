@@ -1,6 +1,11 @@
+/*
+  ==============================================================================
+    Author:  Benjamin Quiedeville
+  ==============================================================================
+*/
+
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-// #include "JucePluginDefines.h"
 
 //==============================================================================
 AmpModelerAudioProcessor::AmpModelerAudioProcessor()
