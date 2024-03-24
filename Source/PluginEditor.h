@@ -11,42 +11,17 @@
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
 
+struct Knob;
+struct ComboBox;
 
-struct Knob {
-
-    Knob(juce::String labelID, juce::String name) : label{labelID, name} 
-    {
-    }
-
-    juce::Slider slider;
-    juce::Label label;
-    std::unique_ptr<SliderAttachment> sliderAttachment;
-};
-
-
-struct ComboBox {
-    
-    ComboBox(juce::String labelID, juce::String name) : label {labelID, name}
-    {
-    }
-
-    juce::ComboBox box;
-    juce::Label label;
-    std::unique_ptr<ComboBoxAttachment> boxAttachment;
-};
-
-
-class AmpModelerAudioProcessorEditor : public juce::AudioProcessorEditor
+struct Editor : public juce::AudioProcessorEditor
 {
-public:
-    AmpModelerAudioProcessorEditor (AmpModelerAudioProcessor&);
-    ~AmpModelerAudioProcessorEditor() override;
+    Editor (Processor&);
+    ~Editor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
-private:
 
     std::unique_ptr<Knob> gateKnob;
     std::unique_ptr<Knob> boostTopKnob;
@@ -73,9 +48,63 @@ private:
     juce::ToggleButton testOscNoiseToggle {"Noise toggle"};
     juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
 
-    AmpModelerAudioProcessor& audioProcessor;
+    Processor& audioProcessor;
 
     void createKnob(Knob *knob, const juce::String& paramID);
     void createComboBox(ComboBox *comboBox, const juce::String& paramID);
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmpModelerAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Editor)
+};
+
+struct Knob {
+
+    Knob(juce::String labelID, juce::String name, 
+         const juce::String& paramID, Editor *editor) 
+    : label{labelID, name} 
+    {    
+        slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
+        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
+        editor->addAndMakeVisible(slider);
+    
+        label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+        label.setJustificationType(juce::Justification::centred);
+        label.setFont(15.0f);
+        editor->addAndMakeVisible(label);
+        
+        sliderAttachment = std::make_unique<SliderAttachment>(
+            *(editor->audioProcessor.apvts), paramID, slider
+        );
+
+    }
+
+    juce::Slider slider;
+    juce::Label label;
+    std::unique_ptr<SliderAttachment> sliderAttachment;
+};
+
+
+struct ComboBox {
+    
+    ComboBox(juce::String labelID, juce::String name, 
+             const juce::String& paramID, Editor *editor) 
+             : label {labelID, name}
+    {
+        box.setEditableText(false);
+        box.setJustificationType(juce::Justification::centred);
+        editor->addAndMakeVisible(box);
+        
+        label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+        label.setJustificationType(juce::Justification::centred);
+        label.setFont(15.0f);
+        
+        editor->addAndMakeVisible(label);
+        
+        boxAttachment = std::make_unique<ComboBoxAttachment>(
+            *(editor->audioProcessor.apvts), paramID, box
+        );
+    
+    }
+
+    juce::ComboBox box;
+    juce::Label label;
+    std::unique_ptr<ComboBoxAttachment> boxAttachment;
 };

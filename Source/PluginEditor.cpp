@@ -8,52 +8,32 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioProcessor& p)
+Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
 
-    gateKnob             = std::make_unique<Knob>("GATE_KNOB_LABEL", "Gate Thresh");
-    boostTopKnob         = std::make_unique<Knob>("BOOST_TOP_KNOB_LABEL" , "Boost Top");
-    boostTightKnob       = std::make_unique<Knob>("BOOST_TIGHT_KNOB_LABEL", "Boost Tight");
+    gateKnob = std::make_unique<Knob>("GATE_KNOB_LABEL", "Gate Thresh", ParamIDs[GATE_THRESH], this);
+    boostTopKnob = std::make_unique<Knob>("BOOST_TOP_KNOB_LABEL" , "Boost Top", ParamIDs[BITE], this);
+    boostTightKnob = std::make_unique<Knob>("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", ParamIDs[TIGHT], this);
     
-    gainKnob             = std::make_unique<Knob>("GAIN_KNOB_LABEL", "Pre Gain");
-    inputFilterKnob      = std::make_unique<Knob>("INPUT_KNOB_FILTER_LABEL", "Input Filter");
+    gainKnob = std::make_unique<Knob>("GAIN_KNOB_LABEL", "Pre Gain", ParamIDs[PREAMP_GAIN], this);
+
+    inputFilterKnob = std::make_unique<Knob>("INPUT_KNOB_FILTER_LABEL", "Input Filter", ParamIDs[INPUT_FILTER], this);
     
-    bassEQKnob           = std::make_unique<Knob>("BASS_EQ_KNOB_LABEL", "Bass");
-    midEQKnob            = std::make_unique<Knob>("MIDDLE_EQ_KNOB_LABEL", "Mid");
-    trebbleEQKnob        = std::make_unique<Knob>("TREBBLE_EQ_KNOB_LABEL", "Trebble");
-    preampVolumeKnob     = std::make_unique<Knob>("PREMP_VOLUME_KNOB_LABEL", "Post Gain");
+    bassEQKnob = std::make_unique<Knob>("BASS_EQ_KNOB_LABEL", "Bass", ParamIDs[TONESTACK_BASS], this);
+    midEQKnob = std::make_unique<Knob>("MIDDLE_EQ_KNOB_LABEL", "Mid", ParamIDs[TONESTACK_MIDDLE], this);
+    trebbleEQKnob = std::make_unique<Knob>("TREBBLE_EQ_KNOB_LABEL", "Trebble", ParamIDs[TONESTACK_TREBBLE], this);
 
-    resonanceKnob        = std::make_unique<Knob>("RESONANCE_KNOB_LABEL", "Resonance");
-    presenceKnob         = std::make_unique<Knob>("PRESENCE_KNOB_LABEL", "Presence");
+    preampVolumeKnob = std::make_unique<Knob>("PREMP_VOLUME_KNOB_LABEL", "Post Gain", ParamIDs[PREAMP_VOLUME], this);
 
-    volumeKnob           = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level");
+    resonanceKnob = std::make_unique<Knob>("RESONANCE_KNOB_LABEL", "Resonance", ParamIDs[RESONANCE], this);
+    presenceKnob = std::make_unique<Knob>("PRESENCE_KNOB_LABEL", "Presence", ParamIDs[PRESENCE], this);
 
-    ampChannelBox        = std::make_unique<ComboBox>("AMP_CHANNEL_BOX_LABEL", "Amp Channel");
-    toneStackModelBox    = std::make_unique<ComboBox>("TONE_MODEL_BOX_LABEL", "Tonestack Model");
+    volumeKnob = std::make_unique<Knob>("MASTER_VOLUME_KNOB_LABEL", "Output Level", ParamIDs[MASTER_VOLUME], this);
 
+    ampChannelBox = std::make_unique<ComboBox>("AMP_CHANNEL_BOX_LABEL", "Amp Channel", ParamIDs[CHANNEL], this);
+    toneStackModelBox = std::make_unique<ComboBox>("TONE_MODEL_BOX_LABEL", "Tonestack Model", ParamIDs[TONESTACK_MODEL], this);
 
-    createKnob(gateKnob.get(), ParamIDs[GATE_THRESH]);
-    createKnob(boostTopKnob.get(), ParamIDs[BITE]);
-    createKnob(boostTightKnob.get(), ParamIDs[TIGHT]);
-
-    createKnob(gainKnob.get(), ParamIDs[PREAMP_GAIN]);
-
-    createKnob(inputFilterKnob.get(), ParamIDs[INPUT_FILTER]);
-
-    createKnob(bassEQKnob.get(), ParamIDs[TONESTACK_BASS]);
-    createKnob(midEQKnob.get(), ParamIDs[TONESTACK_MIDDLE]);
-    createKnob(trebbleEQKnob.get(), ParamIDs[TONESTACK_TREBBLE]);
-
-    createKnob(preampVolumeKnob.get(), ParamIDs[PREAMP_VOLUME]);
-
-    createKnob(resonanceKnob.get(), ParamIDs[RESONANCE]);
-    createKnob(presenceKnob.get(), ParamIDs[PRESENCE]);
-
-    createKnob(volumeKnob.get(), ParamIDs[MASTER_VOLUME]);
-    
-    createComboBox(ampChannelBox.get(), ParamIDs[CHANNEL]);
-    createComboBox(toneStackModelBox.get(), ParamIDs[TONESTACK_MODEL]);
 
     ampChannelBox->box.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox->box.setSelectedId(2, juce::NotificationType::dontSendNotification);
@@ -89,20 +69,21 @@ AmpModelerAudioProcessorEditor::AmpModelerAudioProcessorEditor (AmpModelerAudioP
     addAndMakeVisible(testOscNoiseToggle);
 
 
-    setSize (1200, 600);
+    setSize(1200, 600);
+    setResizable(true, true);
 }
 
-AmpModelerAudioProcessorEditor::~AmpModelerAudioProcessorEditor()
+Editor::~Editor()
 {
 }
 
 //==============================================================================
-void AmpModelerAudioProcessorEditor::paint (juce::Graphics& g)
+void Editor::paint (juce::Graphics& g)
 {
-	g.fillAll(juce::Colours::black);
+	g.fillAll(juce::Colours::darkgrey);
 }
 
-void AmpModelerAudioProcessorEditor::resized() {
+void Editor::resized() {
     
     int knobSize = 100;
     int horizontalMargin = 25;
@@ -215,40 +196,4 @@ void AmpModelerAudioProcessorEditor::resized() {
 
     testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
     testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
-}
-
-
-void AmpModelerAudioProcessorEditor::createKnob(Knob *knob, const juce::String& paramID) {
-
-    knob->slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    knob->slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
-    addAndMakeVisible(knob->slider);
-
-    knob->label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
-    knob->label.setJustificationType(juce::Justification::centred);
-    knob->label.setFont(15.0f);
-    addAndMakeVisible(knob->label);
-    
-    knob->sliderAttachment = std::make_unique<SliderAttachment>(
-        *(audioProcessor.apvts), paramID, knob->slider
-    );
-}
-
-
-void AmpModelerAudioProcessorEditor::createComboBox(ComboBox *comboBox, const juce::String& paramID)  {
-    
-    comboBox->box.setEditableText(false);
-    comboBox->box.setJustificationType(juce::Justification::centred);
-    addAndMakeVisible(comboBox->box);
-    
-    comboBox->label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
-    comboBox->label.setJustificationType(juce::Justification::centred);
-    comboBox->label.setFont(15.0f);
-    
-    addAndMakeVisible(comboBox->label);
-    
-    comboBox->boxAttachment = std::make_unique<ComboBoxAttachment>(
-        *(audioProcessor.apvts), paramID, comboBox->box
-    );
-
 }

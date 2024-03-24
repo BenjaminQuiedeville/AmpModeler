@@ -129,16 +129,15 @@ const std::vector<juce::String> ParamIDs = {
     "MASTER_VOLUME"
 };
 
-class AmpModelerAudioProcessor  : public juce::AudioProcessor, 
-                                juce::AudioProcessorValueTreeState::Listener
-                                #if JucePlugin_Enable_ARA
-                                , public juce::AudioProcessorARAExtension
-                                #endif
+struct Processor  : public juce::AudioProcessor, 
+                                   juce::AudioProcessorValueTreeState::Listener
+                                   #if JucePlugin_Enable_ARA
+                                   , public juce::AudioProcessorARAExtension
+                                   #endif
 {
-public:
 	//==============================================================================
-	AmpModelerAudioProcessor();
-	~AmpModelerAudioProcessor() override;
+	Processor();
+	~Processor() override;
 
 	//==============================================================================
 	void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -193,14 +192,11 @@ public:
     sample_t *intputSignalCopy = nullptr;
     bool doTestOsc = false;
 
-private:
-
-
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
 	juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmpModelerAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Processor)
 };

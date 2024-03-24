@@ -8,7 +8,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-AmpModelerAudioProcessor::AmpModelerAudioProcessor()
+Processor::Processor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
@@ -34,7 +34,7 @@ AmpModelerAudioProcessor::AmpModelerAudioProcessor()
     }
 }
 
-AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
+Processor::~Processor() {
 
     for (uint8_t i = 0; i < N_PARAMS; i++) {
         apvts->removeParameterListener(ParamIDs[i], this);
@@ -54,12 +54,12 @@ AmpModelerAudioProcessor::~AmpModelerAudioProcessor() {
 }
 
 //==============================================================================
-const juce::String AmpModelerAudioProcessor::getName() const
+const juce::String Processor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool AmpModelerAudioProcessor::acceptsMidi() const
+bool Processor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -68,7 +68,7 @@ bool AmpModelerAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool AmpModelerAudioProcessor::producesMidi() const
+bool Processor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -77,7 +77,7 @@ bool AmpModelerAudioProcessor::producesMidi() const
    #endif
 }
 
-bool AmpModelerAudioProcessor::isMidiEffect() const
+bool Processor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -86,42 +86,42 @@ bool AmpModelerAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double AmpModelerAudioProcessor::getTailLengthSeconds() const
+double Processor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int AmpModelerAudioProcessor::getNumPrograms()
+int Processor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int AmpModelerAudioProcessor::getCurrentProgram()
+int Processor::getCurrentProgram()
 {
     return 0;
 }
 
-void AmpModelerAudioProcessor::setCurrentProgram (int index)
+void Processor::setCurrentProgram (int index)
 {
     index;
     return;
 }
 
-const juce::String AmpModelerAudioProcessor::getProgramName (int index)
+const juce::String Processor::getProgramName (int index)
 {
     index;
     return {};
 }
 
-void AmpModelerAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void Processor::changeProgramName (int index, const juce::String& newName)
 {
     newName; index;
     return;
 }
 
 //==============================================================================
-void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
 
@@ -149,14 +149,14 @@ void AmpModelerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     initParameters();
 }
 
-void AmpModelerAudioProcessor::releaseResources()
+void Processor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool AmpModelerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -181,7 +181,7 @@ bool AmpModelerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
-void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {   
     midiMessages;
 
@@ -227,24 +227,24 @@ void AmpModelerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 }
 
 //==============================================================================
-bool AmpModelerAudioProcessor::hasEditor() const
+bool Processor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* AmpModelerAudioProcessor::createEditor()
+juce::AudioProcessorEditor* Processor::createEditor()
 {
-    return new AmpModelerAudioProcessorEditor (*this);
+    return new Editor (*this);
 }
 
 //==============================================================================
-void AmpModelerAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {
+void Processor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
     juce::MemoryOutputStream stream(destData, false);
     apvts->state.writeToStream(stream);
 }   
 
-void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {
+void Processor::setStateInformation (const void* data, int sizeInBytes) {
     // Recall params
     juce::ValueTree importedTree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
 
@@ -255,7 +255,7 @@ void AmpModelerAudioProcessor::setStateInformation (const void* data, int sizeIn
 
 }
 
-void AmpModelerAudioProcessor::initParameters() {
+void Processor::initParameters() {
 
     noiseGate->threshold = DB_TO_GAIN(*apvts->getRawParameterValue(ParamIDs[GATE_THRESH]));
                                
@@ -263,17 +263,6 @@ void AmpModelerAudioProcessor::initParameters() {
     preBoost->biteFilter.setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, 
                                           *apvts->getRawParameterValue(ParamIDs[BITE]), 
                                           samplerate);
-
-    preamp->preGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_GAIN]), 
-                               SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
-
-    float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
-    float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
-    float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
-    toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
-
-    ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
-    toneStack->comp->setModel(model);
 
 
     preamp->inputFilter.setCoefficients(*apvts->getRawParameterValue(ParamIDs[INPUT_FILTER]), 
@@ -284,6 +273,15 @@ void AmpModelerAudioProcessor::initParameters() {
     preamp->preGain.newTarget(scale(paramValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
                                 SMOOTH_PARAM_TIME, 
                                 samplerate * PREAMP_UP_SAMPLE_FACTOR);
+
+    float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
+    float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
+    float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
+    toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
+
+    ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+    toneStack->comp->setModel(model);
+
 
     preamp->postGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_VOLUME]), 
                                SMOOTH_PARAM_TIME, 
@@ -302,7 +300,7 @@ void AmpModelerAudioProcessor::initParameters() {
                             SMOOTH_PARAM_TIME, samplerate);
 }
 
-void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
+void Processor::parameterChanged(const juce::String &parameterID, float newValue) {
 
     // int paramIndex = 0;
 
@@ -395,7 +393,7 @@ void AmpModelerAudioProcessor::parameterChanged(const juce::String &parameterID,
 
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLayout()
 {   
 
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -460,5 +458,5 @@ juce::AudioProcessorValueTreeState::ParameterLayout AmpModelerAudioProcessor::cr
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AmpModelerAudioProcessor();
+    return new Processor();
 }
