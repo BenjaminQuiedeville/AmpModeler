@@ -15,6 +15,7 @@ enum class ToneStackModel {
     JCM800,
     Soldano,
     Rectifier,
+    RockerVerb,
     Custom,
     N_MODELS
 };
@@ -69,6 +70,16 @@ struct EQComponents {
             C1 = 0.47e-9;
             C2 = 20e-9;
             C3 = 20e-9;    
+            break; 
+
+        case ToneStackModel::RockerVerb:
+            R1 = 250e3;
+            R2 = 300e3;
+            R3 = 25e3;
+            R4 = 39e3;
+            C1 = 0.56e-9;
+            C2 = 22e-9;
+            C3 = 22e-9;    
             break; 
 
         case ToneStackModel::Custom:

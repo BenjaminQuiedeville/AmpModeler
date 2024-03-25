@@ -125,7 +125,7 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
 
-    inputNoiseFilter.setCoefficients(2000.0, 0.7, 0.0, sampleRate);
+    inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, sampleRate);
 
     noiseGate->prepareToPlay(sampleRate);
     preBoost->prepareToPlay();

@@ -38,7 +38,7 @@ Editor::Editor (Processor& p)
     ampChannelBox->box.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox->box.setSelectedId(2, juce::NotificationType::dontSendNotification);
 
-    toneStackModelBox->box.addItemList({"Savage", "JCM", "SLO", "Recto"}, 1);
+    toneStackModelBox->box.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
     toneStackModelBox->box.setSelectedId(1, juce::NotificationType::dontSendNotification);
 
 
