@@ -25,10 +25,11 @@ struct EQComponents {
         setModel(ToneStackModel::EnglSavage);
     }
 
-    void setModel(ToneStackModel model) {
+    void setModel(ToneStackModel newModel) {
         
+        if (newModel == model) { return; }
         
-        switch (model) {
+        switch (newModel) {
         case ToneStackModel::EnglSavage:
 
             R1 = 250e3;
@@ -92,6 +93,8 @@ struct EQComponents {
     double C1;
     double C2;
     double C3;
+    
+    ToneStackModel model;
 };
 
 

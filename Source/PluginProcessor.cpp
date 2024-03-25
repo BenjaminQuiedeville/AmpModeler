@@ -125,6 +125,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
 
+    inputNoiseFilter.setCoefficients(2000.0, 0.7, 0.0, sampleRate);
+
     noiseGate->prepareToPlay(sampleRate);
     preBoost->prepareToPlay();
 
@@ -197,6 +199,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
 
     sample_t *audioPtr = buffer.getWritePointer(0);
+
+    inputNoiseFilter.processBuffer(audioPtr, numSamples);
+
 
     if (doTestOsc) {
         for (size_t i = 0; i < numSamples; i++) {
@@ -274,13 +279,13 @@ void Processor::initParameters() {
                                 SMOOTH_PARAM_TIME, 
                                 samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
+    ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+    toneStack->comp->setModel(model);
+
     float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
     float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
     float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
     toneStack->updateCoefficients(trebbleEQgain, midEQgain, bassEQgain, samplerate);
-
-    ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
-    toneStack->comp->setModel(model);
 
 
     preamp->postGain.newTarget(*apvts->getRawParameterValue(ParamIDs[PREAMP_VOLUME]), 
@@ -355,20 +360,16 @@ void Processor::parameterChanged(const juce::String &parameterID, float newValue
         preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
         return;
-    }
-
-    if (parameterID == ParamIDs[TONESTACK_MODEL]) {
-        
-        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
-        toneStack->comp->setModel(model);
-        
-        return;
-    }
+    }        
 
     if (parameterID == ParamIDs[TONESTACK_BASS]
         || parameterID == ParamIDs[TONESTACK_MIDDLE]
-        || parameterID == ParamIDs[TONESTACK_TREBBLE])
+        || parameterID == ParamIDs[TONESTACK_TREBBLE]
+        || parameterID == ParamIDs[TONESTACK_MODEL])
     {
+        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+        toneStack->comp->setModel(model);
+        
         float bassEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
         float trebbleEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
         float midEQgain = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
@@ -443,7 +444,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         ParamIDs[RESONANCE], "Reson", 0.0f, 6.0f, 3.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PRESENCE], "Presence", 0.0f, 6.0f, 3.0f
+        ParamIDs[PRESENCE], "Presence", 0.0f, 12.0f, 6.0f
     ));
 
 

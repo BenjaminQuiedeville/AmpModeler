@@ -26,7 +26,7 @@ libérer le buffer temporaire
 
 */
 
-
+//@TODO change back to pffft's C version for more flexibility
 struct IRLoader {
 
     IRLoader();

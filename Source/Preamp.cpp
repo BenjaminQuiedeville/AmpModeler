@@ -94,10 +94,10 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    stageOutputFilter1.setCoefficients(2000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     tubeBypassFilter1.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     tubeBypassFilter2.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);

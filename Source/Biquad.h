@@ -18,7 +18,7 @@ enum FilterType {
     BIQUAD_NFILTERTYPES,
 };
 
-
+//@TODO refactor to be thread safe
 struct Biquad {
 
     Biquad(FilterType type) { filterType = (uint8_t)type; }

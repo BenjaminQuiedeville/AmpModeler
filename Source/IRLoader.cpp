@@ -234,6 +234,7 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
     loadIR(true, nullptr);
 }
 
+//@TODO not thread safe
 void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
 
     FFT::TimeVector irTimeVec = fftEngine->createTimeVector();

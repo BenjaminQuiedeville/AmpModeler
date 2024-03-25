@@ -174,6 +174,8 @@ struct Processor  : public juce::AudioProcessor,
 
 	juce::AudioProcessorValueTreeState *apvts;
 
+    Biquad inputNoiseFilter {BIQUAD_LOWPASS};
+
     NoiseGate *noiseGate;
     Boost *preBoost;
     PreampDistorsion *preamp;
