@@ -415,7 +415,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 50.0f
+        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 100.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(

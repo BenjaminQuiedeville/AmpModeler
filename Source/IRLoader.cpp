@@ -4,6 +4,10 @@
   ==============================================================================
 */
 
+#ifndef JUCE_MODAL_LOOPS_PERMITTED
+    #define JUCE_MODAL_LOOPS_PERMITTED 1
+#endif
+
 #include "IRLoader.h"
 #include <memory>
 #include <math.h>
@@ -11,9 +15,6 @@
 #include <fstream>
 #include <iostream>
 
-#ifndef JUCE_MODAL_LOOPS_PERMITTED
-    #define JUCE_MODAL_LOOPS_PERMITTED 1
-#endif
 
 #define BITS_24_MAX (double)((1 << 23) - 1)
 
@@ -261,7 +262,6 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
         prepareConvolution(baseIR, BASE_IR_SIZE);
         return;
     }
-
 
     auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
 

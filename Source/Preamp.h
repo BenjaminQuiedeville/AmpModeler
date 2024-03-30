@@ -44,7 +44,7 @@ struct PreampDistorsion {
     double samplerate = 0.0;
 
     OnepoleFilter inputFilter;
-
+    
     OnepoleFilter couplingFilter1;
     OnepoleFilter couplingFilter2;
     OnepoleFilter couplingFilter3;
@@ -55,8 +55,8 @@ struct PreampDistorsion {
     OnepoleFilter stageOutputFilter3;
     OnepoleFilter stageOutputFilter4;
 
-    Biquad tubeBypassFilter1 {BIQUAD_LOWSHELF};
-    Biquad tubeBypassFilter2 {BIQUAD_LOWSHELF};
+    Biquad cathodeBypassFilter1 {BIQUAD_LOWSHELF};
+    Biquad cathodeBypassFilter2 {BIQUAD_LOWSHELF};
 
     OverSampler *overSampler;
     sample_t *upSampledBlock = nullptr;

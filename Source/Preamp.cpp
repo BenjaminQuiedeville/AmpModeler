@@ -23,10 +23,11 @@ void OverSampler::prepareToPlay(double _samplerate) {
     downSampleFilter1.prepareToPlay();
     downSampleFilter2.prepareToPlay();
 
-    upSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.7, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    upSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 0.7, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    downSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.7, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    downSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 0.7, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    // earlevel.com/main/2016/09/29/cascading-filters
+    upSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.54119610, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    upSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 1.3065630, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    downSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.54119610, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    downSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 1.3065630, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
 }
 
@@ -88,7 +89,8 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter4.prepareToPlay();
     
 
-    inputFilter.setCoefficients(50.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    inputFilter.setCoefficients(100.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    
     couplingFilter1.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter2.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
@@ -99,8 +101,8 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    tubeBypassFilter1.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    tubeBypassFilter2.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter1.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     overSampler->prepareToPlay(_samplerate);
 

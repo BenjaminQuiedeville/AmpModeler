@@ -42,16 +42,12 @@ boost
     frequence de boost
 
 tonestack
-    modèles de tonestack
     composants custom
     
 preamp 
     modèle de lampe
-    ajuster les niveaux des channels
-
 
     filtres custom ?
-
 
 irloader 
 
