@@ -63,7 +63,7 @@ struct NoiseGate {
     
     sample_t *gateBuffer = nullptr;
     size_t gateBufferLength = 0;
-    int32_t gateBufferIndex = 0;
+    s32 gateBufferIndex = 0;
     
     double absoluteSum = 0.0;
     

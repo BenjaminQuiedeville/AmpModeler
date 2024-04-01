@@ -68,6 +68,10 @@ Editor::Editor (Processor& p)
     addAndMakeVisible(testOscToggle);
     addAndMakeVisible(testOscNoiseToggle);
 
+    tabs.addTab("Tab 1", juce::Colours::red, &testOscToggle, false, 0);
+    tabs.addTab("Tab 2", juce::Colours::blue, &testOscNoiseToggle, false, 1);
+    // addAndMakeVisible(tabs);
+
 
     setSize(1200, 600);
     setResizable(true, true);
@@ -196,4 +200,8 @@ void Editor::resized() {
 
     testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
     testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
+
+    // tabs.setBounds(0, 0, 1000, 400);
+
+
 }

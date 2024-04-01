@@ -57,12 +57,14 @@ struct PreampDistorsion {
 
     Biquad cathodeBypassFilter1 {BIQUAD_LOWSHELF};
     Biquad cathodeBypassFilter2 {BIQUAD_LOWSHELF};
+    Biquad cathodeBypassFilter3 {BIQUAD_LOWSHELF};
+    Biquad cathodeBypassFilter4 {BIQUAD_LOWSHELF};
 
     OverSampler *overSampler;
     sample_t *upSampledBlock = nullptr;
 
-    sample_t headroom = 20.0f;
-    uint8_t channel = 2;
+    sample_t headroom = 30.0f;
+    u8 channel = 2;
 
 };
 

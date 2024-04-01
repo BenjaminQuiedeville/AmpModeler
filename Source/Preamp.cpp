@@ -8,7 +8,7 @@
 #include <memory>
 #include <assert.h>
 
-const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
+const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(32.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-18.0);
 
 const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(18.0);
@@ -103,7 +103,8 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
 
     cathodeBypassFilter1.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter2.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
+    cathodeBypassFilter3.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
@@ -128,9 +129,9 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
 sample_t PreampDistorsion::processGainStages(sample_t sample) {
 
     // input Tube stage
-    sample = tubeBypassFilter1.process(sample);
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
+    sample = cathodeBypassFilter1.process(sample);
     
     sample = inputFilter.processHighPass(sample);
     sample = stageOutputFilter1.processLowPass(sample);
@@ -151,9 +152,9 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
 
     sample *= 0.5f;
 
-    sample = tubeBypassFilter2.process(sample);
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
+    sample = cathodeBypassFilter2.process(sample);
     sample = couplingFilter2.processHighPass(sample);
 
     if (channel == 2) {

@@ -21,7 +21,7 @@ enum FilterType {
 //@TODO refactor to be thread safe
 struct Biquad {
 
-    Biquad(FilterType type) { filterType = (uint8_t)type; }
+    Biquad(FilterType type) { filterType = (u8)type; }
 
     void prepareToPlay() {
 
@@ -151,7 +151,7 @@ struct Biquad {
     sample_t x2 = 0.0f;
     sample_t y1 = 0.0f;
     sample_t y2 = 0.0f;
-    uint8_t filterType;
+    u8 filterType;
 
 };
 

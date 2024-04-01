@@ -48,6 +48,8 @@ struct Editor : public juce::AudioProcessorEditor
     juce::ToggleButton testOscNoiseToggle {"Noise toggle"};
     juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
 
+    juce::TabbedComponent tabs {juce::TabbedButtonBar::Orientation::TabsAtTop};
+
     Processor& audioProcessor;
 
     void createKnob(Knob *knob, const juce::String& paramID);

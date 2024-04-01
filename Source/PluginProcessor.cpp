@@ -29,14 +29,14 @@ Processor::Processor()
     toneStack = new Tonestack();
     irLoader  = new IRLoader();
 
-    for (uint8_t i = 0; i < N_PARAMS; i++) {
+    for (u8 i = 0; i < N_PARAMS; i++) {
         apvts->addParameterListener(ParamIDs[i], this);
     }
 }
 
 Processor::~Processor() {
 
-    for (uint8_t i = 0; i < N_PARAMS; i++) {
+    for (u8 i = 0; i < N_PARAMS; i++) {
         apvts->removeParameterListener(ParamIDs[i], this);
     }
 
@@ -279,6 +279,9 @@ void Processor::initParameters() {
                                 SMOOTH_PARAM_TIME, 
                                 samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
+    preamp->channel = (u8)*apvts->getRawParameterValue(ParamIDs[CHANNEL]);
+
+
     ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
     toneStack->comp->setModel(model);
 
@@ -351,7 +354,7 @@ void Processor::parameterChanged(const juce::String &parameterID, float newValue
 
     if (parameterID == ParamIDs[CHANNEL]) {
         
-        preamp->channel = (uint8_t)newValue;
+        preamp->channel = (u8)newValue;
         return;
     }
 

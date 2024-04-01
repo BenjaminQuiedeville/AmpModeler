@@ -28,20 +28,20 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
 
     char temp[1] = {0};
     char riffString[4];
-    int32_t ChunkSize;
+    s32 ChunkSize;
     char format[4];
     
     char SubChunk1ID[4];
-    int32_t SubChunk1Size;
-    int16_t AudioFormat;
-    int16_t NumChannels;
-    int32_t samplerate;
-    int32_t byteRate;
-    int16_t BlockAlign;
-    int16_t bitsPerSample;
+    s32 SubChunk1Size;
+    s16 AudioFormat;
+    s16 NumChannels;
+    s32 samplerate;
+    s32 byteRate;
+    s16 BlockAlign;
+    s16 bitsPerSample;
     
     char SubChunk2ID[4];
-    int32_t signalSizeBytes;
+    s32 signalSizeBytes;
     
     // FILE *wavFile = fopen(filepath.data(), "rb");
     FILE *wavFile = nullptr;
@@ -127,17 +127,17 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     }
 
 
-    uint32_t counter = 0;
+    u32 counter = 0;
     switch (bitsPerSample) {
     case 16: {
 
-        int8_t sampleChar[2] = {0x00, 0x00};
+        s8 sampleChar[2] = {0x00, 0x00};
 
         while (!feof(wavFile) && counter < numSamples) {
             fread(sampleChar, 1, 2, wavFile);
             
-            int32_t mask = (int32_t)(1 << (bitsPerSample - 1));
-            int16_t sampleInt = *(int16_t *)sampleChar;
+            s32 mask = (s32)(1 << (bitsPerSample - 1));
+            s16 sampleInt = *(s16 *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFF;
@@ -151,12 +151,12 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     }
     case 24: {
     
-        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+        s8 sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
         while (!feof(wavFile) && counter < numSamples) {
             fread(sampleChar, 1, 3, wavFile);
 
-            int64_t mask = (int64_t)1 << (bitsPerSample - 1);
-            int32_t sampleInt = *(int32_t *)sampleChar;
+            s64 mask = (s64)1 << (bitsPerSample - 1);
+            s32 sampleInt = *(s32 *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFFFF;
@@ -170,14 +170,14 @@ static size_t parseWavFile(const std::string& filepath, float **buffer) {
     }
     case 32: {
         
-        int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
+        s8 sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
 
         while (!feof(wavFile) && counter < numSamples) {
 
             fread(sampleChar, 1, 4, wavFile);
 
-            int64_t mask = (int64_t)1 << (bitsPerSample - 1);
-            int32_t sampleInt = *(int32_t *)sampleChar;
+            s64 mask = (s64)1 << (bitsPerSample - 1);
+            s32 sampleInt = *(s32 *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFFFFFF;
