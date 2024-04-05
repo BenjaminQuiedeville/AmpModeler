@@ -1,6 +1,5 @@
 /* libFLAC - Free Lossless Audio Codec library
- * Copyright (C) 2000-2009  Josh Coalson
- * Copyright (C) 2011-2016  Xiph.Org Foundation
+ * Copyright (C) 2013-2023  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,21 +29,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLAC__PRIVATE__ALL_H
-#define FLAC__PRIVATE__ALL_H
+#ifndef FLAC__SHARE__PRIVATE_H
+#define FLAC__SHARE__PRIVATE_H
 
-#include "bitmath.h"
-#include "bitreader.h"
-#include "bitwriter.h"
-#include "cpu.h"
-#include "crc.h"
-#include "fixed.h"
-#include "float.h"
-#include "format.h"
-#include "lpc.h"
-#include "md5.h"
-#include "memory.h"
-#include "metadata.h"
-#include "stream_encoder_framing.h"
+/*
+ * Unpublished debug routines from libFLAC. This should not be used from any
+ * client code other than code shipped with the FLAC sources.
+ */
+FLAC_API FLAC__bool FLAC__stream_encoder_disable_instruction_set(FLAC__StreamEncoder *encoder, int value);
+FLAC_API FLAC__bool FLAC__stream_encoder_disable_constant_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
+FLAC_API FLAC__bool FLAC__stream_encoder_disable_fixed_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
+FLAC_API FLAC__bool FLAC__stream_encoder_disable_verbatim_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
+/*
+ * The following two routines were intended as debug routines and are not
+ * in the public headers, but SHOULD NOT CHANGE! It is known they are used
+ * in some non-audio projects needing every last bit of performance.
+ * See https://github.com/xiph/flac/issues/547 for details. These projects
+ * provide their own prototypes, so changing the signature of these
+ * functions would break building.
+ */
+FLAC_API FLAC__bool FLAC__stream_encoder_set_do_md5(FLAC__StreamEncoder *encoder, FLAC__bool value);
+FLAC_API FLAC__bool FLAC__stream_encoder_get_do_md5(const FLAC__StreamEncoder *encoder);
 
-#endif
+#endif /* FLAC__SHARE__PRIVATE_H */
