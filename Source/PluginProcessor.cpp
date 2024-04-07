@@ -308,43 +308,34 @@ void Processor::initParameters() {
                             SMOOTH_PARAM_TIME, samplerate);
 }
 
-void Processor::parameterChanged(const juce::String &parameterID, float newValue) {
-
-    // int paramIndex = 0;
-
-    // for(int i = 0; i < ParamIDs.size(); i++) {
-    //     if (parameterID == ParamIDs[i]) {
-    //         paramIndex = i;
-    //         break;
-    //     }
-    // }
-    //
-    // switch (paramIndex) {}
+void Processor::parameterChanged(const juce::String &parameterId, float newValue) {
 
 
-    if (parameterID == ParamIDs[GATE_THRESH]) {
+    const auto id = juce::Identifier(parameterId);
+
+    if (id == ParamIDs[GATE_THRESH]) {
         noiseGate->threshold = DB_TO_GAIN(newValue);
         return;
     }
 
-    if (parameterID == ParamIDs[BITE]) {
+    if (id == ParamIDs[BITE]) {
         preBoost->biteFilter.setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, newValue, samplerate);
 
         return;
     }
 
-    if (parameterID == ParamIDs[TIGHT]) {
+    if (id == ParamIDs[TIGHT]) {
         preBoost->tightFilter.setCoefficients(newValue, samplerate);
         return;
     }
 
-    if (parameterID == ParamIDs[INPUT_FILTER]) {
+    if (id == ParamIDs[INPUT_FILTER]) {
         preamp->inputFilter.setCoefficients(newValue, samplerate*PREAMP_UP_SAMPLE_FACTOR);
         return;
     }
 
-    if (parameterID == ParamIDs[PREAMP_GAIN]) {
-        auto paramRange = apvts->getParameter(parameterID)->getNormalisableRange();
+    if (id == ParamIDs[PREAMP_GAIN]) {
+        auto paramRange = apvts->getParameter(id)->getNormalisableRange();
 
         preamp->preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
                                   SMOOTH_PARAM_TIME, 
@@ -352,23 +343,23 @@ void Processor::parameterChanged(const juce::String &parameterID, float newValue
         return;
     }
 
-    if (parameterID == ParamIDs[CHANNEL]) {
+    if (id == ParamIDs[CHANNEL]) {
         
         preamp->channel = (u8)newValue;
         return;
     }
 
-    if (parameterID == ParamIDs[PREAMP_VOLUME]) {
+    if (id == ParamIDs[PREAMP_VOLUME]) {
 
         preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
         return;
     }        
 
-    if (parameterID == ParamIDs[TONESTACK_BASS]
-        || parameterID == ParamIDs[TONESTACK_MIDDLE]
-        || parameterID == ParamIDs[TONESTACK_TREBBLE]
-        || parameterID == ParamIDs[TONESTACK_MODEL])
+    if (id == ParamIDs[TONESTACK_BASS]
+        || id == ParamIDs[TONESTACK_MIDDLE]
+        || id == ParamIDs[TONESTACK_TREBBLE]
+        || id == ParamIDs[TONESTACK_MODEL])
     {
         ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
         toneStack->comp->setModel(model);
@@ -380,17 +371,17 @@ void Processor::parameterChanged(const juce::String &parameterID, float newValue
         return;
     }
 
-    if (parameterID == ParamIDs[RESONANCE]) {
+    if (id == ParamIDs[RESONANCE]) {
         resonanceFilter.setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, newValue, samplerate);
         return;
     }
 
-    if (parameterID == ParamIDs[PRESENCE]) {
+    if (id == ParamIDs[PRESENCE]) {
         presenceFilter.setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, newValue, samplerate);
         return;
     }
 
-    if (parameterID == ParamIDs[MASTER_VOLUME]) {
+    if (id == ParamIDs[MASTER_VOLUME]) {
         masterVolume.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
         return;
     }
@@ -403,56 +394,56 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[GATE_THRESH], "Gate Thresh", -90.0f, -40.0f, -75.0f
+        ParamIDs[GATE_THRESH].toString(), "Gate Thresh", -90.0f, -40.0f, -75.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[BITE], "Bite", 0.0f, 30.0f, 0.0f
+        ParamIDs[BITE].toString(), "Bite", 0.0f, 30.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[TIGHT], "Tight", 20.0f, 1000.0f, 0.0f
+        ParamIDs[TIGHT].toString(), "Tight", 20.0f, 1000.0f, 0.0f
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PREAMP_GAIN], "Pre Gain", 0.0f, 10.0f, 5.0f
+        ParamIDs[PREAMP_GAIN].toString(), "Pre Gain", 0.0f, 10.0f, 5.0f
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[INPUT_FILTER], "Input Filter", 0.0f, 700.0f, 100.0f
-    ));
-    
-    params.push_back(std::make_unique<juce::AudioParameterInt>(
-        ParamIDs[CHANNEL], "Amp Channel", 1, 4, 2
-    ));
-    
-
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[TONESTACK_BASS], "Bass", 0.0f, 1.0f, 0.5f
-    ));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[TONESTACK_MIDDLE], "Mid", 0.0f, 1.0f, 0.5f
-    ));
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[TONESTACK_TREBBLE], "Trebble", 0.0f, 1.0f, 0.5f
+        ParamIDs[INPUT_FILTER].toString(), "Input Filter", 0.0f, 700.0f, 100.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(
-        ParamIDs[TONESTACK_MODEL], "Tonestack model", 1, 4, 1
+        ParamIDs[CHANNEL].toString(), "Amp Channel", 1, 4, 2
+    ));
+    
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[TONESTACK_BASS].toString(), "Bass", 0.0f, 1.0f, 0.5f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[TONESTACK_MIDDLE].toString(), "Mid", 0.0f, 1.0f, 0.5f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[TONESTACK_TREBBLE].toString(), "Trebble", 0.0f, 1.0f, 0.5f
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterInt>(
+        ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 1, 4, 1
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PREAMP_VOLUME], "Post Gain", -36.0f, 12.0f, 0.0f
+        ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -36.0f, 12.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[RESONANCE], "Reson", 0.0f, 6.0f, 3.0f
+        ParamIDs[RESONANCE].toString(), "Reson", 0.0f, 6.0f, 3.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PRESENCE], "Presence", 0.0f, 12.0f, 6.0f
+        ParamIDs[PRESENCE].toString(), "Presence", 0.0f, 12.0f, 6.0f
     ));
 
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[MASTER_VOLUME], "Master Vol", -20.0f, 0.0f, -6.0f
+        ParamIDs[MASTER_VOLUME].toString(), "Master Vol", -20.0f, 0.0f, -6.0f
     ));
 
     return { params.begin(), params.end() };

@@ -8,7 +8,7 @@
 #include <memory>
 #include <assert.h>
 
-const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(32.0);
+const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-18.0);
 
 const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(18.0);
@@ -120,7 +120,7 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
     sample = -sample / headroom;
 
     if (sample > 0.0f) { sample = std::tanh(sample); }
-    if (sample < -1.0f) { sample = -1.0f; }
+    if (sample < -1.3f) { sample = -1.3f; }
 
     return sample*headroom;
 }

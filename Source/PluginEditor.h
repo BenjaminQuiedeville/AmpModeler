@@ -10,7 +10,7 @@
 
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
-
+²
 struct Knob;
 struct ComboBox;
 
@@ -60,7 +60,7 @@ struct Editor : public juce::AudioProcessorEditor
 struct Knob {
 
     Knob(juce::String labelID, juce::String name, 
-         const juce::String& paramID, Editor *editor) 
+         const juce::Identifier& paramID, Editor *editor) 
     : label{labelID, name} 
     {    
         slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
@@ -73,7 +73,7 @@ struct Knob {
         editor->addAndMakeVisible(label);
         
         sliderAttachment = std::make_unique<SliderAttachment>(
-            *(editor->audioProcessor.apvts), paramID, slider
+            *(editor->audioProcessor.apvts), paramID.toString(), slider
         );
 
     }
@@ -87,7 +87,7 @@ struct Knob {
 struct ComboBox {
     
     ComboBox(juce::String labelID, juce::String name, 
-             const juce::String& paramID, Editor *editor) 
+             const juce::Identifier& paramID, Editor *editor) 
              : label {labelID, name}
     {
         box.setEditableText(false);
@@ -101,7 +101,7 @@ struct ComboBox {
         editor->addAndMakeVisible(label);
         
         boxAttachment = std::make_unique<ComboBoxAttachment>(
-            *(editor->audioProcessor.apvts), paramID, box
+            *(editor->audioProcessor.apvts), paramID.toString(), box
         );
     
     }

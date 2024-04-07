@@ -108,7 +108,7 @@ enum Params {
     N_PARAMS
 };
 
-const std::vector<juce::String> ParamIDs = {
+const std::vector<juce::Identifier> ParamIDs = {
     "GATE_THRESH",
     "BITE",
     "TIGHT",
