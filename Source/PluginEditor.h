@@ -10,7 +10,7 @@
 
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
-²
+
 struct Knob;
 struct ComboBox;
 
@@ -57,15 +57,15 @@ struct Editor : public juce::AudioProcessorEditor
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Editor)
 };
 
-struct Knob {
+struct Knob : public juce::Slider {
 
     Knob(juce::String labelID, juce::String name, 
          const juce::Identifier& paramID, Editor *editor) 
     : label{labelID, name} 
     {    
-        slider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-        slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
-        editor->addAndMakeVisible(slider);
+        setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
+        setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
+        editor->addAndMakeVisible(*this);
     
         label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
         label.setJustificationType(juce::Justification::centred);
@@ -73,26 +73,24 @@ struct Knob {
         editor->addAndMakeVisible(label);
         
         sliderAttachment = std::make_unique<SliderAttachment>(
-            *(editor->audioProcessor.apvts), paramID.toString(), slider
+            *(editor->audioProcessor.apvts), paramID.toString(), *this
         );
-
     }
 
-    juce::Slider slider;
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
 };
 
 
-struct ComboBox {
+struct ComboBox : public juce::ComboBox {
     
     ComboBox(juce::String labelID, juce::String name, 
              const juce::Identifier& paramID, Editor *editor) 
              : label {labelID, name}
     {
-        box.setEditableText(false);
-        box.setJustificationType(juce::Justification::centred);
-        editor->addAndMakeVisible(box);
+        setEditableText(false);
+        setJustificationType(juce::Justification::centred);
+        editor->addAndMakeVisible(*this);
         
         label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
         label.setJustificationType(juce::Justification::centred);
@@ -101,12 +99,10 @@ struct ComboBox {
         editor->addAndMakeVisible(label);
         
         boxAttachment = std::make_unique<ComboBoxAttachment>(
-            *(editor->audioProcessor.apvts), paramID.toString(), box
+            *(editor->audioProcessor.apvts), paramID.toString(), *this
         );
-    
     }
 
-    juce::ComboBox box;
     juce::Label label;
     std::unique_ptr<ComboBoxAttachment> boxAttachment;
 };

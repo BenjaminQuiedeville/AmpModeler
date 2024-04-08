@@ -35,11 +35,11 @@ Editor::Editor (Processor& p)
     toneStackModelBox = std::make_unique<ComboBox>("TONE_MODEL_BOX_LABEL", "Tonestack Model", ParamIDs[TONESTACK_MODEL], this);
 
 
-    ampChannelBox->box.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
-    ampChannelBox->box.setSelectedId(2, juce::NotificationType::dontSendNotification);
+    ampChannelBox->addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
+    ampChannelBox->setSelectedId(2, juce::NotificationType::dontSendNotification);
 
-    toneStackModelBox->box.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
-    toneStackModelBox->box.setSelectedId(1, juce::NotificationType::dontSendNotification);
+    toneStackModelBox->addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
+    toneStackModelBox->setSelectedId(1, juce::NotificationType::dontSendNotification);
 
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(false, &irNameLabel); };
@@ -102,93 +102,93 @@ void Editor::resized() {
     auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
     auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
 
-    gateKnob->slider.setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
-    gateKnob->label.setBounds(gateKnob->slider.getX(), 
-                              gateKnob->slider.getY() - 20, 
-                              gateKnob->slider.getWidth(), 
+    gateKnob->setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
+    gateKnob->label.setBounds(gateKnob->getX(), 
+                              gateKnob->getY() - 20, 
+                              gateKnob->getWidth(), 
                               20);
 
-    boostTopKnob->slider.setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
-    boostTopKnob->label.setBounds(boostTopKnob->slider.getX(),
-                                  boostTopKnob->slider.getY() - 20,
-                                  boostTopKnob->slider.getWidth(), 
+    boostTopKnob->setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
+    boostTopKnob->label.setBounds(boostTopKnob->getX(),
+                                  boostTopKnob->getY() - 20,
+                                  boostTopKnob->getWidth(), 
                                   20);
 
-    boostTightKnob->slider.setBounds(computeXcoord(0), computeYcoord(2), knobSize, knobSize);
-    boostTightKnob->label.setBounds(boostTightKnob->slider.getX(),
-                                    boostTightKnob->slider.getY() - 20,
-                                    boostTightKnob->slider.getWidth(),
+    boostTightKnob->setBounds(computeXcoord(0), computeYcoord(2), knobSize, knobSize);
+    boostTightKnob->label.setBounds(boostTightKnob->getX(),
+                                    boostTightKnob->getY() - 20,
+                                    boostTightKnob->getWidth(),
                                     20);
 
-    gainKnob->slider.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
-    gainKnob->label.setBounds(gainKnob->slider.getX(), 
-                              gainKnob->slider.getY() - 20, 
-                              gainKnob->slider.getWidth(), 
+    gainKnob->setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
+    gainKnob->label.setBounds(gainKnob->getX(), 
+                              gainKnob->getY() - 20, 
+                              gainKnob->getWidth(), 
                               20);
     
-    inputFilterKnob->slider.setBounds(computeXcoord(1), computeYcoord(2), knobSize, knobSize);
-    inputFilterKnob->label.setBounds(inputFilterKnob->slider.getX(), 
-                                     inputFilterKnob->slider.getY() - 20, 
-                                     inputFilterKnob->slider.getWidth(), 
+    inputFilterKnob->setBounds(computeXcoord(1), computeYcoord(2), knobSize, knobSize);
+    inputFilterKnob->label.setBounds(inputFilterKnob->getX(), 
+                                     inputFilterKnob->getY() - 20, 
+                                     inputFilterKnob->getWidth(), 
                                      20);
 
-    bassEQKnob->slider.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
-    bassEQKnob->label.setBounds(bassEQKnob->slider.getX(), 
-                                bassEQKnob->slider.getY() - 20, 
-                                bassEQKnob->slider.getWidth(), 
+    bassEQKnob->setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
+    bassEQKnob->label.setBounds(bassEQKnob->getX(), 
+                                bassEQKnob->getY() - 20, 
+                                bassEQKnob->getWidth(), 
                                 20);
 
-    midEQKnob->slider.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
-    midEQKnob->label.setBounds(midEQKnob->slider.getX(), 
-                               midEQKnob->slider.getY() - 20, 
-                               midEQKnob->slider.getWidth(), 
+    midEQKnob->setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
+    midEQKnob->label.setBounds(midEQKnob->getX(), 
+                               midEQKnob->getY() - 20, 
+                               midEQKnob->getWidth(), 
                                20);
     
-    trebbleEQKnob->slider.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
-    trebbleEQKnob->label.setBounds(trebbleEQKnob->slider.getX(), 
-                                   trebbleEQKnob->slider.getY() - 20, 
-                                   trebbleEQKnob->slider.getWidth(), 
+    trebbleEQKnob->setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
+    trebbleEQKnob->label.setBounds(trebbleEQKnob->getX(), 
+                                   trebbleEQKnob->getY() - 20, 
+                                   trebbleEQKnob->getWidth(), 
                                    20);
 
-    resonanceKnob->slider.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
-    resonanceKnob->label.setBounds(resonanceKnob->slider.getX(),
-                                   resonanceKnob->slider.getY() - 20,
-                                   resonanceKnob->slider.getWidth(), 
+    resonanceKnob->setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
+    resonanceKnob->label.setBounds(resonanceKnob->getX(),
+                                   resonanceKnob->getY() - 20,
+                                   resonanceKnob->getWidth(), 
                                    20);
 
-    presenceKnob->slider.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
-    presenceKnob->label.setBounds(presenceKnob->slider.getX(),
-                                   presenceKnob->slider.getY() - 20,
-                                   presenceKnob->slider.getWidth(), 
+    presenceKnob->setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    presenceKnob->label.setBounds(presenceKnob->getX(),
+                                   presenceKnob->getY() - 20,
+                                   presenceKnob->getWidth(), 
                                    20);
 
     
 
-    preampVolumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
-    preampVolumeKnob->label.setBounds(preampVolumeKnob->slider.getX(), 
-                                      preampVolumeKnob->slider.getY() - 20, 
-                                      preampVolumeKnob->slider.getWidth(), 
+    preampVolumeKnob->setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
+    preampVolumeKnob->label.setBounds(preampVolumeKnob->getX(), 
+                                      preampVolumeKnob->getY() - 20, 
+                                      preampVolumeKnob->getWidth(), 
                                       20);
 
 
 
 
-    volumeKnob->slider.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
-    volumeKnob->label.setBounds(volumeKnob->slider.getX(), 
-                                volumeKnob->slider.getY() - 20, 
-                                volumeKnob->slider.getWidth(), 
+    volumeKnob->setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
+    volumeKnob->label.setBounds(volumeKnob->getX(), 
+                                volumeKnob->getY() - 20, 
+                                volumeKnob->getWidth(), 
                                 20);
 
-    ampChannelBox->box.setBounds(computeXcoord(2), computeYcoord(2) + 30, 120, 30);
-    ampChannelBox->label.setBounds(ampChannelBox->box.getX(),
-                                   ampChannelBox->box.getY() - 20,
-                                   ampChannelBox->box.getWidth(), 
+    ampChannelBox->setBounds(computeXcoord(2), computeYcoord(2) + 30, 120, 30);
+    ampChannelBox->label.setBounds(ampChannelBox->getX(),
+                                   ampChannelBox->getY() - 20,
+                                   ampChannelBox->getWidth(), 
                                    20);
 
-    toneStackModelBox->box.setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
-    toneStackModelBox->label.setBounds(toneStackModelBox->box.getX(),
-                                       toneStackModelBox->box.getY() - 20,
-                                       toneStackModelBox->box.getWidth(), 
+    toneStackModelBox->setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
+    toneStackModelBox->label.setBounds(toneStackModelBox->getX(),
+                                       toneStackModelBox->getY() - 20,
+                                       toneStackModelBox->getWidth(), 
                                        20);
 
 
