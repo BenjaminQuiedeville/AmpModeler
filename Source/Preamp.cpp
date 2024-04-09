@@ -9,7 +9,7 @@
 #include <assert.h>
 
 const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
-const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-18.0);
+const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
 
 const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(18.0);
 const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(3.0);
@@ -65,7 +65,7 @@ PreampDistorsion::PreampDistorsion() {
 }
 
 PreampDistorsion::~PreampDistorsion() {
-    delete overSampler;
+    delete overSampler; 
 
     if (upSampledBlock) { free(upSampledBlock); }
 
@@ -74,7 +74,7 @@ PreampDistorsion::~PreampDistorsion() {
 void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     samplerate = _samplerate;
 
-    preGain.init(0.5);
+    preGain.init(0.0);
     postGain.init(DB_TO_GAIN(-12.0));
     
     inputFilter.prepareToPlay();
@@ -89,22 +89,24 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter4.prepareToPlay();
     
 
-    inputFilter.setCoefficients(100.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    inputFilter.setCoefficients(300.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+
+    brightCapFilter.setCoefficients(750.0, 0.4, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
-    couplingFilter1.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter1.setCoefficients(100.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter2.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter4.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    cathodeBypassFilter1.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter3.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(200.0, 0.4, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter1.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter3.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
@@ -117,12 +119,16 @@ void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
 
 static inline sample_t waveShaping(sample_t sample, float headroom) {
     
-    sample = -sample / headroom;
+    sample = sample / headroom;
 
-    if (sample > 0.0f) { sample = std::tanh(sample); }
+    if (sample > 0.0f) { 
+        sample = 1/juce::MathConstants<sample_t>::pi * 2.0f 
+               * std::atan(sample * juce::MathConstants<sample_t>::pi * 0.5f); 
+    }
+
     if (sample < -1.3f) { sample = -1.3f; }
 
-    return sample*headroom;
+    return -sample*headroom;
 }
 
 
@@ -138,9 +144,9 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
     sample *= 0.9f;
 
     sample *= (sample_t)preGain.nextValue();
+    sample = brightCapFilter.process(sample);
 
 
-    // Second Tube first stage of saturation, stop there for clean tone
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
     sample = couplingFilter1.processHighPass(sample);

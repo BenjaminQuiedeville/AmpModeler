@@ -12,7 +12,7 @@
 #include "Biquad.h"
 #include "SmoothParam.h"
 
-#define PREAMP_UP_SAMPLE_FACTOR        4
+#define PREAMP_UP_SAMPLE_FACTOR 8
 
 
 
@@ -44,6 +44,8 @@ struct PreampDistorsion {
     double samplerate = 0.0;
 
     OnepoleFilter inputFilter;
+    
+    Biquad brightCapFilter {BIQUAD_LOWSHELF};
     
     OnepoleFilter couplingFilter1;
     OnepoleFilter couplingFilter2;
