@@ -49,65 +49,65 @@ struct Biquad {
         double alpha = sinw0/(2.0f*Q);
     
         double A = 0.0;
-        double AInv = 0.0; 
-        double a0Inv = 0.0;
-        double twoSqrtAlpha = 0.0;
+        double a0inv = 0.0;
+        double beta = 0.0;
     
         switch (filterType) {
             case BIQUAD_LOWPASS:
-                a0Inv = 1.0/(1.0 + alpha);
+                a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (1.0 - cosw0) * 0.5 * a0Inv;
+                b0 = (1.0 - cosw0) * 0.5 * a0inv;
                 b1 = 2.0 * b0;
                 b2 = b0;
-                a1 = -2.0 * cosw0 * a0Inv;
-                a2 = (1.0 - alpha) * a0Inv;
+                a1 = -2.0 * cosw0 * a0inv;
+                a2 = (1.0 - alpha) * a0inv;
                 break;
     
             case BIQUAD_HIGHPASS:
-                a0Inv = 1.0/(1.0 + alpha);
+                a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (1.0 + cosw0) * 0.5 * a0Inv;
+                b0 = (1.0 + cosw0) * 0.5 * a0inv;
                 b1 = -2.0 * b0;
                 b2 = b0;
-                a1 = -2.0 * cosw0 * a0Inv;
-                a2 = (1.0 - alpha) * a0Inv;
+                a1 = -2.0 * cosw0 * a0inv;
+                a2 = (1.0 - alpha) * a0inv;
                 break;
     
             case BIQUAD_PEAK: 
                 A = pow(10.0, gaindB/40.0);
-                AInv = 1.0/A;
-                a0Inv = 1.0/(1.0 + alpha * AInv);
+                
+                a0inv = 1/(1 + alpha/A);
     
-                b0 = (1.0 + alpha * A) * a0Inv;
-                b1 = -2.0 * cosw0 * a0Inv; 
-                b2 = (1.0 - alpha * A) * a0Inv; 
+                b0 = (1.0 + alpha * A) * a0inv;
+                b1 = -2.0 * cosw0 * a0inv;
+                b2 = (1.0 - alpha * A) * a0inv; 
                 a1 = b1; 
-                a2 = (1.0 - alpha * AInv) * a0Inv;
+                a2 = (1.0 - alpha / A) * a0inv;
                 break;
     
             case BIQUAD_LOWSHELF: 
                 A = pow(10.0, gaindB/40.0);
-                twoSqrtAlpha = 2.0 * sqrt(A)* alpha;
-                a0Inv = 1.0/((A + 1.0) + (A - 1.0)*cosw0 + twoSqrtAlpha); 
+                beta = sqrt(A)/Q;
+
+                a0inv = 1/((A+1) + (A-1)*cosw0 + beta*sinw0);
                 
-                b0 = A*((A + 1.0) - (A - 1.0)*cosw0 + twoSqrtAlpha)*a0Inv;
-                b1 = 2.0 * A*((A - 1.0) - (A + 1.0)*cosw0)*a0Inv;
-                b2 = A*((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
-                a1 = -2.0 * ((A - 1.0) + (A + 1.0)*cosw0)*a0Inv;
-                a2 = ((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
+                b0 = (A*((A+1) - (A-1)*cosw0 + beta*sinw0)) * a0inv;
+                b1 = (2*A*((A-1) - (A+1)*cosw0)) * a0inv;
+                b2 = (A*((A+1) - (A-1)*cosw0 - beta*sinw0)) * a0inv;
+                a1 = (-2*((A-1) + (A+1)*cosw0)) * a0inv;
+                a2 = ((A+1) + (A-1)*cosw0 - beta*sinw0) * a0inv;
                 break;
     
             case BIQUAD_HIGHSHELF:
                 A = pow(10.0, gaindB/40.0);
-                twoSqrtAlpha = 2.0 * sqrt(A)* alpha;
-                a0Inv = 1.0/((A + 1.0) - (A - 1.0)* cosw0 + twoSqrtAlpha); 
+                beta = sqrt(A)/Q;
+                a0inv = 1/((A+1) - (A-1)*cosw0 + beta*sinw0);
     
-                b0 = A*((A + 1.0) + (A - 1.0) * cosw0 + twoSqrtAlpha) * a0Inv;
-                b1 = -2.0 * A *((A - 1.0) + (A + 1.0) * cosw0) * a0Inv;
-                b2 = A*((A + 1.0) + (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
-                a1 = 2.0 * ((A - 1.0) - (A + 1.0)*cosw0) * a0Inv;
-                a2 = ((A + 1.0) - (A - 1.0)*cosw0 - twoSqrtAlpha) * a0Inv;
+                b0 = (A*((A+1) + (A-1)*cosw0 + beta*sinw0)) * a0inv;
+                b1 = (-2*A*((A-1) + (A+1)*cosw0)) * a0inv;
+                b2 = (A*((A+1) + (A-1)*cosw0 - beta*sinw0)) * a0inv;
+                a1 = (2*((A-1) - (A+1)*cosw0)) * a0inv;
+                a2 = ((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv;
                 break;
     
             default:
