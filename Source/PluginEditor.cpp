@@ -36,10 +36,12 @@ Editor::Editor (Processor& p)
 
 
     ampChannelBox->addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
-    ampChannelBox->setSelectedId(2, juce::NotificationType::dontSendNotification);
+    ampChannelBox->setSelectedId((int)*audioProcessor.apvts->getRawParameterValue(ParamIDs[CHANNEL]), 
+                                 juce::NotificationType::dontSendNotification);
 
     toneStackModelBox->addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
-    toneStackModelBox->setSelectedId(1, juce::NotificationType::dontSendNotification);
+    toneStackModelBox->setSelectedId((int)*audioProcessor.apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]), 
+                                     juce::NotificationType::dontSendNotification);
 
 
     irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(false, &irNameLabel); };
