@@ -11,8 +11,27 @@
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
 
-struct Knob;
-struct ComboBox;
+struct Editor;
+
+struct Knob : public juce::Slider {
+
+    Knob(juce::String labelID, juce::String name, 
+         const juce::Identifier& paramID, Editor *editor);
+
+    juce::Label label;
+    std::unique_ptr<SliderAttachment> sliderAttachment;
+};
+
+
+struct ComboBox : public juce::ComboBox {
+    
+    ComboBox(juce::String labelID, juce::String name, 
+             const juce::Identifier& paramID, Editor *editor); 
+
+    juce::Label label;
+    std::unique_ptr<ComboBoxAttachment> boxAttachment;
+};
+
 
 struct Editor : public juce::AudioProcessorEditor
 {
@@ -23,23 +42,23 @@ struct Editor : public juce::AudioProcessorEditor
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    std::unique_ptr<Knob> gateKnob;
-    std::unique_ptr<Knob> boostTopKnob;
-    std::unique_ptr<Knob> boostTightKnob;
-    std::unique_ptr<Knob> gainKnob;
-    std::unique_ptr<Knob> inputFilterKnob;
-    std::unique_ptr<Knob> bassEQKnob;
-    std::unique_ptr<Knob> midEQKnob;
-    std::unique_ptr<Knob> trebbleEQKnob;
-    std::unique_ptr<Knob> preampVolumeKnob;
+    Knob gateKnob;
+    Knob boostTopKnob;
+    Knob boostTightKnob;
+    Knob gainKnob;
+    Knob inputFilterKnob;
+    Knob bassEQKnob;
+    Knob midEQKnob;
+    Knob trebbleEQKnob;
+    Knob preampVolumeKnob;
 
-    std::unique_ptr<Knob> resonanceKnob;
-    std::unique_ptr<Knob> presenceKnob;
+    Knob resonanceKnob;
+    Knob presenceKnob;
 
-    std::unique_ptr<Knob> volumeKnob;
+    Knob volumeKnob;
 
-    std::unique_ptr<ComboBox> ampChannelBox;
-    std::unique_ptr<ComboBox> toneStackModelBox;
+    ComboBox ampChannelBox;
+    ComboBox toneStackModelBox;
 
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
@@ -55,54 +74,4 @@ struct Editor : public juce::AudioProcessorEditor
     void createKnob(Knob *knob, const juce::String& paramID);
     void createComboBox(ComboBox *comboBox, const juce::String& paramID);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Editor)
-};
-
-struct Knob : public juce::Slider {
-
-    Knob(juce::String labelID, juce::String name, 
-         const juce::Identifier& paramID, Editor *editor) 
-    : label{labelID, name} 
-    {    
-        setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-        setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
-        editor->addAndMakeVisible(*this);
-    
-        label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
-        label.setJustificationType(juce::Justification::centred);
-        label.setFont(15.0f);
-        editor->addAndMakeVisible(label);
-        
-        sliderAttachment = std::make_unique<SliderAttachment>(
-            *(editor->audioProcessor.apvts), paramID.toString(), *this
-        );
-    }
-
-    juce::Label label;
-    std::unique_ptr<SliderAttachment> sliderAttachment;
-};
-
-
-struct ComboBox : public juce::ComboBox {
-    
-    ComboBox(juce::String labelID, juce::String name, 
-             const juce::Identifier& paramID, Editor *editor) 
-             : label {labelID, name}
-    {
-        setEditableText(false);
-        setJustificationType(juce::Justification::centred);
-        editor->addAndMakeVisible(*this);
-        
-        label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
-        label.setJustificationType(juce::Justification::centred);
-        label.setFont(15.0f);
-        
-        editor->addAndMakeVisible(label);
-        
-        boxAttachment = std::make_unique<ComboBoxAttachment>(
-            *(editor->audioProcessor.apvts), paramID.toString(), *this
-        );
-    }
-
-    juce::Label label;
-    std::unique_ptr<ComboBoxAttachment> boxAttachment;
 };
