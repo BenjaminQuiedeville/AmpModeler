@@ -11,28 +11,43 @@
 Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
 
-    gateKnob("GATE_KNOB_LABEL", "Gate Thresh", ParamIDs[GATE_THRESH], this),
-    boostTopKnob("BOOST_TOP_KNOB_LABEL" , "Boost Top", ParamIDs[BITE], this),
-    boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", ParamIDs[TIGHT], this),
+    gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
+    boostTopKnob("BOOST_TOP_KNOB_LABEL" , "Boost Top", this),
+    boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this),
     
-    gainKnob("GAIN_KNOB_LABEL", "Pre Gain", ParamIDs[PREAMP_GAIN], this),
+    gainKnob("GAIN_KNOB_LABEL", "Pre Gain", this),
 
-    inputFilterKnob("INPUT_KNOB_FILTER_LABEL", "Input Filter", ParamIDs[INPUT_FILTER], this),
+    inputFilterKnob("INPUT_KNOB_FILTER_LABEL", "Input Filter", this),
     
-    bassEQKnob("BASS_EQ_KNOB_LABEL", "Bass", ParamIDs[TONESTACK_BASS], this),
-    midEQKnob("MIDDLE_EQ_KNOB_LABEL", "Mid", ParamIDs[TONESTACK_MIDDLE], this),
-    trebbleEQKnob("TREBBLE_EQ_KNOB_LABEL", "Trebble", ParamIDs[TONESTACK_TREBBLE], this),
+    bassEQKnob("BASS_EQ_KNOB_LABEL", "Bass", this),
+    midEQKnob("MIDDLE_EQ_KNOB_LABEL", "Mid", this),
+    trebbleEQKnob("TREBBLE_EQ_KNOB_LABEL", "Trebble", this),
 
-    preampVolumeKnob("PREMP_VOLUME_KNOB_LABEL", "Post Gain", ParamIDs[PREAMP_VOLUME], this),
+    preampVolumeKnob("PREMP_VOLUME_KNOB_LABEL", "Post Gain", this),
 
-    resonanceKnob("RESONANCE_KNOB_LABEL", "Resonance", ParamIDs[RESONANCE], this),
-    presenceKnob("PRESENCE_KNOB_LABEL", "Presence", ParamIDs[PRESENCE], this),
+    resonanceKnob("RESONANCE_KNOB_LABEL", "Resonance", this),
+    presenceKnob("PRESENCE_KNOB_LABEL", "Presence", this),
 
-    volumeKnob("MASTER_VOLUME_KNOB_LABEL", "Output Level", ParamIDs[MASTER_VOLUME], this),
+    volumeKnob("MASTER_VOLUME_KNOB_LABEL", "Output Level", this),
 
-    ampChannelBox("AMP_CHANNEL_BOX_LABEL", "Amp Channel", ParamIDs[CHANNEL], this),
-    toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", ParamIDs[TONESTACK_MODEL], this)
+    ampChannelBox("AMP_CHANNEL_BOX_LABEL", "Amp Channel", this),
+    toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", this)
 {
+
+    gateKnob.init(ParamIDs[GATE_THRESH].toString(), this);
+    boostTopKnob.init(ParamIDs[BITE].toString(), this);
+    boostTightKnob.init(ParamIDs[TIGHT].toString(), this);
+    gainKnob.init(ParamIDs[PREAMP_GAIN].toString(), this);
+    inputFilterKnob.init(ParamIDs[INPUT_FILTER].toString(), this);
+    bassEQKnob.init(ParamIDs[TONESTACK_BASS].toString(), this);
+    midEQKnob.init(ParamIDs[TONESTACK_MIDDLE].toString(), this);
+    trebbleEQKnob.init(ParamIDs[TONESTACK_TREBBLE].toString(), this);
+    preampVolumeKnob.init(ParamIDs[PREAMP_VOLUME].toString(), this);
+    resonanceKnob.init(ParamIDs[RESONANCE].toString(), this);
+    presenceKnob.init(ParamIDs[PRESENCE].toString(), this);
+    volumeKnob.init(ParamIDs[MASTER_VOLUME].toString(), this);
+    ampChannelBox.init(ParamIDs[CHANNEL].toString(), this);
+    toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), this);
 
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
@@ -208,8 +223,7 @@ void Editor::resized() {
 
 }
 
-Knob::Knob(juce::String labelID, juce::String name, 
-     const juce::Identifier& paramID, Editor *editor) 
+Knob::Knob(juce::String labelID, juce::String name, Editor *editor) 
 : label{labelID, name} 
 {    
     setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
@@ -220,15 +234,16 @@ Knob::Knob(juce::String labelID, juce::String name,
     label.setJustificationType(juce::Justification::centred);
     label.setFont(15.0f);
     editor->addAndMakeVisible(label);
-    
+}
+
+void Knob::init(juce::String paramID, Editor *editor) {
     sliderAttachment = std::make_unique<SliderAttachment>(
-        *(editor->audioProcessor.apvts), paramID.toString(), *this
+        *(editor->audioProcessor.apvts), paramID, *this
     );
 }
 
 
-ComboBox::ComboBox(juce::String labelID, juce::String name, 
-         const juce::Identifier& paramID, Editor *editor) 
+ComboBox::ComboBox(juce::String labelID, juce::String name, Editor *editor) 
          : label {labelID, name}
 {
     setEditableText(false);
@@ -241,7 +256,10 @@ ComboBox::ComboBox(juce::String labelID, juce::String name,
     
     editor->addAndMakeVisible(label);
     
+}
+
+void ComboBox::init(juce::String paramID, Editor *editor) {
     boxAttachment = std::make_unique<ComboBoxAttachment>(
-        *(editor->audioProcessor.apvts), paramID.toString(), *this
+        *(editor->audioProcessor.apvts), paramID, *this
     );
 }

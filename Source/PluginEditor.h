@@ -15,9 +15,10 @@ struct Editor;
 
 struct Knob : public juce::Slider {
 
-    Knob(juce::String labelID, juce::String name, 
-         const juce::Identifier& paramID, Editor *editor);
-
+    Knob(juce::String labelID, juce::String name, Editor* editor);
+    
+    void init(juce::String paramID, Editor *editor);
+    
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
 };
@@ -25,8 +26,9 @@ struct Knob : public juce::Slider {
 
 struct ComboBox : public juce::ComboBox {
     
-    ComboBox(juce::String labelID, juce::String name, 
-             const juce::Identifier& paramID, Editor *editor); 
+    ComboBox(juce::String labelID, juce::String name, Editor* editor); 
+
+    void init(juce::String paramID, Editor *editor);
 
     juce::Label label;
     std::unique_ptr<ComboBoxAttachment> boxAttachment;
