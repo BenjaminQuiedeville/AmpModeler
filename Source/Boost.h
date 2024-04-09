@@ -12,7 +12,7 @@
 #include "OnepoleFilter.h"
 #include "SmoothParam.h"
 
-#define BOOST_BITE_Q     0.4
+#define BOOST_BITE_Q     0.25
 #define BOOST_BITE_FREQ  1700.0
 
 struct Boost {

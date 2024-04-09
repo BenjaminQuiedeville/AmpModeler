@@ -10,7 +10,7 @@
 #include "Biquad.h"
 
 
-enum class ToneStackModel {
+enum ToneStackModel {
     EnglSavage = 0,
     JCM800,
     Soldano,
@@ -23,7 +23,7 @@ enum class ToneStackModel {
 struct EQComponents {
 
     EQComponents(ToneStackModel ) {
-        setModel(ToneStackModel::EnglSavage);
+        setModel(EnglSavage);
     }
 
     void setModel(ToneStackModel newModel) {
@@ -31,7 +31,7 @@ struct EQComponents {
         if (newModel == model) { return; }
         
         switch (newModel) {
-        case ToneStackModel::EnglSavage:
+        case EnglSavage:
 
             R1 = 250e3;
             R2 = 1e6;
@@ -42,7 +42,7 @@ struct EQComponents {
             C3 = 22e-9;    
             break;
         
-        case ToneStackModel::JCM800:
+        case JCM800:
             R1 = 220e3;
             R2 = 1e6;
             R3 = 22e3;
@@ -52,7 +52,7 @@ struct EQComponents {
             C3 = 22e-9;    
             break; 
 
-        case ToneStackModel::Rectifier:
+        case Rectifier:
             R1 = 250e3;
             R2 = 1e6;
             R3 = 25e3;
@@ -62,7 +62,7 @@ struct EQComponents {
             C3 = 20e-9;    
             break; 
 
-        case ToneStackModel::Soldano:
+        case Soldano:
             R1 = 250e3;
             R2 = 1e6;
             R3 = 25e3;
@@ -72,7 +72,7 @@ struct EQComponents {
             C3 = 20e-9;    
             break; 
 
-        case ToneStackModel::RockerVerb:
+        case RockerVerb:
             R1 = 250e3;
             R2 = 300e3;
             R3 = 25e3;
@@ -82,7 +82,7 @@ struct EQComponents {
             C3 = 22e-9;    
             break; 
 
-        case ToneStackModel::Custom:
+        case Custom:
 
             R1 = 250e3;
             R2 = 1e6;

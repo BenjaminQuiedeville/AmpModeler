@@ -20,7 +20,7 @@ struct OnepoleFilter {
     }
 
     void setCoefficients(double frequency, double samplerate) {
-        b0 = sin(juce::MathConstants<float>::pi / samplerate * frequency);
+        b0 = sin(juce::MathConstants<double>::pi / samplerate * frequency);
         a1 = b0 - 1.0;
     }
 

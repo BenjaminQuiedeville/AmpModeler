@@ -10,7 +10,7 @@
 //@TODO refactor to precompute  constant values on model change 
 void Tonestack::updateCoefficients(float t, float m, float l, double samplerate) {
 
-    l = scale(l, 0.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+    l = scale(l, 0.0f, 1.0f, -1.0f, 2.0f, 1.0f);
 
     double L = std::exp((l-1.0)*3.4);
 
