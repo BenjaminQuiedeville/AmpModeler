@@ -220,7 +220,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     
     for (size_t i = 0; i < numSamples; i++) {
         audioPtr[i] *= (sample_t)DB_TO_GAIN(masterVolume.nextValue());
-        assert(abs(audioPtr[i]) < 1.0f);
     }
 
     // copy left channel into right channel
@@ -394,7 +393,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -24.0f, 18.0f, 0.0f
+        ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -18.0f, 18.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[RESONANCE].toString(), "Reson", 0.0f, 12.0f, 6.0f

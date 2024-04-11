@@ -271,11 +271,11 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
     }
 
     juce::File returnedFile = chooser->getResult();
-    const std::string filepath = returnedFile.getFullPathName().toStdString();
+    irPath = returnedFile.getFullPathName().toStdString();
 
-    if (filepath == "") { return; }
+    if (irPath == "") { return; }
 
-    size_t irSize = parseWavFile(filepath, &irBuffer);
+    size_t irSize = parseWavFile(irPath, &irBuffer);
 
     if (irSize == 0) { return; }
 

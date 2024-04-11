@@ -11,8 +11,8 @@
 const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
 
-const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(18.0);
-const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(3.0);
+const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(24.0);
+const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(9.0);
 
 
 

@@ -49,6 +49,8 @@ struct IRLoader {
     double samplerate = 0.0;
 
     int overlapAddIndex = 0;
+    
+    std::string irPath;
 
     FFT::FreqVector inputDftBuffer;
     FFT::FreqVector irDftBuffer;
