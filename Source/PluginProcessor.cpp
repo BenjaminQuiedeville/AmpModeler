@@ -20,6 +20,11 @@ Processor::Processor()
                      #endif
                        )
 #endif
+,                   
+valueTree("IR paths", {}, 
+    {{"Group", 
+    {{"name", "IR names"}}, 
+    {{"Parameter", {{"id", "IR1"}, {"value", "C:/"}}}}}});
 {
 
     apvts =  new juce::AudioProcessorValueTreeState(*this, nullptr, "Params", createParameterLayout());
@@ -50,7 +55,8 @@ Processor::~Processor() {
     if (intputSignalCopy) {
         free(intputSignalCopy);
     }
-
+    
+    delete valueTree;
     delete apvts;
 }
 
@@ -241,6 +247,7 @@ juce::AudioProcessorEditor* Processor::createEditor()
 //==============================================================================
 void Processor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
+    apvts->state.appendChild(valueTree, nullptr);
     juce::MemoryOutputStream stream(destData, false);
     apvts->state.writeToStream(stream);
 }   
@@ -249,8 +256,13 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
     // Recall params
     juce::ValueTree importedTree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
 
+    valueTree = importedTree.getChildWithName("IR paths");
+
     if (importedTree.isValid()) {
         apvts->state = importedTree;
+        
+        //valueTree.getProperty("IR1");
+        
         initParameters();
     }
 

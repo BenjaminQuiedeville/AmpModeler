@@ -168,6 +168,7 @@ struct Processor  : public juce::AudioProcessor,
 	void getStateInformation (juce::MemoryBlock& destData) override;
 	void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::ValueTree valueTree;
 	juce::AudioProcessorValueTreeState *apvts;
 
     Biquad inputNoiseFilter {BIQUAD_LOWPASS};
