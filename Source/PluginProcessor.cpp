@@ -20,14 +20,15 @@ Processor::Processor()
                      #endif
                        )
 #endif
-,                   
-valueTree("IR paths", {}, 
-    {{"Group", 
-    {{"name", "IR names"}}, 
-    {{"Parameter", {{"id", "IR1"}, {"value", "C:/"}}}}}});
+,
+valueTree(irPathTree),
+apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
 {
-
-    apvts =  new juce::AudioProcessorValueTreeState(*this, nullptr, "Params", createParameterLayout());
+// valueTree("IR paths", {}, 
+//     {{"Group", 
+//     {{"name", "IR names"}}, 
+//     {{"Parameter", {{"id", "IR1"}, {"value", "C:/"}}}}}})
+   
     
     noiseGate = new NoiseGate();
     preBoost  = new Boost();
@@ -36,14 +37,19 @@ valueTree("IR paths", {},
     irLoader  = new IRLoader();
 
     for (u8 i = 0; i < N_PARAMS; i++) {
-        apvts->addParameterListener(ParamIDs[i], this);
+        apvts.addParameterListener(ParamIDs[i], this);
     }
+    
+    valueTree.setProperty(irPath1, "C:/", nullptr);
+    valueTree.setProperty(irPath2, "C:/", nullptr);
+    
+    apvts.state.appendChild(valueTree, nullptr);
 }
 
 Processor::~Processor() {
 
     for (u8 i = 0; i < N_PARAMS; i++) {
-        apvts->removeParameterListener(ParamIDs[i], this);
+        apvts.removeParameterListener(ParamIDs[i], this);
     }
 
     delete noiseGate;
@@ -54,10 +60,7 @@ Processor::~Processor() {
 
     if (intputSignalCopy) {
         free(intputSignalCopy);
-    }
-    
-    delete valueTree;
-    delete apvts;
+    }    
 }
 
 //==============================================================================
@@ -247,21 +250,32 @@ juce::AudioProcessorEditor* Processor::createEditor()
 //==============================================================================
 void Processor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
-    apvts->state.appendChild(valueTree, nullptr);
+    apvts.state.appendChild(valueTree, nullptr); // ?????
+    
     juce::MemoryOutputStream stream(destData, false);
-    apvts->state.writeToStream(stream);
+    apvts.state.writeToStream(stream);
 }   
 
 void Processor::setStateInformation (const void* data, int sizeInBytes) {
     // Recall params
     juce::ValueTree importedTree = juce::ValueTree::readFromData(data, size_t(sizeInBytes));
 
-    valueTree = importedTree.getChildWithName("IR paths");
-
     if (importedTree.isValid()) {
-        apvts->state = importedTree;
+        apvts.state = importedTree;
+        valueTree = apvts.state.getChildWithName(irPathTree);
         
-        //valueTree.getProperty("IR1");
+        juce::String irPath = valueTree.getProperty(irPath1);
+        juce::File openedFile(irPath);
+        
+        if (openedFile.getFileExtension() == ".wav"){
+            irLoader->irFile = openedFile;
+            irLoader->loadIR(false);
+            DBG("ir file properly loaded from saved state");
+        } else {
+            irLoader->irFile = juce::File();
+            irLoader->loadIR(true);
+            DBG("could not load the stored ir file");
+        }
         
         initParameters();
     }
@@ -271,7 +285,7 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
 void Processor::initParameters() {
     for (size_t i = 0; i < N_PARAMS; i++) {
         parameterChanged(ParamIDs[i].toString(), 
-                         *apvts->getRawParameterValue(ParamIDs[i]));
+                         *apvts.getRawParameterValue(ParamIDs[i]));
     }
 }
 
@@ -285,8 +299,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
-    if (id == ParamIDs[BITE]) {
-        preBoost->biteFilter.setCoefficients(BOOST_BITE_FREQ, BOOST_BITE_Q, newValue, samplerate);
+    if (id == ParamIDs[BITE] || id == ParamIDs[BITE_FREQ]) {
+
+        float amount = *apvts.getRawParameterValue(ParamIDs[BITE]);        
+        float freq = *apvts.getRawParameterValue(ParamIDs[BITE_FREQ]);
+    
+        preBoost->biteFilter.setCoefficients(freq, BOOST_BITE_Q, amount, samplerate);
 
         return;
     }
@@ -302,9 +320,9 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[PREAMP_GAIN]) {
-        auto paramRange = apvts->getParameter(id)->getNormalisableRange();
+        auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
-        preamp->preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.0f),
+        preamp->preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
                                   SMOOTH_PARAM_TIME, 
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
         preamp->brightCapFilter.setCoefficients(
@@ -334,12 +352,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == ParamIDs[TONESTACK_TREBBLE]
         || id == ParamIDs[TONESTACK_MODEL])
     {
-        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
         toneStack->comp->setModel(model);
         
-        float bassParam = *apvts->getRawParameterValue(ParamIDs[TONESTACK_BASS]);
-        float trebbleParam = *apvts->getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
-        float midParam = *apvts->getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
+        float bassParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
+        float trebbleParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
+        float midParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
         toneStack->updateCoefficients(trebbleParam/10.0f, midParam/10.0f, bassParam/10.0f, samplerate);
         return;
     }
@@ -372,6 +390,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[BITE].toString(), "Bite", 0.0f, 30.0f, 0.0f
+    ));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[BITE_FREQ].toString(), "Bite Freq", 500.0f, 3500.0f, 1700.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[TIGHT].toString(), "Tight", 10.0f, 750.0f, 10.0f

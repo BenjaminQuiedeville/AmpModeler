@@ -93,6 +93,7 @@ struct TestOsc {
 enum Params {
     GATE_THRESH,
     BITE,
+    BITE_FREQ,
     TIGHT,
     PREAMP_GAIN,
     CHANNEL,
@@ -108,9 +109,10 @@ enum Params {
     N_PARAMS
 };
 
-const std::vector<juce::Identifier> ParamIDs = {
+static std::vector<juce::Identifier> ParamIDs = {
     "GATE_THRESH",
     "BITE",
+    "BITE_FREQ",
     "TIGHT",
     "PREAMP_GAIN",
     "INPUT_FILTER",
@@ -124,6 +126,10 @@ const std::vector<juce::Identifier> ParamIDs = {
     "PRESENCE",
     "MASTER_VOLUME"
 };
+
+static juce::Identifier irPathTree("IR_PATHS");
+static juce::Identifier irPath1 ("IR1");
+static juce::Identifier irPath2 ("IR2");
 
 struct Processor  : public juce::AudioProcessor, 
                                    juce::AudioProcessorValueTreeState::Listener
@@ -166,10 +172,10 @@ struct Processor  : public juce::AudioProcessor,
 
 	//==============================================================================
 	void getStateInformation (juce::MemoryBlock& destData) override;
-	void setStateInformation (const void* data, int sizeInBytes) override;
+    void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::ValueTree valueTree;
-	juce::AudioProcessorValueTreeState *apvts;
+	juce::AudioProcessorValueTreeState apvts;
 
     Biquad inputNoiseFilter {BIQUAD_LOWPASS};
 

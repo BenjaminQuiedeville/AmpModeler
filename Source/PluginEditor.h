@@ -45,7 +45,8 @@ struct Editor : public juce::AudioProcessorEditor
     void resized() override;
 
     Knob gateKnob;
-    Knob boostTopKnob;
+    Knob boostAttackKnob;
+    Knob boostFreqKnob;
     Knob boostTightKnob;
     Knob gainKnob;
     Knob inputFilterKnob;

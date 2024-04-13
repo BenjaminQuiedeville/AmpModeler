@@ -232,7 +232,7 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
     overlapAddIndex = 0;
     blockSize = _blockSize;
 
-    loadIR(true, nullptr);
+    loadIR(true);
 }
 
 //@TODO not thread safe
@@ -255,23 +255,14 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     return;
 }
 
-
-void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
+void IRLoader::loadIR(bool initIR) {
 
     if (initIR) {
         prepareConvolution(baseIR, BASE_IR_SIZE);
         return;
     }
 
-    auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
-
-    bool fileChoosed = chooser->browseForFileToOpen();
-    if (!fileChoosed) { 
-        return; 
-    }
-
-    juce::File returnedFile = chooser->getResult();
-    irPath = returnedFile.getFullPathName().toStdString();
+    std::string irPath = irFile.getFullPathName().toStdString();
 
     if (irPath == "") { return; }
 
@@ -279,17 +270,10 @@ void IRLoader::loadIR(bool initIR, juce::Label *irNameLabel) {
 
     if (irSize == 0) { return; }
 
-    // prepareConvolution(irBuffer, irSize);
     irBufferSize = irSize;
-    updateIR = true;
-
-    // if (irBuffer != nullptr) { free(irBuffer); }
     
-    assert(irNameLabel != nullptr);
-    irNameLabel->setText(returnedFile.getFileNameWithoutExtension(),
-                         juce::NotificationType::dontSendNotification);
-
-    return;
+    // the IR is fully loaded at the end of the process function
+    updateIR = true;
 }
 
 

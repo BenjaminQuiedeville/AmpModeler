@@ -12,7 +12,8 @@ Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
 
     gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
-    boostTopKnob("BOOST_TOP_KNOB_LABEL" , "Boost Top", this),
+    boostAttackKnob("BOOST_ATTACK_KNOB_LABEL" , "Boost Top", this),
+    boostFreqKnob("BOOST_FREQ_KNOB_LABEL", "Boost Freq", this),
     boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this),
     
     gainKnob("GAIN_KNOB_LABEL", "Pre Gain", this),
@@ -35,7 +36,8 @@ Editor::Editor (Processor& p)
 {
 
     gateKnob.init(ParamIDs[GATE_THRESH].toString(), this);
-    boostTopKnob.init(ParamIDs[BITE].toString(), this);
+    boostAttackKnob.init(ParamIDs[BITE].toString(), this);
+    boostFreqKnob.init(ParamIDs[BITE_FREQ].toString(), this);
     boostTightKnob.init(ParamIDs[TIGHT].toString(), this);
     gainKnob.init(ParamIDs[PREAMP_GAIN].toString(), this);
     inputFilterKnob.init(ParamIDs[INPUT_FILTER].toString(), this);
@@ -51,20 +53,46 @@ Editor::Editor (Processor& p)
 
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
-    ampChannelBox.setSelectedId((int)*audioProcessor.apvts->getRawParameterValue(ParamIDs[CHANNEL]), 
+    ampChannelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[CHANNEL]), 
                                  juce::NotificationType::dontSendNotification);
 
     toneStackModelBox.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
-    toneStackModelBox.setSelectedId((int)*audioProcessor.apvts->getRawParameterValue(ParamIDs[TONESTACK_MODEL]), 
+    toneStackModelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]), 
                                      juce::NotificationType::dontSendNotification);
 
 
-    irLoadButton.onClick = [&]() { audioProcessor.irLoader->loadIR(false, &irNameLabel); };
+    irLoadButton.onClick = [&]() { 
+    
+        auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
+
+        bool fileChoosed = chooser->browseForFileToOpen();
+        if (!fileChoosed) { 
+            return; 
+        }
+
+        juce::File returnedFile = chooser->getResult();
+        
+        if (returnedFile.getFileExtension() != ".wav") {
+            return;
+        }
+
+        audioProcessor.irLoader->irFile = returnedFile;
+        audioProcessor.irLoader->loadIR(false); 
+    
+        irNameLabel.setText(returnedFile.getFileNameWithoutExtension(),
+                            juce::NotificationType::dontSendNotification);
+                            
+        audioProcessor.valueTree.setProperty(irPath1, returnedFile.getFullPathName(), nullptr);
+    
+    };
+    
     addAndMakeVisible(irLoadButton);
 
     irNameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     irNameLabel.setJustificationType(juce::Justification::left);
     irNameLabel.setFont(15.0f);
+    irNameLabel.setText(audioProcessor.irLoader->irFile.getFileNameWithoutExtension(), 
+                        juce::NotificationType::dontSendNotification);
     addAndMakeVisible(irNameLabel);
 
     irLoaderBypassToggle.onClick = [&]() {
@@ -125,10 +153,16 @@ void Editor::resized() {
                               gateKnob.getWidth(), 
                               20);
 
-    boostTopKnob.setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
-    boostTopKnob.label.setBounds(boostTopKnob.getX(),
-                                  boostTopKnob.getY() - 20,
-                                  boostTopKnob.getWidth(), 
+    boostAttackKnob.setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
+    boostAttackKnob.label.setBounds(boostAttackKnob.getX(),
+                                  boostAttackKnob.getY() - 20,
+                                  boostAttackKnob.getWidth(), 
+                                  20);
+    
+    boostFreqKnob.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
+    boostFreqKnob.label.setBounds(boostFreqKnob.getX(),
+                                  boostFreqKnob.getY() - 20,
+                                  boostFreqKnob.getWidth(), 
                                   20);
 
     boostTightKnob.setBounds(computeXcoord(0), computeYcoord(2), knobSize, knobSize);
@@ -137,43 +171,43 @@ void Editor::resized() {
                                     boostTightKnob.getWidth(),
                                     20);
 
-    gainKnob.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
+    gainKnob.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
     gainKnob.label.setBounds(gainKnob.getX(), 
                               gainKnob.getY() - 20, 
                               gainKnob.getWidth(), 
                               20);
     
-    inputFilterKnob.setBounds(computeXcoord(1), computeYcoord(2), knobSize, knobSize);
+    inputFilterKnob.setBounds(computeXcoord(2), computeYcoord(2), knobSize, knobSize);
     inputFilterKnob.label.setBounds(inputFilterKnob.getX(), 
                                      inputFilterKnob.getY() - 20, 
                                      inputFilterKnob.getWidth(), 
                                      20);
 
-    bassEQKnob.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
+    bassEQKnob.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
     bassEQKnob.label.setBounds(bassEQKnob.getX(), 
                                 bassEQKnob.getY() - 20, 
                                 bassEQKnob.getWidth(), 
                                 20);
 
-    midEQKnob.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
+    midEQKnob.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
     midEQKnob.label.setBounds(midEQKnob.getX(), 
                                midEQKnob.getY() - 20, 
                                midEQKnob.getWidth(), 
                                20);
     
-    trebbleEQKnob.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
+    trebbleEQKnob.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
     trebbleEQKnob.label.setBounds(trebbleEQKnob.getX(), 
                                    trebbleEQKnob.getY() - 20, 
                                    trebbleEQKnob.getWidth(), 
                                    20);
 
-    resonanceKnob.setBounds(computeXcoord(5), computeYcoord(2), knobSize, knobSize);
+    resonanceKnob.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
     resonanceKnob.label.setBounds(resonanceKnob.getX(),
                                    resonanceKnob.getY() - 20,
                                    resonanceKnob.getWidth(), 
                                    20);
 
-    presenceKnob.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    presenceKnob.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
     presenceKnob.label.setBounds(presenceKnob.getX(),
                                    presenceKnob.getY() - 20,
                                    presenceKnob.getWidth(), 
@@ -181,7 +215,7 @@ void Editor::resized() {
 
     
 
-    preampVolumeKnob.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
+    preampVolumeKnob.setBounds(computeXcoord(7), computeYcoord(1), knobSize, knobSize);
     preampVolumeKnob.label.setBounds(preampVolumeKnob.getX(), 
                                       preampVolumeKnob.getY() - 20, 
                                       preampVolumeKnob.getWidth(), 
@@ -190,19 +224,19 @@ void Editor::resized() {
 
 
 
-    volumeKnob.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
+    volumeKnob.setBounds(computeXcoord(7), computeYcoord(2), knobSize, knobSize);
     volumeKnob.label.setBounds(volumeKnob.getX(), 
                                 volumeKnob.getY() - 20, 
                                 volumeKnob.getWidth(), 
                                 20);
 
-    ampChannelBox.setBounds(computeXcoord(2), computeYcoord(2) + 30, 120, 30);
+    ampChannelBox.setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
     ampChannelBox.label.setBounds(ampChannelBox.getX(),
                                    ampChannelBox.getY() - 20,
                                    ampChannelBox.getWidth(), 
                                    20);
 
-    toneStackModelBox.setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
+    toneStackModelBox.setBounds(computeXcoord(4), computeYcoord(2) + 30, 120, 30);
     toneStackModelBox.label.setBounds(toneStackModelBox.getX(),
                                        toneStackModelBox.getY() - 20,
                                        toneStackModelBox.getWidth(), 
@@ -210,13 +244,13 @@ void Editor::resized() {
 
 
 
-    irLoadButton.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
+    irLoadButton.setBounds(computeXcoord(7), computeYcoord(0), 100, 50);
     irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 200, 20);
 
-    irLoaderBypassToggle.setBounds(computeXcoord(5), computeYcoord(0), 100, 50);
+    irLoaderBypassToggle.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
 
-    testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
-    testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
+    // testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
+    // testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
 
     // tabs.setBounds(0, 0, 1000, 400);
 
@@ -238,7 +272,7 @@ Knob::Knob(juce::String labelID, juce::String name, Editor *editor)
 
 void Knob::init(juce::String paramID, Editor *editor) {
     sliderAttachment = std::make_unique<SliderAttachment>(
-        *(editor->audioProcessor.apvts), paramID, *this
+        editor->audioProcessor.apvts, paramID, *this
     );
 }
 
@@ -260,6 +294,6 @@ ComboBox::ComboBox(juce::String labelID, juce::String name, Editor *editor)
 
 void ComboBox::init(juce::String paramID, Editor *editor) {
     boxAttachment = std::make_unique<ComboBoxAttachment>(
-        *(editor->audioProcessor.apvts), paramID, *this
+        editor->audioProcessor.apvts, paramID, *this
     );
 }

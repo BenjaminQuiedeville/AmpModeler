@@ -34,7 +34,7 @@ struct IRLoader {
 
     void init(double samplerate, size_t blockSize);
 
-    void loadIR(bool initIR, juce::Label *irNameLabel);
+    void loadIR(bool initIR);
     void prepareConvolution(float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
@@ -50,8 +50,8 @@ struct IRLoader {
 
     int overlapAddIndex = 0;
     
-    std::string irPath;
-
+    juce::File irFile;
+    
     FFT::FreqVector inputDftBuffer;
     FFT::FreqVector irDftBuffer;
     FFT::TimeVector inputBufferPadded;
