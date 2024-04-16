@@ -9,10 +9,7 @@
 
 
 #include "common.h"
-#include "pffft/pffft.hpp"
-
-#define FFT_SIZE (1 << 15)
-using FFT = pffft::FFT<float, FFT_SIZE>;
+#include "pffft/pffft.h"
 
 /*
 
@@ -34,10 +31,14 @@ struct IRLoader {
 
     void init(double samplerate, size_t blockSize);
 
+    void reallocFFTEngine(u64 newSize);
     void loadIR(bool initIR);
     void prepareConvolution(float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 
+    PFFFT_Setup *fftEngine = nullptr;
+    size_t fftSize = 16384;
+    
     size_t blockSize = 0;
     size_t convolutionResultSize = 0;
 
@@ -52,13 +53,13 @@ struct IRLoader {
     
     juce::File irFile;
     
-    FFT::FreqVector inputDftBuffer;
-    FFT::FreqVector irDftBuffer;
-    FFT::TimeVector inputBufferPadded;
-    FFT::TimeVector convolutionResultBuffer;
-    FFT::TimeVector overlapAddBuffer;
+    float *inputDftBuffer;
+    float *irDftBuffer;
+    float *inputBufferPadded;
+    float *convolutionResultBuffer;
+    float *overlapAddBuffer;
+    float *fftWorkBuffer;
 
-    FFT *fftEngine;
     
 };
 

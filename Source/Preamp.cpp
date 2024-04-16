@@ -59,19 +59,19 @@ void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampl
 }
 
 
-PreampDistorsion::PreampDistorsion() {
+Preamp::Preamp() {
     
     overSampler = new OverSampler();
 }
 
-PreampDistorsion::~PreampDistorsion() {
+Preamp::~Preamp() {
     delete overSampler; 
 
     if (upSampledBlock) { free(upSampledBlock); }
 
 }
 
-void PreampDistorsion::prepareToPlay(double _samplerate, int blockSize) {
+void Preamp::prepareToPlay(double _samplerate, int blockSize) {
     samplerate = _samplerate;
 
     preGain.init(0.0);
@@ -132,7 +132,7 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
 }
 
 
-sample_t PreampDistorsion::processGainStages(sample_t sample) {
+sample_t Preamp::processGainStages(sample_t sample) {
 
     // input Tube stage
     sample *= STAGE_GAIN;
@@ -189,7 +189,7 @@ sample_t PreampDistorsion::processGainStages(sample_t sample) {
     return sample;
 }
 
-void PreampDistorsion::process(sample_t *buffer, size_t nSamples) {
+void Preamp::process(sample_t *buffer, size_t nSamples) {
         
 
     overSampler->upSample(buffer, upSampledBlock, nSamples, nSamples*PREAMP_UP_SAMPLE_FACTOR);

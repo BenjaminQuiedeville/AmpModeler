@@ -181,7 +181,7 @@ struct Processor  : public juce::AudioProcessor,
 
     NoiseGate *noiseGate;
     Boost *preBoost;
-    PreampDistorsion *preamp;
+    Preamp *preamp;
     Tonestack *toneStack;
     IRLoader *irLoader;
 

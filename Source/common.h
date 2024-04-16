@@ -30,5 +30,16 @@ static inline float scale(float x, float min, float max, float newmin, float new
     return std::pow((x - min) / (max - min), curve) * (newmax - newmin) + newmin;
 }
 
+static inline u64 nextPowTwo(u64 n) {
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    n++;
+    return n;
+}
+
 
 #endif  // AMP_MODELER_COMMON

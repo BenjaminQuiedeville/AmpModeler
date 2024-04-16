@@ -32,7 +32,7 @@ apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
     
     noiseGate = new NoiseGate();
     preBoost  = new Boost();
-    preamp    = new PreampDistorsion();
+    preamp    = new Preamp();
     toneStack = new Tonestack();
     irLoader  = new IRLoader();
 

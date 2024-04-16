@@ -31,9 +31,9 @@ struct OverSampler {
 };
 
 
-struct PreampDistorsion {
-    PreampDistorsion();
-    ~PreampDistorsion();
+struct Preamp {
+    Preamp();
+    ~Preamp();
     
     void prepareToPlay(double samplerate, int blockSize);
     sample_t processGainStages(sample_t sample);
