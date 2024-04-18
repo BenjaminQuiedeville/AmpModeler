@@ -23,7 +23,6 @@ libérer le buffer temporaire
 
 */
 
-//@TODO change back to pffft's C version for more flexibility
 struct IRLoader {
 
     IRLoader();
@@ -53,10 +52,11 @@ struct IRLoader {
     
     juce::File irFile;
     
+    float *inputBufferPadded;
     float *inputDftBuffer;
     float *irDftBuffer;
-    float *inputBufferPadded;
     float *convolutionResultBuffer;
+    float *convolutionResultDftBuffer;
     float *overlapAddBuffer;
     float *fftWorkBuffer;
 
