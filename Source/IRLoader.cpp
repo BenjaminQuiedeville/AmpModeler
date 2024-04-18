@@ -218,20 +218,22 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
     pffft_destroy_setup(fftEngine);
     
     pffft_aligned_free(inputBufferPadded);
-    pffft_aligned_free(convolutionResultBuffer);
     pffft_aligned_free(inputDftBuffer);
     pffft_aligned_free(irDftBuffer);
+    pffft_aligned_free(convolutionResultBuffer);
+    pffft_aligned_free(convolutionResultDftBuffer);
     pffft_aligned_free(fftWorkBuffer);
     free(overlapAddBuffer);
     
     
     fftEngine = pffft_new_setup((int)fftSize, PFFFT_REAL);
 
-    inputBufferPadded       = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    convolutionResultBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputDftBuffer          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    irDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));    
-    overlapAddBuffer        = (float *)calloc(2 * fftSize, sizeof(float));
+    inputBufferPadded          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    inputDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    irDftBuffer                = (float *)pffft_aligned_malloc(fftSize * sizeof(float));    
+    convolutionResultBuffer    = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    convolutionResultDftBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    overlapAddBuffer           = (float *)calloc(2 * fftSize, sizeof(float));
     
     if (fftSize >= 16384) {
         fftWorkBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
@@ -250,12 +252,13 @@ IRLoader::IRLoader() {
 
     fftEngine = pffft_new_setup((int)fftSize, PFFFT_REAL);
 
-    inputBufferPadded       = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    convolutionResultBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputDftBuffer          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    irDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    fftWorkBuffer           = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    overlapAddBuffer        = (float *)calloc(2 * fftSize, sizeof(float));
+    inputBufferPadded          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    inputDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    irDftBuffer                = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    convolutionResultDftBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    convolutionResultBuffer    = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    fftWorkBuffer              = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    overlapAddBuffer           = (float *)calloc(2 * fftSize, sizeof(float));
 
     for (u32 i = 0; i < fftSize; i++) {
         inputBufferPadded[i] = 0.0f;
@@ -268,9 +271,10 @@ IRLoader::~IRLoader() {
     pffft_destroy_setup(fftEngine);
 
     pffft_aligned_free(inputBufferPadded);       
-    pffft_aligned_free(convolutionResultBuffer); 
     pffft_aligned_free(inputDftBuffer);          
     pffft_aligned_free(irDftBuffer);             
+    pffft_aligned_free(convolutionResultBuffer); 
+    pffft_aligned_free(convolutionResultDftBuffer); 
     pffft_aligned_free(fftWorkBuffer);
     free(overlapAddBuffer);        
 }
@@ -341,9 +345,13 @@ void IRLoader::process(float *input, size_t nSamples) {
 
     pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
 
-    pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, inputDftBuffer, 1.0f);
+    for (size_t i = 0; i < fftSize; i++) {
+        convolutionResultDftBuffer[i] = 0.0f;
+    }
 
-    pffft_transform(fftEngine, inputDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
+    pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
+
+    pffft_transform(fftEngine, convolutionResultDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
 
     size_t overlapAddBufferSize = 2 * fftSize;
 
