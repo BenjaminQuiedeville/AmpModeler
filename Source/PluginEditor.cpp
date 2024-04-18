@@ -57,7 +57,7 @@ Editor::Editor (Processor& p)
                                  juce::NotificationType::dontSendNotification);
 
     toneStackModelBox.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
-    toneStackModelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]), 
+    toneStackModelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1, 
                                      juce::NotificationType::dontSendNotification);
 
 

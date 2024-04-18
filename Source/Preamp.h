@@ -12,7 +12,7 @@
 #include "Biquad.h"
 #include "SmoothParam.h"
 
-#define PREAMP_UP_SAMPLE_FACTOR 8
+#define PREAMP_UP_SAMPLE_FACTOR 4
 
 
 

@@ -352,7 +352,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == ParamIDs[TONESTACK_TREBBLE]
         || id == ParamIDs[TONESTACK_MODEL])
     {
-        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) - 1);
+        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]));
         toneStack->comp->setModel(model);
         
         float bassParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
@@ -407,7 +407,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(
-        ParamIDs[CHANNEL].toString(), "Amp Channel", 1, 4, 2
+        ParamIDs[CHANNEL].toString(), "Amp Channel", 1, 4, 1
     ));
     
 
@@ -421,9 +421,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         ParamIDs[TONESTACK_TREBBLE].toString(), "Trebble", 0.0f, 10.0f, 5.0f
     ));
     
-    params.push_back(std::make_unique<juce::AudioParameterInt>(
-        ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 1, 4, 1
+    // params.push_back(std::make_unique<juce::AudioParameterInt>(
+    //     ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 1, 5, 1
+    // ));
+
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(
+        ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 
+        juce::StringArray{"Savage", "JCM", "SLO", "Rect", "Orange"}, 0
     ));
+
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -18.0f, 18.0f, 0.0f

@@ -231,7 +231,7 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
     convolutionResultBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
     inputDftBuffer          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
     irDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));    
-    overlapAddBuffer        = (float *)malloc(2 * fftSize * sizeof(float));
+    overlapAddBuffer        = (float *)calloc(2 * fftSize, sizeof(float));
     
     if (fftSize >= 16384) {
         fftWorkBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
@@ -255,7 +255,7 @@ IRLoader::IRLoader() {
     inputDftBuffer          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
     irDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
     fftWorkBuffer           = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    overlapAddBuffer        = (float *)malloc(2 * fftSize * sizeof(float));
+    overlapAddBuffer        = (float *)calloc(2 * fftSize, sizeof(float));
 
     for (u32 i = 0; i < fftSize; i++) {
         inputBufferPadded[i] = 0.0f;
