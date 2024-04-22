@@ -93,20 +93,20 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
 
     brightCapFilter.setCoefficients(750.0, 0.4, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
-    couplingFilter1.setCoefficients(100.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter2.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter1.setCoefficients(300.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter2.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter3.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter4.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter4.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    cathodeBypassFilter1.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter3.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter1.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter3.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
