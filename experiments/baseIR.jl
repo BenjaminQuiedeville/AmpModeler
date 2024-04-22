@@ -3,7 +3,7 @@ using DelimitedFiles
 
 function main()
 
-    filepath :: String = "TestImpulseResponsesAuroraDSP/SinMix_Hesu412.wav"
+    filepath :: String = "data/default_IR.wav"
     
 
     (IR, _, _, _) = WAV.wavread(filepath, format = "double")
