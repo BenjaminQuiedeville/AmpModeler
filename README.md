@@ -1,15 +1,13 @@
-### Amp Modeler
+# Amp Modeler
 
-# Todo :
+## Dependency to build the plugin :
+- CMake
+- A C++ compiler (mainly built with MSVC)
 
-IRs : free IRs distributed with FenrIR by Aurora DSP
+## Build the project : 
+At the root of project do
 
-écrire un algo d'upsampling custom
-
-Corriger les courbes de clipping pour la distorsion
-
-setup the project : at the root of project
-    cmake -S . -B build -G "Generator"
+cmake -S . -B build -G "Generator"
 
 Generator can be either :
 "Visual Studio 17 2022"
@@ -17,4 +15,4 @@ Generator can be either :
 "MSYS Makefiles"
 
 to build :
-    cmake --build build --config Debug/Release
+    cmake --build build --config Release
