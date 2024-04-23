@@ -79,7 +79,7 @@ Editor::Editor (Processor& p)
         audioProcessor.irLoader->irFile = returnedFile;
         IRLoaderError error = audioProcessor.irLoader->loadIR(false); 
         
-        if (error = IRLoaderError::Error) { return; }
+        if (error == IRLoaderError::Error) { return; }
     
         irNameLabel.setText(returnedFile.getFileNameWithoutExtension(),
                             juce::NotificationType::dontSendNotification);
