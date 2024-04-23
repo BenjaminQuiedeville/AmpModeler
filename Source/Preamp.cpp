@@ -94,9 +94,9 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
     brightCapFilter.setCoefficients(750.0, 0.4, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
     couplingFilter1.setCoefficients(300.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter2.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter3.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter4.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter2.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter3.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter4.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter2.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
@@ -104,9 +104,9 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
     stageOutputFilter4.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     cathodeBypassFilter1.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(20.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter3.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(20.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
@@ -173,6 +173,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
 
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
+    sample = cathodeBypassFilter3.process(sample);
     sample = couplingFilter3.processHighPass(sample);
 
     if (channel == 3) {
@@ -184,6 +185,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
 
     sample *= STAGE_GAIN;
     sample = waveShaping(sample, headroom);
+    sample = cathodeBypassFilter4.process(sample);
     sample = couplingFilter4.processHighPass(sample);
         
     return sample;

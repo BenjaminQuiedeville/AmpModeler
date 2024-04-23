@@ -23,6 +23,11 @@ libérer le buffer temporaire
 
 */
 
+enum IRLoaderError {
+    OK, 
+    Error
+};
+
 struct IRLoader {
 
     IRLoader();
@@ -31,7 +36,7 @@ struct IRLoader {
     void init(double samplerate, size_t blockSize);
 
     void reallocFFTEngine(u64 newSize);
-    void loadIR(bool initIR);
+    IRLoaderError loadIR(bool initIR);
     void prepareConvolution(float* irPtr, size_t irSize);
     void process(float *input, size_t nSamples);
 

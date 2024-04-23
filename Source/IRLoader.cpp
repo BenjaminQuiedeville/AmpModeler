@@ -4,9 +4,7 @@
   ==============================================================================
 */
 
-#ifndef JUCE_MODAL_LOOPS_PERMITTED
-    #define JUCE_MODAL_LOOPS_PERMITTED 1
-#endif
+#define JUCE_MODAL_LOOPS_PERMITTED 1
 
 #include "IRLoader.h"
 #include <memory>
@@ -54,15 +52,19 @@ static u64 parseWavFile(const std::string& filepath, float **buffer) {
 
     fread(riffString, 1, 4, wavFile);
 
-    // assert(riffString[0] == 'R' || riffString[1] == 'I' 
-    //     || riffString[2] == 'F' || riffString[3] == 'F');
-
-    assert(memcmp(riffString, "RIFF", 4) == 0);
     if (memcmp(riffString, "RIFF", 4) != 0) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "There is an error in the \"RIFF\" header of the .wav file, please choose another file", 
+            "Ok");
+        
         fclose(wavFile);
         return 0;
     }
-
+    
+    // assert(memcmp(riffString, "RIFF", 4) == 0);
+    
     fread((char *)(&ChunkSize), 1, 4, wavFile);
     fread(format, 1, 4, wavFile);
 
@@ -84,7 +86,20 @@ static u64 parseWavFile(const std::string& filepath, float **buffer) {
     fread((char *)(&BlockAlign), 1, 2, wavFile);
     fread((char *)(&bitsPerSample), 1, 2, wavFile);
     
-    assert(NumChannels == 1);
+    // assert(NumChannels == 1);
+    
+
+    if (NumChannels != 1) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "Sorry, I don't support IRs with more than one channels for now, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        return 0;        
+    }
+    
     assert(byteRate == (samplerate * NumChannels * bitsPerSample/8));
     assert(BlockAlign == (NumChannels * bitsPerSample/8));
     
@@ -99,7 +114,20 @@ static u64 parseWavFile(const std::string& filepath, float **buffer) {
     
     // if (SubChunk2ID[0] != 'd' || SubChunk2ID[1] != 'a'
     //  || SubChunk2ID[2] != 't' || SubChunk2ID[3] != 'a')
-    assert(memcmp(SubChunk2ID, "data", 4) == 0 && "le fichier contient des métadonnées chiantes");
+    
+
+    if (memcmp(SubChunk2ID, "data", 4) != 0) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "The file contains anoying meta data than I can't decode for now, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        return 0;        
+    }
+    // assert(memcmp(SubChunk2ID, "data", 4) == 0 && "le fichier contient des métadonnées chiantes");
+    
 
     //if (memcmp(SubChunk2ID, "data", 4) == 0)
     //{
@@ -277,6 +305,7 @@ IRLoader::~IRLoader() {
     pffft_aligned_free(convolutionResultDftBuffer); 
     pffft_aligned_free(fftWorkBuffer);
     free(overlapAddBuffer);        
+    free(irBuffer);
 }
 
 void IRLoader::init(double _samplerate, size_t _blockSize) {
@@ -313,25 +342,28 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     return;
 }
 
-void IRLoader::loadIR(bool initIR) {
+IRLoaderError IRLoader::loadIR(bool initIR) {
 
     if (initIR) {
         prepareConvolution(baseIR, BASE_IR_SIZE);
-        return;
+        return IRLoaderError::OK;
     }
 
     std::string irPath = irFile.getFullPathName().toStdString();
 
-    if (irPath == "") { return; }
+    if (irPath == "") { return IRLoaderError::Error; }
 
     size_t irSize = parseWavFile(irPath, &irBuffer);
 
-    if (irSize == 0) { return; }
+    // @TODO create enum error id if loading the IR fails
+    if (irSize == 0) { return IRLoaderError::Error; }
 
     irBufferSize = irSize;
     
     // the IR is fully loaded at the end of the process function
     updateIR = true;
+    
+    return IRLoaderError::OK;
 }
 
 
