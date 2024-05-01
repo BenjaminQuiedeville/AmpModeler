@@ -432,7 +432,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -18.0f, 18.0f, 0.0f
+        ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -18.0f, 32.0f, 0.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[RESONANCE].toString(), "Reson", 0.0f, 12.0f, 6.0f
