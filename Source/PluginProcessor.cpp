@@ -395,7 +395,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         ParamIDs[BITE_FREQ].toString(), "Bite Freq", 500.0f, 3500.0f, 1700.0f
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[TIGHT].toString(), "Tight", 10.0f, 750.0f, 10.0f
+        ParamIDs[TIGHT].toString(), "Tight", 0.0f, 1000.0f, 10.0f
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -403,7 +403,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[INPUT_FILTER].toString(), "Input Filter", 0.0f, 700.0f, 300.0f
+        ParamIDs[INPUT_FILTER].toString(), "Input Filter", 0.0f, 1500.0f, 500.0f
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(
