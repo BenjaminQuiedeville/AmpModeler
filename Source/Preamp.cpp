@@ -10,6 +10,7 @@
 
 const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
+const sample_t INPUT_GAIN = 0.05f;
 
 const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(24.0);
 const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(9.0);
@@ -117,10 +118,7 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
 
 }
 
-static inline sample_t waveShaping(sample_t sample, float headroom) {
-    
-    sample = sample / headroom;
-
+static inline sample_t waveShaping(sample_t sample) {
     if (sample > 0.0f) { 
         sample = 1/juce::MathConstants<sample_t>::pi * 2.0f 
                * std::atan(sample * juce::MathConstants<sample_t>::pi * 0.5f); 
@@ -128,7 +126,7 @@ static inline sample_t waveShaping(sample_t sample, float headroom) {
 
     if (sample < -1.3f) { sample = -1.3f; }
 
-    return -sample*headroom;
+    return -sample;
 }
 
 
@@ -136,7 +134,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
 
     // input Tube stage
     sample *= STAGE_GAIN;
-    sample = waveShaping(sample, headroom);
+    sample = waveShaping(sample);
     sample = cathodeBypassFilter1.process(sample);
     
     sample = inputFilter.processHighPass(sample);
@@ -148,7 +146,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
 
 
     sample *= STAGE_GAIN;
-    sample = waveShaping(sample, headroom);
+    sample = waveShaping(sample);
     sample = couplingFilter1.processHighPass(sample);
 
     if (channel == 1) {
@@ -159,7 +157,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
     sample *= 0.5f;
 
     sample *= STAGE_GAIN;
-    sample = waveShaping(sample, headroom);
+    sample = waveShaping(sample);
     sample = cathodeBypassFilter2.process(sample);
     sample = couplingFilter2.processHighPass(sample);
 
@@ -172,7 +170,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
     sample *= 0.5f;
 
     sample *= STAGE_GAIN;
-    sample = waveShaping(sample, headroom);
+    sample = waveShaping(sample);
     sample = cathodeBypassFilter3.process(sample);
     sample = couplingFilter3.processHighPass(sample);
 
@@ -184,7 +182,7 @@ sample_t Preamp::processGainStages(sample_t sample) {
     sample *= 0.5f;
 
     sample *= STAGE_GAIN;
-    sample = waveShaping(sample, headroom);
+    sample = waveShaping(sample);
     sample = cathodeBypassFilter4.process(sample);
     sample = couplingFilter4.processHighPass(sample);
         
@@ -200,16 +198,15 @@ void Preamp::process(sample_t *buffer, size_t nSamples) {
         
         sample_t sample = upSampledBlock[index];
 
+        sample *= INPUT_GAIN;
         sample = processGainStages(sample);
         
         sample *= OUTPUT_ATTENUATION;
         
-        sample /= headroom;
         sample *= (sample_t)DB_TO_GAIN(postGain.nextValue());
 
         upSampledBlock[index] = sample;
     }
-
     
     overSampler->downSample(upSampledBlock, buffer, nSamples * PREAMP_UP_SAMPLE_FACTOR, nSamples);
 
