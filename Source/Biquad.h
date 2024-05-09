@@ -34,10 +34,8 @@ struct Biquad {
     }
 
     void reset() {
-        x1 = 0.0f;
-        x2 = 0.0f;
-        y1 = 0.0f;
-        y2 = 0.0f;
+        w1 = 0.0f;
+        w2 = 0.0f;
     }
 
     void setCoefficients(double frequency, double Q, double gaindB, double samplerate) {
@@ -56,21 +54,21 @@ struct Biquad {
             case BIQUAD_LOWPASS:
                 a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (1.0 - cosw0) * 0.5 * a0inv;
-                b1 = 2.0 * b0;
-                b2 = b0;
-                a1 = -2.0 * cosw0 * a0inv;
-                a2 = (1.0 - alpha) * a0inv;
+                b0 = (sample_t)((1.0 - cosw0) * 0.5 * a0inv);
+                b1 = (sample_t)(2.0 * b0);
+                b2 = (sample_t)(b0);
+                a1 = (sample_t)(-2.0 * cosw0 * a0inv);
+                a2 = (sample_t)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_HIGHPASS:
                 a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (1.0 + cosw0) * 0.5 * a0inv;
-                b1 = -2.0 * b0;
-                b2 = b0;
-                a1 = -2.0 * cosw0 * a0inv;
-                a2 = (1.0 - alpha) * a0inv;
+                b0 = (sample_t)((1.0 + cosw0) * 0.5 * a0inv);
+                b1 = (sample_t)(-2.0 * b0);
+                b2 = (sample_t)(b0);
+                a1 = (sample_t)(-2.0 * cosw0 * a0inv);
+                a2 = (sample_t)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_PEAK: 
@@ -78,11 +76,11 @@ struct Biquad {
                 
                 a0inv = 1/(1 + alpha/A);
     
-                b0 = (1.0 + alpha * A) * a0inv;
-                b1 = -2.0 * cosw0 * a0inv;
-                b2 = (1.0 - alpha * A) * a0inv; 
-                a1 = b1; 
-                a2 = (1.0 - alpha / A) * a0inv;
+                b0 = (sample_t)((1.0 + alpha * A) * a0inv);
+                b1 = (sample_t)(-2.0 * cosw0 * a0inv);
+                b2 = (sample_t)((1.0 - alpha * A) * a0inv); 
+                a1 = (sample_t)(b1);
+                a2 = (sample_t)((1.0 - alpha / A) * a0inv);
                 break;
     
             case BIQUAD_LOWSHELF: 
@@ -91,11 +89,11 @@ struct Biquad {
 
                 a0inv = 1/((A+1) + (A-1)*cosw0 + beta*sinw0);
                 
-                b0 = (A*((A+1) - (A-1)*cosw0 + beta*sinw0)) * a0inv;
-                b1 = (2*A*((A-1) - (A+1)*cosw0)) * a0inv;
-                b2 = (A*((A+1) - (A-1)*cosw0 - beta*sinw0)) * a0inv;
-                a1 = (-2*((A-1) + (A+1)*cosw0)) * a0inv;
-                a2 = ((A+1) + (A-1)*cosw0 - beta*sinw0) * a0inv;
+                b0 = (sample_t)((A*((A+1) - (A-1)*cosw0 + beta*sinw0)) * a0inv);
+                b1 = (sample_t)((2*A*((A-1) - (A+1)*cosw0)) * a0inv);
+                b2 = (sample_t)((A*((A+1) - (A-1)*cosw0 - beta*sinw0)) * a0inv);
+                a1 = (sample_t)((-2*((A-1) + (A+1)*cosw0)) * a0inv);
+                a2 = (sample_t)(((A+1) + (A-1)*cosw0 - beta*sinw0) * a0inv);
                 break;
     
             case BIQUAD_HIGHSHELF:
@@ -103,19 +101,19 @@ struct Biquad {
                 beta = sqrt(A)/Q;
                 a0inv = 1/((A+1) - (A-1)*cosw0 + beta*sinw0);
     
-                b0 = (A*((A+1) + (A-1)*cosw0 + beta*sinw0)) * a0inv;
-                b1 = (-2*A*((A-1) + (A+1)*cosw0)) * a0inv;
-                b2 = (A*((A+1) + (A-1)*cosw0 - beta*sinw0)) * a0inv;
-                a1 = (2*((A-1) - (A+1)*cosw0)) * a0inv;
-                a2 = ((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv;
+                b0 = (sample_t)((A*((A+1) + (A-1)*cosw0 + beta*sinw0)) * a0inv);
+                b1 = (sample_t)((-2*A*((A-1) + (A+1)*cosw0)) * a0inv);
+                b2 = (sample_t)((A*((A+1) + (A-1)*cosw0 - beta*sinw0)) * a0inv);
+                a1 = (sample_t)((2*((A-1) - (A+1)*cosw0)) * a0inv);
+                a2 = (sample_t)(((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv);
                 break;
     
             default:
-                b0 = 1.0;
-                b1 = 0.0;
-                b2 = 0.0;
-                a1 = 0.0;
-                a2 = 0.0;
+                b0 = 1.0f;
+                b1 = 0.0f;
+                b2 = 0.0f;
+                a1 = 0.0f;
+                a2 = 0.0f;
                 break;
         }
     }
@@ -131,26 +129,24 @@ struct Biquad {
 
     sample_t process(sample_t sample) {
 
-        sample_t outputSample = (float)(sample * b0 + x1 * b1 + x2 * b2
-                              - y1 * a1 - y2 * a2);
-        x2 = x1;
-        x1 = sample;
-        y2 = y1;
-        y1 = outputSample;
+        sample_t w = sample - a1*w1 - a2*w2;
+        sample_t outputSample = b0*w + b1*w1 + b2*w2;
+        
+        w2 = w1;
+        w1 = w;
+        
         return outputSample;
     }
 
 
-    double b0 = 1.0;
-    double b1 = 0.0;
-    double b2 = 0.0;
-    double a1 = 0.0;
-    double a2 = 0.0;
+    sample_t b0 = 1.0;
+    sample_t b1 = 0.0;
+    sample_t b2 = 0.0;
+    sample_t a1 = 0.0;
+    sample_t a2 = 0.0;
 
-    sample_t x1 = 0.0f;
-    sample_t x2 = 0.0f;
-    sample_t y1 = 0.0f;
-    sample_t y2 = 0.0f;
+    sample_t w1 = 0.0f;
+    sample_t w2 = 0.0f;
     u8 filterType;
 
 };
