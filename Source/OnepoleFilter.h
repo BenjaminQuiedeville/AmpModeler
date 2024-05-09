@@ -24,13 +24,13 @@ struct OnepoleFilter {
         a1 = b0 - 1.0;
     }
 
-    inline sample_t processLowPass(sample_t sample) {
+    inline sample_t processLowpass(sample_t sample) {
         sample = (sample_t)(sample * b0 - a1 * y1);
         y1 = sample;
         return sample;
     }
 
-    inline sample_t processHighPass(sample_t sample) {
+    inline sample_t processHighpass(sample_t sample) {
         sample_t lpSample = (sample_t)(sample * b0 - a1 * y1);
         y1 = lpSample;
         return sample - lpSample;
@@ -38,13 +38,13 @@ struct OnepoleFilter {
 
     void processBufferLowpass(sample_t *buffer, size_t numSamples) {
         for (size_t index = 0; index < numSamples; index++) {
-            buffer[index] = processLowPass(buffer[index]);
+            buffer[index] = processLowpass(buffer[index]);
         }
     }
 
     void processBufferHighpass(sample_t *buffer, size_t numSamples) {
         for (size_t index = 0; index < numSamples; index++) {
-            buffer[index] = processHighPass(buffer[index]);
+            buffer[index] = processHighpass(buffer[index]);
         }
     }
     

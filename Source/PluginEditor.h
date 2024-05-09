@@ -66,8 +66,6 @@ struct Editor : public juce::AudioProcessorEditor
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
 
-    juce::ToggleButton testOscToggle {"Toggle Test Sound"};
-    juce::ToggleButton testOscNoiseToggle {"Noise toggle"};
     juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
 
     juce::TabbedComponent tabs {juce::TabbedButtonBar::Orientation::TabsAtTop};

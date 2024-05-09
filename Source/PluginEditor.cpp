@@ -103,23 +103,6 @@ Editor::Editor (Processor& p)
 
     addAndMakeVisible(irLoaderBypassToggle);
 
-    testOscToggle.onClick = [&]() { 
-        audioProcessor.doTestOsc = testOscToggle.getToggleState(); 
-    }; 
-
-    testOscNoiseToggle.onClick = [&]() { 
-        audioProcessor.testOsc.doNoise = testOscNoiseToggle.getToggleState(); 
-    };
-
-
-    addAndMakeVisible(testOscToggle);
-    addAndMakeVisible(testOscNoiseToggle);
-
-    tabs.addTab("Tab 1", juce::Colours::red, &testOscToggle, false, 0);
-    tabs.addTab("Tab 2", juce::Colours::blue, &testOscNoiseToggle, false, 1);
-    // addAndMakeVisible(tabs);
-
-
     setSize(1200, 600);
     setResizable(true, true);
 }

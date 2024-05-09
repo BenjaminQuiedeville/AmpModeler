@@ -18,7 +18,7 @@
 
 #define BASE_IR_SIZE 1440
 static float baseIR[BASE_IR_SIZE] = {
-#include "baseIR.inc"
+#include "data/baseIR.inc"
 };
 
 
@@ -355,7 +355,6 @@ IRLoaderError IRLoader::loadIR(bool initIR) {
 
     size_t irSize = parseWavFile(irPath, &irBuffer);
 
-    // @TODO create enum error id if loading the IR fails
     if (irSize == 0) { return IRLoaderError::Error; }
 
     irBufferSize = irSize;

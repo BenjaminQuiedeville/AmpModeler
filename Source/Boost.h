@@ -14,6 +14,7 @@
 
 #define BOOST_BITE_Q     0.23
 
+// @TODO refactor to remove struct
 struct Boost {
 
     void prepareToPlay() {
@@ -25,7 +26,7 @@ struct Boost {
 
         for (size_t i = 0; i<nSamples; i++) {
             sample_t sample = buffer[i];
-            sample = tightFilter.processHighPass(sample);
+            sample = tightFilter.processHighpass(sample);
             sample = biteFilter.process(sample);
             buffer[i] = sample;
         }

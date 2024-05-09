@@ -151,8 +151,6 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
         intputSignalCopy = (sample_t *)calloc(samplesPerBlock,  sizeof(sample_t));
     }
 
-    testOsc.setFreq(200.0, sampleRate);
-
     initParameters();
 }
 
@@ -206,13 +204,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     sample_t *audioPtr = buffer.getWritePointer(0);
 
     inputNoiseFilter.processBuffer(audioPtr, numSamples);
-
-
-    if (doTestOsc) {
-        for (size_t i = 0; i < numSamples; i++) {
-            audioPtr[i] = testOsc.generateNextSample();
-        }
-    }
 
     memcpy(intputSignalCopy, audioPtr, numSamples * sizeof(sample_t));
 
@@ -327,7 +318,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
         preamp->brightCapFilter.setCoefficients(
             750.0, 0.4, 
-            scale(newValue, paramRange.start, paramRange.end, -18.0f, 0.0f, 1.0f),
+            scale_linear(newValue, paramRange.start, paramRange.end, -18.0f, 0.0f),
             samplerate*PREAMP_UP_SAMPLE_FACTOR
         );
         

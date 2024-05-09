@@ -38,9 +38,6 @@ RESTANT :
 général 
     presets
 
-boost 
-    frequence de boost
-
 tonestack
     composants custom
     
@@ -51,44 +48,14 @@ preamp
 
 irloader 
 
-    écrire le path de l'ir dans le apvts, pour conserver l'ir entre instance si possible
-
     wavread
         ignorer les chunks inutils
-        ajouter des conditions d'erreur 
 
     double IR mixable
     alignement de phase
 
     algorithme partitionné
-
-
 */
-
-struct TestOsc {
-
-    void setFreq(double freq, double samplerate) {
-        a = 2.0f * (float)sin(juce::MathConstants<double>::pi * freq/samplerate);
-    }
-
-    sample_t generateNextSample() {
-        
-        if (doNoise) {
-            return gain * (std::rand() / RAND_MAX * 2.0f - 1.0f) ;
-        }
-            
-        s[0] = s[0] - a*s[1];
-        s[1] = s[1] + a*s[0];
-        return s[0] * gain;
-    }
-
-    sample_t s[2] = {0.5f, 0.0f};
-    sample_t a = 0.0f;
-    sample_t gain = 0.01f;
-    bool doNoise = false;
-};
-
-
 
 enum Params {
     GATE_THRESH,
@@ -190,12 +157,9 @@ struct Processor  : public juce::AudioProcessor,
 
 	SmoothParamLinear masterVolume;
 
-    TestOsc testOsc;
-
     double samplerate = 44100.0;
 
     sample_t *intputSignalCopy = nullptr;
-    bool doTestOsc = false;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

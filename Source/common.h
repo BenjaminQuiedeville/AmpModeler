@@ -30,6 +30,10 @@ static inline float scale(float x, float min, float max, float newmin, float new
     return std::pow((x - min) / (max - min), curve) * (newmax - newmin) + newmin;
 }
 
+static inline float scale_linear(float x, float min, float max, float newmin, float newmax) {
+    return (x - min) / (max - min) * (newmax - newmin) + newmin;
+}
+
 static inline u64 nextPowTwo(u64 n) {
     n--;
     n |= n >> 1;
