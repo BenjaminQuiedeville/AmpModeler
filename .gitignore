@@ -13,3 +13,5 @@
 .vscode/
 
 build/*
+executables/
+profile reports/
