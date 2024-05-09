@@ -46,15 +46,15 @@ struct NoiseGate {
             gateBuffer[gateBufferIndex] = sidechain[i];
             absoluteSum += std::abs(gateBuffer[gateBufferIndex]);
             
-            gateBufferIndex = (gateBufferIndex+1) % gateBufferLength;
+            gateBufferIndex++;
+            if (gateBufferIndex == gateBufferLength) { gateBufferIndex = 0; }
 
             bool isOpen = (absoluteSum / gateBufferLength) > threshold;
             gateGain.newTarget(isOpen ? 1.0 : 0.0, 
-                                isOpen ? attackTimeMs : releaseTimeMs,
-                                samplerate);
+                               isOpen ? attackTimeMs : releaseTimeMs,
+                               samplerate);
             
             input[i] *= (sample_t)gateGain.nextValue();
-                        
         }    
     }
 
@@ -73,6 +73,3 @@ struct NoiseGate {
     double releaseTimeMs = 15.0;
 
 };
-
-
-
