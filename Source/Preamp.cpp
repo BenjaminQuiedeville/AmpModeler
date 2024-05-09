@@ -7,10 +7,11 @@
 #include "Preamp.h"
 #include <memory>
 #include <assert.h>
+#include "data/waveshape_table.inc"
 
 const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
-const sample_t INPUT_GAIN = 0.05f;
+const sample_t INPUT_GAIN = 0.1f;
 
 const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(24.0);
 const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(9.0);
@@ -118,96 +119,161 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
 
 }
 
-static inline sample_t waveShaping(sample_t sample) {
-    if (sample > 0.0f) { 
-        sample = 1/juce::MathConstants<sample_t>::pi * 2.0f 
-               * std::atan(sample * juce::MathConstants<sample_t>::pi * 0.5f); 
+static inline void waveShaping(sample_t *buffer, size_t nSamples) {
+
+    for (size_t i = 0; i < nSamples; i++) {
+        
+        sample_t sample = buffer[i];
+        if (sample > 0.0f) { 
+            sample = 1/juce::MathConstants<sample_t>::pi * 2.0f 
+                   * std::atan(sample * juce::MathConstants<sample_t>::pi * 0.5f); 
+        }
+    
+        if (sample < -1.3f) { sample = -1.3f; }
+        buffer[i] = -sample;
     }
-
-    if (sample < -1.3f) { sample = -1.3f; }
-
-    return -sample;
 }
 
+static inline void tableWaveshape(sample_t *buffer, size_t nSamples) {
 
-sample_t Preamp::processGainStages(sample_t sample) {
-
-    // input Tube stage
-    sample *= STAGE_GAIN;
-    sample = waveShaping(sample);
-    sample = cathodeBypassFilter1.process(sample);
+    for (size_t i = 0; i < nSamples; i++) {
     
-    sample = inputFilter.processHighPass(sample);
-    sample = stageOutputFilter1.processLowPass(sample);
-    sample *= 0.9f;
+        sample_t sample = buffer[i];
+        sample_t normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
+        
+        int tableIndex = (int)(normalizedPosition * WAVESHAPE_TABLE_SIZE);
+        float interpCoeff = normalizedPosition * WAVESHAPE_TABLE_SIZE - (float)tableIndex;
+        
+        if (tableIndex >= WAVESHAPE_TABLE_SIZE) {
+            buffer[i] = waveshaping_table[WAVESHAPE_TABLE_SIZE-1];
+            continue;
+        }
+        
+        if (tableIndex < 0) {
+            buffer[i] = waveshaping_table[0];
+            continue;
+        }
+        
+        // interpolation Lagrange 3rd order
+        
+        size_t index2 = tableIndex + 1;
+        size_t index3 = tableIndex + 2;
+        size_t index4 = tableIndex + 4;
+        
+        if (index4 > WAVESHAPE_TABLE_SIZE) {
+            buffer[i] = waveshaping_table[tableIndex];
+            continue;
+        }
+        
+        float value1 = waveshaping_table[tableIndex];
+        float value2 = waveshaping_table[index2];
+        float value3 = waveshaping_table[index3];
+        float value4 = waveshaping_table[index4];
+        
+        float d1 = interpCoeff - 1.0f;
+        float d2 = interpCoeff - 2.0f;
+        float d3 = interpCoeff - 3.0f;
+        
+        float oneSixth = 1.0f/6.0f;
+        
+        float c1 = -d1 * d2 * d3 * oneSixth;
+        float c2 = d2 * d3 * 0.5f;
+        float c3 = -d1 * d3 * 0.5f;
+        float c4 = d1 * d2 * oneSixth;
 
-    sample *= (sample_t)preGain.nextValue();
-    sample = brightCapFilter.process(sample);
+        buffer[i] = value1 * c1 + interpCoeff * (value2 * c2 + value3 * c3 + value4 * c4);
+        
+    }
+}
 
+void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
+    
+    size_t index = 0;
+    
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= INPUT_GAIN;
+        buffer[index] *= STAGE_GAIN;
+    }
+            
+    tableWaveshape(buffer, nSamples);
+    cathodeBypassFilter1.processBuffer(buffer, nSamples);
+    
+    inputFilter.processBufferHighpass(buffer, nSamples);
+    stageOutputFilter1.processBufferLowpass(buffer, nSamples);
 
-    sample *= STAGE_GAIN;
-    sample = waveShaping(sample);
-    sample = couplingFilter1.processHighPass(sample);
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= 0.9f;
+        buffer[index] *= (sample_t)preGain.nextValue();
+        buffer[index] *= STAGE_GAIN;
+    }
+
+    brightCapFilter.processBuffer(buffer, nSamples);
+
+    tableWaveshape(buffer, nSamples);
+    couplingFilter1.processBufferHighpass(buffer, nSamples);
 
     if (channel == 1) {
-        sample *= STAGE_ONE_COMPENSATION;
-        return sample;        
+        for (index = 0; index < nSamples; index++) {
+            buffer[index] *= STAGE_ONE_COMPENSATION;
+            return;
+        }
     }
 
-    sample *= 0.5f;
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= 0.5f;
+        buffer[index] *= STAGE_GAIN;
+    }
 
-    sample *= STAGE_GAIN;
-    sample = waveShaping(sample);
-    sample = cathodeBypassFilter2.process(sample);
-    sample = couplingFilter2.processHighPass(sample);
+    tableWaveshape(buffer, nSamples);
+    cathodeBypassFilter2.processBuffer(buffer, nSamples);
+    couplingFilter2.processBufferHighpass(buffer, nSamples);
 
     if (channel == 2) {
-        sample *= STAGE_TWO_COMPENSATION;
-        return sample;        
+        for (index = 0; index < nSamples; index++) {
+            buffer[index] *= STAGE_TWO_COMPENSATION;
+            return;
+        }        
     }
 
-    sample = stageOutputFilter2.processLowPass(sample);
-    sample *= 0.5f;
+    stageOutputFilter2.processBufferLowpass(buffer, nSamples);
 
-    sample *= STAGE_GAIN;
-    sample = waveShaping(sample);
-    sample = cathodeBypassFilter3.process(sample);
-    sample = couplingFilter3.processHighPass(sample);
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= 0.5f;
+        buffer[index] *= STAGE_GAIN;
+    }
+    
+    tableWaveshape(buffer, nSamples);
+    cathodeBypassFilter3.processBuffer(buffer, nSamples);
+    couplingFilter3.processBufferHighpass(buffer, nSamples);
 
     if (channel == 3) {
-        return sample;        
+        return;        
     }
 
-    sample = stageOutputFilter3.processLowPass(sample);
-    sample *= 0.5f;
-
-    sample *= STAGE_GAIN;
-    sample = waveShaping(sample);
-    sample = cathodeBypassFilter4.process(sample);
-    sample = couplingFilter4.processHighPass(sample);
-        
-    return sample;
+    stageOutputFilter3.processBufferLowpass(buffer, nSamples);
+    
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= 0.5f;
+        buffer[index] *= STAGE_GAIN;
+    }
+    
+    tableWaveshape(buffer, nSamples);
+    cathodeBypassFilter4.processBuffer(buffer, nSamples);
+    couplingFilter4.processBufferHighpass(buffer, nSamples);
 }
 
 void Preamp::process(sample_t *buffer, size_t nSamples) {
-        
+    
+    size_t blockSize = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
 
-    overSampler->upSample(buffer, upSampledBlock, nSamples, nSamples*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler->upSample(buffer, upSampledBlock, nSamples, blockSize);
 
-    for (size_t index = 0; index < nSamples*PREAMP_UP_SAMPLE_FACTOR; index++) {
-        
-        sample_t sample = upSampledBlock[index];
-
-        sample *= INPUT_GAIN;
-        sample = processGainStages(sample);
-        
-        sample *= OUTPUT_ATTENUATION;
-        
-        sample *= (sample_t)DB_TO_GAIN(postGain.nextValue());
-
-        upSampledBlock[index] = sample;
+    processGainStages(upSampledBlock, blockSize);
+           
+    for (size_t index = 0; index < blockSize; index++) {
+        upSampledBlock[index] *= OUTPUT_ATTENUATION;
+        upSampledBlock[index] *= (sample_t)DB_TO_GAIN(postGain.nextValue());
     }
     
-    overSampler->downSample(upSampledBlock, buffer, nSamples * PREAMP_UP_SAMPLE_FACTOR, nSamples);
-
+    overSampler->downSample(upSampledBlock, buffer, blockSize, nSamples);
 }

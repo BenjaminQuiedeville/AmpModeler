@@ -36,7 +36,7 @@ struct Preamp {
     ~Preamp();
     
     void prepareToPlay(double samplerate, int blockSize);
-    sample_t processGainStages(sample_t sample);
+    void processGainStages(sample_t *buffer, size_t nSamples);
     void process(sample_t *buffer, size_t nSamples);
 
     SmoothParamLinear preGain;
