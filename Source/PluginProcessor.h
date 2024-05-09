@@ -12,7 +12,6 @@
 #include "SmoothParam.h"
 
 #include "NoiseGate.h"
-#include "Boost.h"
 #include "Preamp.h"
 #include "Tonestack.h"
 #include "IRLoader.h"
@@ -25,6 +24,8 @@
 #ifndef  JucePlugin_Name
     #define JucePlugin_Name "AmpModeler"
 #endif
+
+#define BOOST_BITE_Q     0.23
 
 #define RESONANCE_FREQUENCY 190.0
 #define RESONANCE_Q         0.4
@@ -146,8 +147,10 @@ struct Processor  : public juce::AudioProcessor,
 
     Biquad inputNoiseFilter {BIQUAD_LOWPASS};
 
+    OnepoleFilter tightFilter;
+    Biquad biteFilter {BIQUAD_PEAK};
+
     NoiseGate *noiseGate;
-    Boost *preBoost;
     Preamp *preamp;
     Tonestack *toneStack;
     IRLoader *irLoader;

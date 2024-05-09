@@ -31,7 +31,6 @@ apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
    
     
     noiseGate = new NoiseGate();
-    preBoost  = new Boost();
     preamp    = new Preamp();
     toneStack = new Tonestack();
     irLoader  = new IRLoader();
@@ -53,7 +52,6 @@ Processor::~Processor() {
     }
 
     delete noiseGate;
-    delete preBoost;
     delete preamp;
     delete toneStack;
     delete irLoader;
@@ -137,8 +135,10 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     inputNoiseFilter.setCoefficients(2500.0, 0.7, 0.0, sampleRate);
 
+    tightFilter.prepareToPlay();
+    biteFilter.prepareToPlay();
+    
     noiseGate->prepareToPlay(sampleRate);
-    preBoost->prepareToPlay();
 
     preamp->prepareToPlay(sampleRate, samplesPerBlock);
 
@@ -208,9 +208,11 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     memcpy(intputSignalCopy, audioPtr, numSamples * sizeof(sample_t));
 
     /******PROCESS********/
-    preBoost->process(audioPtr, numSamples);
+    
+    tightFilter.processBufferHighpass(audioPtr, numSamples);
+    biteFilter.processBuffer(audioPtr, numSamples);
+
     preamp->process(audioPtr, numSamples);
-    noiseGate->process(audioPtr, intputSignalCopy, numSamples);
     toneStack->process(audioPtr, numSamples);
     
     resonanceFilter.processBuffer(audioPtr, numSamples);
@@ -221,6 +223,8 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     for (size_t i = 0; i < numSamples; i++) {
         audioPtr[i] *= (sample_t)DB_TO_GAIN(masterVolume.nextValue());
     }
+    
+    noiseGate->process(audioPtr, intputSignalCopy, numSamples);
 
     // copy left channel into right channel
     buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
@@ -295,13 +299,13 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         float amount = *apvts.getRawParameterValue(ParamIDs[BITE]);        
         float freq = *apvts.getRawParameterValue(ParamIDs[BITE_FREQ]);
     
-        preBoost->biteFilter.setCoefficients(freq, BOOST_BITE_Q, amount, samplerate);
+        biteFilter.setCoefficients(freq, BOOST_BITE_Q, amount, samplerate);
 
         return;
     }
 
     if (id == ParamIDs[TIGHT]) {
-        preBoost->tightFilter.setCoefficients(newValue, samplerate);
+        tightFilter.setCoefficients(newValue, samplerate);
         return;
     }
 
