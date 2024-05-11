@@ -10,7 +10,7 @@
 #include "Biquad.h"
 
 
-enum ToneStackModel {
+enum TonestackModel {
     EnglSavage = 0,
     JCM800,
     Soldano,
@@ -20,81 +20,47 @@ enum ToneStackModel {
     N_MODELS
 };
 
-struct EQComponents {
+struct TonestackConstants {
+    
+    double beta11;
+    double beta12;
+    double beta13;
+    double beta14;
+    
+    double beta21;
+    double beta22;
+    double beta23;
+    double beta24;
+    double beta25;
+    double beta26;
+    
+    double beta31;
+    double beta32;
+    double beta33;
+    double beta34;
+    double beta35;
+    double beta36;
 
-    EQComponents(ToneStackModel ) {
-        setModel(EnglSavage);
-    }
+    double alpha11;
+    double alpha12;
+    double alpha13;
+    
+    double alpha21;
+    double alpha22;
+    double alpha23;
+    double alpha24;
+    double alpha25;
+    
+    double alpha31;
+    double alpha32;
+    double alpha33;
+    double alpha34;
+    double alpha35;
 
-    void setModel(ToneStackModel newModel) {
-        
-        if (newModel == model) { return; }
-        
-        switch (newModel) {
-        case EnglSavage:
+};
 
-            R1 = 250e3;
-            R2 = 1e6;
-            R3 = 20e3;
-            R4 = 47e3;
-            C1 = 0.47e-9;
-            C2 = 47e-9;
-            C3 = 22e-9;    
-            break;
-        
-        case JCM800:
-            R1 = 220e3;
-            R2 = 1e6;
-            R3 = 22e3;
-            R4 = 33e3;
-            C1 = 0.47e-9;
-            C2 = 22e-9;
-            C3 = 22e-9;    
-            break; 
 
-        case Soldano:
-            R1 = 250e3;
-            R2 = 1e6;
-            R3 = 25e3;
-            R4 = 47e3;
-            C1 = 0.47e-9;
-            C2 = 20e-9;
-            C3 = 20e-9;    
-            break; 
-
-        case Rectifier:
-            R1 = 250e3;
-            R2 = 1e6;
-            R3 = 25e3;
-            R4 = 47e3;
-            C1 = 0.50e-9;
-            C2 = 20e-9;
-            C3 = 20e-9;    
-            break; 
-
-        case Orange:
-            R1 = 250e3;
-            R2 = 300e3;
-            R3 = 25e3;
-            R4 = 39e3;
-            C1 = 0.56e-9;
-            C2 = 22e-9;
-            C3 = 22e-9;    
-            break; 
-
-        case Custom:
-
-            R1 = 250e3;
-            R2 = 1e6;
-            R3 = 20e3;
-            R4 = 47e3;
-            C1 = 0.47e-9;
-            C2 = 47e-9;
-            C3 = 22e-9;    
-            break;
-
-        }
-    }
+struct TonestackComponents {
 
     double R1;
     double R2;
@@ -104,20 +70,21 @@ struct EQComponents {
     double C1;
     double C2;
     double C3;
-    
-    ToneStackModel model;
 };
 
 
 struct Tonestack {
 
     Tonestack() {
-        ToneStackModel model = ToneStackModel::EnglSavage;
-        comp = new EQComponents(model);
+    
+        comps = new TonestackComponents();
+        ctes  = new TonestackConstants();
+        setModel(EnglSavage);
     }
 
     ~Tonestack() {
-        delete comp;
+        delete comps;
+        delete ctes;
     }
 
     void prepareToPlay(double _samplerate) {
@@ -133,33 +100,35 @@ struct Tonestack {
         y3 = 0.0;
     }
 
+
+    void setModel(TonestackModel newModel);
+
+    void updateConstants();
+    
     void updateCoefficients(float t, float m, float l, double samplerate);
 
-    void process(sample_t *signal, size_t nSamples) {
+    void process(sample_t *buffer, size_t nSamples) { 
+       
         for (size_t i = 0; i < nSamples; i++) {
-           signal[i] = processSample(signal[i]);
-        }
-    }
-
-    inline sample_t processSample(sample_t sample) {
-
-        sample_t outputSample = (float)(sample * b0
-                            + x1 * b1
-                            + x2 * b2
-                            + x3 * b3
-                            - y1 * a1
-                            - y2 * a2
-                            - y3 * a3);
-
-        x3 = x2; 
-        x2 = x1;
-        x1 = sample;
         
-        y3 = y2; 
-        y2 = y1;
-        y1 = outputSample;
+            sample_t outputSample = (sample_t)(buffer[i] * b0
+                                  + x1 * b1
+                                  + x2 * b2
+                                  + x3 * b3
+                                  - y1 * a1
+                                  - y2 * a2
+                                  - y3 * a3);
 
-        return outputSample;
+            x3 = x2; 
+            x2 = x1;
+            x1 = buffer[i];
+            
+            y3 = y2; 
+            y2 = y1;
+            y1 = outputSample;
+
+            buffer[i] = outputSample;
+        }
     }
 
     double b0 = 1.0;
@@ -179,7 +148,10 @@ struct Tonestack {
     sample_t y2 = 0.0;
     sample_t y3 = 0.0;
 
-    EQComponents *comp;
+    TonestackModel model;
+    TonestackComponents *comps;
+
+    TonestackConstants *ctes;
 };
 
 #endif // TONE_STACK_H

@@ -56,8 +56,8 @@ Processor::~Processor() {
     delete toneStack;
     delete irLoader;
 
-    if (intputSignalCopy) {
-        free(intputSignalCopy);
+    if (sideChainBuffer) {
+        free(sideChainBuffer);
     }    
 }
 
@@ -147,8 +147,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     toneStack->prepareToPlay(sampleRate);
     irLoader->init(sampleRate, samplesPerBlock);
 
-    if (!intputSignalCopy) {
-        intputSignalCopy = (sample_t *)calloc(samplesPerBlock,  sizeof(sample_t));
+    if (!sideChainBuffer) {
+        sideChainBuffer = (sample_t *)calloc(samplesPerBlock,  sizeof(sample_t));
     }
 
     initParameters();
@@ -205,7 +205,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     inputNoiseFilter.processBuffer(audioPtr, numSamples);
 
-    memcpy(intputSignalCopy, audioPtr, numSamples * sizeof(sample_t));
+    memcpy(sideChainBuffer, audioPtr, numSamples * sizeof(sample_t));
 
     /******PROCESS********/
     
@@ -224,7 +224,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         audioPtr[i] *= (sample_t)DB_TO_GAIN(masterVolume.nextValue());
     }
     
-    noiseGate->process(audioPtr, intputSignalCopy, numSamples);
+    noiseGate->process(audioPtr, sideChainBuffer, numSamples);
 
     // copy left channel into right channel
     buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
@@ -347,8 +347,8 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == ParamIDs[TONESTACK_TREBBLE]
         || id == ParamIDs[TONESTACK_MODEL])
     {
-        ToneStackModel model = static_cast<ToneStackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]));
-        toneStack->comp->setModel(model);
+        TonestackModel model = static_cast<TonestackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]));
+        toneStack->setModel(model);
         
         float bassParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
         float trebbleParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
