@@ -141,8 +141,9 @@ function main() :: Nothing
     l :: Float64 = 0.5
 
     toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 40e-9)
-    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
+    
+    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
     toneStackRectifier  = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
     toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
@@ -179,22 +180,20 @@ function main() :: Nothing
     controlSliders = SliderGrid(fig[1, 3],
         (label = "trebble", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
         (label = "middle", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
-        (label = "bass", range = -1:0.01:1, startvalue = 0.5, horizontal = true),
+        (label = "bass", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
 
         (label = "R1", range = 200e3:10e3:300e3, startvalue = 250e3),
         (label = "R2", range = 500e3:100e3:2e6, startvalue = 1e6),
-        (label = "R3", range = 10e3:1e3:30e3, startvalue = 25e3),
-        (label = "R4", range = 30e3:1e3:50e3, startvalue = 40e3),
-            
+        (label = "R3", range = 10e3:1e3:30e3, startvalue = 20e3),
+        (label = "R4", range = 30e3:1e3:50e3, startvalue = 47e3),
 
-        (label = "C1", range = 0.4e-9:0.01e-9:0.6e-9, startvalue = 0.5e-9),
-        (label = "C2", range = 15e-9:1e-9:25e-9, startvalue = 20e-9),
-        (label = "C3", range = 15e-9:1e-9:25e-9, startvalue = 20e-9),
+        (label = "C1", range = 0.4e-9:0.01e-9:0.8e-9, startvalue = 0.47e-9),
+        (label = "C2", range = 15e-9:1e-9:50e-9, startvalue = 47e-9),
+        (label = "C3", range = 15e-9:1e-9:50e-9, startvalue = 22e-9),
     )
 
     obs = [s.value for s in controlSliders.sliders]
 
-    otherToneStack = toneStackJCM800
 
     customCurve = lift(obs...) do slvalues...
         
@@ -211,20 +210,29 @@ function main() :: Nothing
         [ySpectre...]
     end 
 
-    otherCurve = lift(obs[1:3]...) do slvalues...
+    otherStack = toneStackJCM800
+
+    otherCurves = lift(obs[1:3]...) do slvalues...
         t, m, l = slvalues
-        otherToneFilter = toneStackRational(otherToneStack, t, m, l, samplerate, Float64)
+        filter = toneStackRational(otherStack, t, m, l, samplerate, Float64)
 
-
-        y = filter!(signal, otherToneFilter)
+        y = filter!(signal, filter)
+        
         ySpectre = 20 * log10.((y |> rfft .|> abs).^2)
         
-        [ySpectre...]
+        [ySpectre...] 
     end
 
-    lines!(ax1, yFreqs, customCurve)
-    lines!(ax1, yFreqs, otherCurve)
+    lines!(ax1, yFreqs, customCurve, label = "custom curve")
+    # lines!(ax1, yFreqs, otherCurves, label = "model curve")
+    lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
+    lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
+    lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
+    lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
+    
+    
     limits!(ax1, 20, 20000, -30, 0)
+    axislegend(position = :rb)
 
     display(fig)
 
