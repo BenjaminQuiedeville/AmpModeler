@@ -22,54 +22,53 @@ enum TonestackModel {
 
 struct TonestackConstants {
     
-    double beta11;
-    double beta12;
-    double beta13;
-    double beta14;
+    double beta11 = 0.0;
+    double beta12 = 0.0;
+    double beta13 = 0.0;
+    double beta14 = 0.0;
     
-    double beta21;
-    double beta22;
-    double beta23;
-    double beta24;
-    double beta25;
-    double beta26;
+    double beta21 = 0.0;
+    double beta22 = 0.0;
+    double beta23 = 0.0;
+    double beta24 = 0.0;
+    double beta25 = 0.0;
+    double beta26 = 0.0;
     
-    double beta31;
-    double beta32;
-    double beta33;
-    double beta34;
-    double beta35;
-    double beta36;
+    double beta31 = 0.0;
+    double beta32 = 0.0;
+    double beta33 = 0.0;
+    double beta34 = 0.0;
+    double beta35 = 0.0;
+    double beta36 = 0.0;
 
-    double alpha11;
-    double alpha12;
-    double alpha13;
+    double alpha11 = 0.0;
+    double alpha12 = 0.0;
+    double alpha13 = 0.0;
     
-    double alpha21;
-    double alpha22;
-    double alpha23;
-    double alpha24;
-    double alpha25;
+    double alpha21 = 0.0;
+    double alpha22 = 0.0;
+    double alpha23 = 0.0;
+    double alpha24 = 0.0;
+    double alpha25 = 0.0;
     
-    double alpha31;
-    double alpha32;
-    double alpha33;
-    double alpha34;
-    double alpha35;
-
+    double alpha31 = 0.0;
+    double alpha32 = 0.0;
+    double alpha33 = 0.0;
+    double alpha34 = 0.0;
+    double alpha35 = 0.0;
 };
 
 
 struct TonestackComponents {
 
-    double R1;
-    double R2;
-    double R3;
-    double R4;
+    double R1 = 0.0;
+    double R2 = 0.0;
+    double R3 = 0.0;
+    double R4 = 0.0;
 
-    double C1;
-    double C2;
-    double C3;
+    double C1 = 0.0;
+    double C2 = 0.0;
+    double C3 = 0.0;
 };
 
 
