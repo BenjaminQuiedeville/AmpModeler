@@ -9,7 +9,7 @@
 #include "common.h"
 #include "SmoothParam.h"
 
-#define GATE_BUFFER_LENGTH_SECONDS 0.1
+#define GATE_BUFFER_LENGTH_SECONDS 0.01
 
 struct NoiseGate {
     
