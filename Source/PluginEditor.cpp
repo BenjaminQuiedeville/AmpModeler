@@ -7,6 +7,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const juce::String defaultIRText = "Default IR, made by JuanPabloZed";
+
 //==============================================================================
 Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
@@ -96,6 +98,21 @@ Editor::Editor (Processor& p)
     irNameLabel.setText(audioProcessor.irLoader->irFile.getFileNameWithoutExtension(), 
                         juce::NotificationType::dontSendNotification);
     addAndMakeVisible(irNameLabel);
+
+    irLoaderDefaultIRButton.onClick = [&]() {
+        IRLoaderError error = audioProcessor.irLoader->loadIR(true);
+
+        if (error == IRLoaderError::Error) { return; }
+    
+        irNameLabel.setText(defaultIRText,
+                            juce::NotificationType::dontSendNotification);
+                            
+        audioProcessor.valueTree.setProperty(irPath1, defaultIRText, nullptr);
+        
+    };
+    
+    addAndMakeVisible(irLoaderDefaultIRButton);
+
 
     irLoaderBypassToggle.onClick = [&]() {
         audioProcessor.irLoader->bypass = irLoaderBypassToggle.getToggleState();
@@ -230,9 +247,12 @@ void Editor::resized() {
 
 
     irLoadButton.setBounds(computeXcoord(7), computeYcoord(0), 100, 50);
-    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 200, 20);
+    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, irLoadButton.getWidth(), 20);
 
-    irLoaderBypassToggle.setBounds(computeXcoord(6), computeYcoord(0), 100, 50);
+
+    irLoaderBypassToggle.setBounds(computeXcoord(6), computeYcoord(0) - 20, 120, 30);
+    irLoaderDefaultIRButton.setBounds(irLoaderBypassToggle.getX(), irLoaderBypassToggle.getY() + 40,
+                                      120, 30);
 
     // testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
     // testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
