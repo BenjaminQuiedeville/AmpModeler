@@ -242,10 +242,12 @@ juce::AudioProcessorEditor* Processor::createEditor()
     return new Editor (*this);
 }
 
+// @TODO utiliser juce::File, juce::FileOutputStream, juce::FileInputStream pour 
+// stocker des preset dans %LOCALAPPDATA%/AmpModeler/presets
 //==============================================================================
 void Processor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
-    apvts.state.appendChild(valueTree, nullptr); // ?????
+    apvts.state.appendChild(valueTree, nullptr); 
     
     juce::MemoryOutputStream stream(destData, false);
     apvts.state.writeToStream(stream);

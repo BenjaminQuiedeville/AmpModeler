@@ -11,10 +11,10 @@
 
 const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
 const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
-const sample_t INPUT_GAIN = 0.1f;
+const sample_t INPUT_GAIN = 0.2f;
 
-const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(24.0);
-const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(9.0);
+const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(21.0);
+const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(3.0);
 
 
 
@@ -95,20 +95,20 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
 
     brightCapFilter.setCoefficients(750.0, 0.4, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
-    couplingFilter1.setCoefficients(300.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter1.setCoefficients(500.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter2.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter3.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter4.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(5000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     cathodeBypassFilter1.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(20.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter3.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(20.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler->prepareToPlay(_samplerate);
 
     if (upSampledBlock) {
@@ -117,6 +117,19 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
         upSampledBlock = (sample_t *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(sample_t));
     }
 
+}
+
+static inline void waveShaping2(sample_t *buffer, size_t nSamples) {
+    
+    auto cubicClip = [](sample_t x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
+    
+    for (size_t i = 0; i < nSamples; i++) {
+    
+        sample_t sample = buffer[i];
+        sample = sample > 0.0f ? std::tanh(sample) : 3.0f * cubicClip(1.0f/3.0f * sample);
+    
+        buffer[i] = -sample;
+    }
 }
 
 static inline void waveShaping(sample_t *buffer, size_t nSamples) {
@@ -132,6 +145,17 @@ static inline void waveShaping(sample_t *buffer, size_t nSamples) {
         if (sample < -1.3f) { sample = -1.3f; }
         buffer[i] = -sample;
     }
+}
+
+static inline void hardClipping(sample_t *buffer, size_t nSamples) {
+
+    for (size_t i = 0; i < nSamples; i++) {
+
+        sample_t sample = buffer[i];
+
+        buffer[i] = sample > 1.5f ? 1.5 : sample < -1.5f ? -1.5f : sample;
+    }
+
 }
 
 static inline void tableWaveshape(sample_t *buffer, size_t nSamples) {
@@ -191,32 +215,29 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
     size_t index = 0;
     
     for (index = 0; index < nSamples; index++) {
-        buffer[index] *= INPUT_GAIN;
-        buffer[index] *= STAGE_GAIN;
+        buffer[index] *= INPUT_GAIN * STAGE_GAIN;
     }
             
-    tableWaveshape(buffer, nSamples);
+    waveShaping2(buffer, nSamples);
     cathodeBypassFilter1.processBuffer(buffer, nSamples);
     
     inputFilter.processBufferHighpass(buffer, nSamples);
     stageOutputFilter1.processBufferLowpass(buffer, nSamples);
 
     for (index = 0; index < nSamples; index++) {
-        buffer[index] *= 0.9f;
-        buffer[index] *= (sample_t)preGain.nextValue();
-        buffer[index] *= STAGE_GAIN;
+        buffer[index] *= 0.9f * (sample_t)preGain.nextValue() * STAGE_GAIN;
     }
 
     brightCapFilter.processBuffer(buffer, nSamples);
 
-    tableWaveshape(buffer, nSamples);
+    waveShaping2(buffer, nSamples);
     couplingFilter1.processBufferHighpass(buffer, nSamples);
 
     if (channel == 1) {
         for (index = 0; index < nSamples; index++) {
             buffer[index] *= STAGE_ONE_COMPENSATION;
-            return;
         }
+        return;
     }
 
     for (index = 0; index < nSamples; index++) {
@@ -224,15 +245,15 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
         buffer[index] *= STAGE_GAIN;
     }
 
-    tableWaveshape(buffer, nSamples);
+    waveShaping2(buffer, nSamples);
     cathodeBypassFilter2.processBuffer(buffer, nSamples);
     couplingFilter2.processBufferHighpass(buffer, nSamples);
 
     if (channel == 2) {
         for (index = 0; index < nSamples; index++) {
-            buffer[index] *= STAGE_TWO_COMPENSATION;
-            return;
+            buffer[index] *= -STAGE_TWO_COMPENSATION;
         }        
+        return;
     }
 
     stageOutputFilter2.processBufferLowpass(buffer, nSamples);
@@ -242,7 +263,7 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
         buffer[index] *= STAGE_GAIN;
     }
     
-    tableWaveshape(buffer, nSamples);
+    waveShaping2(buffer, nSamples);
     cathodeBypassFilter3.processBuffer(buffer, nSamples);
     couplingFilter3.processBufferHighpass(buffer, nSamples);
 
@@ -257,9 +278,13 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
         buffer[index] *= STAGE_GAIN;
     }
     
-    tableWaveshape(buffer, nSamples);
+    waveShaping2(buffer, nSamples);
     cathodeBypassFilter4.processBuffer(buffer, nSamples);
     couplingFilter4.processBufferHighpass(buffer, nSamples);
+
+    for (index = 0; index < nSamples; index++) {
+        buffer[index] *= -1.0f;
+    }
 }
 
 void Preamp::process(sample_t *buffer, size_t nSamples) {
