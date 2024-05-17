@@ -23,6 +23,9 @@ mutable struct Filter3{T <: Number}
 
 end 
 
+square(x :: Number) :: Number = x^2
+to_db(x :: Number) :: Number = 20.0 * log10(x)
+
 
 Filter3{T}(B0, B1, B2, B3, A0, A1, A2, A3) where {T <: Number} = 
     Filter3{T}(B0/A0, B1/A0, B2/A0, B3/A0, A1/A0, A2/A0, A3/A0,
@@ -140,13 +143,14 @@ function main() :: Nothing
     m :: Float64 = 0.5
     l :: Float64 = 0.5
 
-    toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 40e-9)
-    toneStackEnglSavage = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
-    
-    toneStackSoldano    = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
-    toneStackJCM800     = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
-    toneStackRectifier  = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
-    toneStackCustom     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
+    toneStackCustom      = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 40e-9)
+    toneStackEnglSavage  = Components{Float64}(250e3, 1e6, 20e3, 47e3, 0.47e-9, 47e-9, 22e-9)
+    toneStackEnglInvader = Components{Float64}(250e3, 1e6, 20e3, 91e3, 330e-12, 22e-9, 33e-9)
+
+    toneStackSoldano     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
+    toneStackJCM800      = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
+    toneStackRectifier   = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
+    toneStackCustom      = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
     samplerate::Float64 = 48000.0
 
@@ -154,9 +158,10 @@ function main() :: Nothing
     signal = [1; zeros(nFreq - 1)]'
 
 
-    toneJCM = toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
-    toneSoldano = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
-    toneEngl = toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
+    toneJCM =       toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
+    toneSoldano =   toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
+    toneEngl =      toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
+    toneInvader =   toneStackRational(toneStackEnglInvader, t, m, l, samplerate, Float64)
     toneRectifier = toneStackRational(toneStackRectifier, t, m, l, samplerate, Float64)
 
     signal = zeros(nFreq)
@@ -164,32 +169,34 @@ function main() :: Nothing
     yJCM = filter!(signal, toneJCM)
     ySoldano = filter!(signal, toneSoldano)
     yEngl = filter!(signal, toneEngl)
+    yInvader = filter!(signal, toneInvader)
     yRectifier = filter!(signal, toneRectifier)
 
     yFreqs = rfftfreq(size(yJCM)[1], samplerate) .+ 1.0
 
-    yJCMSpectre = 20 * log10.((yJCM |> rfft .|> abs).^2)
-    ySoldanoSpectre = 20 * log10.((ySoldano |> rfft .|> abs).^2)
-    yEnglSpectre = 20 * log10.((yEngl |> rfft .|> abs).^2)
-    yRectifierSpectre = 20 * log10.((yRectifier |> rfft .|> abs).^2)
+    yJCMSpectre       = yJCM |> rfft .|> abs .|> to_db
+    ySoldanoSpectre   = ySoldano |> rfft .|> abs .|> to_db
+    yEnglSpectre      = yEngl |> rfft .|> abs .|> to_db
+    yInvaderSpectre   = yInvader |> rfft .|> abs .|> to_db
+    yRectifierSpectre = yRectifier |> rfft .|> abs .|> to_db
 
 
     fig = Figure(size = (1200, 400))
     ax1 = Axis(fig[1, 1:2], xscale = log10)
 
     controlSliders = SliderGrid(fig[1, 3],
-        (label = "trebble", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
-        (label = "middle", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
-        (label = "bass", range = 0:0.01:1, startvalue = 0.5, horizontal = true),
+        (label = "trebble", range = 0:0.01:1,              startvalue = 0.5),
+        (label = "middle",  range = 0:0.01:1,              startvalue = 0.5),
+        (label = "bass",    range = 0:0.01:1,              startvalue = 0.5),
 
-        (label = "R1", range = 200e3:10e3:300e3, startvalue = 250e3),
-        (label = "R2", range = 500e3:100e3:2e6, startvalue = 1e6),
-        (label = "R3", range = 10e3:1e3:30e3, startvalue = 20e3),
-        (label = "R4", range = 30e3:1e3:50e3, startvalue = 47e3),
+        (label = "R1",      range = 200e3:10e3:300e3,      startvalue = 250e3),
+        (label = "R2",      range = 500e3:100e3:2e6,       startvalue = 1e6),
+        (label = "R3",      range = 10e3:1e3:30e3,         startvalue = 20e3),
+        (label = "R4",      range = 30e3:1e3:50e3,         startvalue = 47e3),
 
-        (label = "C1", range = 0.4e-9:0.01e-9:0.8e-9, startvalue = 0.47e-9),
-        (label = "C2", range = 15e-9:1e-9:50e-9, startvalue = 47e-9),
-        (label = "C3", range = 15e-9:1e-9:50e-9, startvalue = 22e-9),
+        (label = "C1",      range = 0.4e-9:0.01e-9:0.8e-9, startvalue = 0.47e-9),
+        (label = "C2",      range = 15e-9:1e-9:50e-9,      startvalue = 47e-9),
+        (label = "C3",      range = 15e-9:1e-9:50e-9,      startvalue = 22e-9),
     )
 
     obs = [s.value for s in controlSliders.sliders]
@@ -225,10 +232,11 @@ function main() :: Nothing
 
     lines!(ax1, yFreqs, customCurve, label = "custom curve")
     # lines!(ax1, yFreqs, otherCurves, label = "model curve")
-    lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
-    lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
+    # lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
+    # lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
     lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
-    lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
+    lines!(ax1, yFreqs, yInvaderSpectre, label = "Engl Invader")
+    # lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
     
     
     limits!(ax1, 20, 20000, -30, 0)
