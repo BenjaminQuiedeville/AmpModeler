@@ -25,6 +25,9 @@ juce_add_plugin(${PROJECT_NAME}
     PLUGIN_CODE                 AMPM 
     FORMATS                     VST3 Standalone
     PRODUCT_NAME                "AmpModeler"
+    
+    COPY_PLUGIN_AFTER_BUILD     TRUE
+
 )
 
 target_sources(${PROJECT_NAME}
