@@ -11,17 +11,12 @@
 #include "OnepoleFilter.h"
 #include "Biquad.h"
 #include "SmoothParam.h"
+#include <assert.h>
+#include <memory>
 
-#define PREAMP_UP_SAMPLE_FACTOR 4
-
-
+constexpr u8 PREAMP_UP_SAMPLE_FACTOR = 4;
 
 struct OverSampler {
-
-    void prepareToPlay(double _samplerate);
-
-    void upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize);
-    void downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize);
 
     Biquad upSampleFilter1 {BIQUAD_LOWPASS};
     Biquad upSampleFilter2 {BIQUAD_LOWPASS};
@@ -36,12 +31,11 @@ struct Preamp {
     ~Preamp();
     
     void prepareToPlay(double samplerate, int blockSize);
-    void processGainStages(sample_t *buffer, size_t nSamples);
-    void process(sample_t *buffer, size_t nSamples);
+    void processGainStages(Sample *buffer, size_t nSamples);
+    void process(Sample *buffer, size_t nSamples);
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
-    double samplerate = 0.0;
 
     OnepoleFilter inputFilter;
     
@@ -63,9 +57,9 @@ struct Preamp {
     Biquad cathodeBypassFilter4 {BIQUAD_LOWSHELF};
 
     OverSampler *overSampler;
-    sample_t *upSampledBlock = nullptr;
+    Sample *upSampledBlock = nullptr;
 
-    u8 channel = 2;
+    u8 channel = 0;
 
 };
 

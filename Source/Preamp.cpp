@@ -5,60 +5,14 @@
 */
 
 #include "Preamp.h"
-#include <memory>
-#include <assert.h>
 #include "data/waveshape_table.inc"
 
-const sample_t STAGE_GAIN =         (sample_t)DB_TO_GAIN(35.0);
-const sample_t OUTPUT_ATTENUATION = (sample_t)DB_TO_GAIN(-32.0);
-const sample_t INPUT_GAIN = 0.2f;
+const Sample STAGE_GAIN =         (Sample)dbtoa(35.0);
+const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-32.0);
+const Sample INPUT_GAIN = 0.2f;
 
-const sample_t STAGE_ONE_COMPENSATION = (sample_t)DB_TO_GAIN(21.0);
-const sample_t STAGE_TWO_COMPENSATION = (sample_t)DB_TO_GAIN(3.0);
-
-
-
-void OverSampler::prepareToPlay(double _samplerate) {
-
-    upSampleFilter1.prepareToPlay();
-    upSampleFilter2.prepareToPlay();
-    downSampleFilter1.prepareToPlay();
-    downSampleFilter2.prepareToPlay();
-
-    // earlevel.com/main/2016/09/29/cascading-filters
-    upSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.54119610, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    upSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 1.3065630, GAIN_TO_DB(PREAMP_UP_SAMPLE_FACTOR), _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    downSampleFilter1.setCoefficients(_samplerate/2 * 0.9, 0.54119610, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    downSampleFilter2.setCoefficients(_samplerate/2 * 0.9, 1.3065630, 0.0, _samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
-}
-
-void OverSampler::upSample(sample_t *source, sample_t *upSampled, size_t sourceSize, size_t upSampledSize) {
-
-    assert(upSampledSize == sourceSize * PREAMP_UP_SAMPLE_FACTOR);
-
-    memset(upSampled, 0, upSampledSize * sizeof(sample_t));
-
-    for (size_t i = 0; i < sourceSize; i++) {
-        upSampled[PREAMP_UP_SAMPLE_FACTOR*i] = source[i];
-    }
-
-    upSampleFilter1.processBuffer(upSampled, upSampledSize);    
-    upSampleFilter2.processBuffer(upSampled, upSampledSize);    
-
-}
-
-void OverSampler::downSample(sample_t *upSampled, sample_t *dest, size_t upSampledSize, size_t destSize) {
-
-    assert(upSampledSize == destSize*PREAMP_UP_SAMPLE_FACTOR);
-
-    downSampleFilter1.processBuffer(upSampled, upSampledSize);
-    downSampleFilter2.processBuffer(upSampled, upSampledSize);
-
-    for (size_t i = 0; i < destSize; i++) {
-        dest[i] = upSampled[i*PREAMP_UP_SAMPLE_FACTOR];
-    }
-}
+const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
+const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
 
 
 Preamp::Preamp() {
@@ -73,11 +27,10 @@ Preamp::~Preamp() {
 
 }
 
-void Preamp::prepareToPlay(double _samplerate, int blockSize) {
-    samplerate = _samplerate;
+void Preamp::prepareToPlay(double samplerate, int blockSize) {
 
     preGain.init(0.0);
-    postGain.init(DB_TO_GAIN(-12.0));
+    postGain.init(dbtoa(-12.0));
     
     inputFilter.prepareToPlay();
     couplingFilter1.prepareToPlay();
@@ -96,50 +49,60 @@ void Preamp::prepareToPlay(double _samplerate, int blockSize) {
     brightCapFilter.setCoefficients(750.0, 0.4, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
     couplingFilter1.setCoefficients(500.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter2.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter3.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter4.setCoefficients(20.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter2.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    cathodeBypassFilter1.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter3.setCoefficients(250.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(200.0, 0.7, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler->prepareToPlay(_samplerate);
+    cathodeBypassFilter1.setCoefficients(250.0, 0.25, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter2.setCoefficients(200.0, 0.25, -2.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter3.setCoefficients(250.0, 0.25, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(200.0, 0.25, -3.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+
+    overSampler->upSampleFilter1.prepareToPlay();
+    overSampler->upSampleFilter2.prepareToPlay();
+    overSampler->downSampleFilter1.prepareToPlay();
+    overSampler->downSampleFilter2.prepareToPlay();
+
+    // earlevel.com/main/2016/09/29/cascading-filters
+    overSampler->upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler->upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler->downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler->downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     if (upSampledBlock) {
-        upSampledBlock = (sample_t *)realloc(upSampledBlock, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(sample_t));
+        upSampledBlock = (Sample *)realloc(upSampledBlock, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample));
     } else {
-        upSampledBlock = (sample_t *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(sample_t));
+        upSampledBlock = (Sample *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(Sample));
     }
 
 }
 
-static inline void waveShaping2(sample_t *buffer, size_t nSamples) {
+static inline void waveShaping2(Sample *buffer, size_t nSamples) {
     
-    auto cubicClip = [](sample_t x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
+    auto cubicClip = [](Sample x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
     
     for (size_t i = 0; i < nSamples; i++) {
     
-        sample_t sample = buffer[i];
+        Sample sample = buffer[i];
         sample = sample > 0.0f ? std::tanh(sample) : 3.0f * cubicClip(1.0f/3.0f * sample);
     
         buffer[i] = -sample;
     }
 }
 
-static inline void waveShaping(sample_t *buffer, size_t nSamples) {
+static inline void waveShaping(Sample *buffer, size_t nSamples) {
 
     for (size_t i = 0; i < nSamples; i++) {
         
-        sample_t sample = buffer[i];
+        Sample sample = buffer[i];
         if (sample > 0.0f) { 
-            sample = 1/juce::MathConstants<sample_t>::pi * 2.0f 
-                   * std::atan(sample * juce::MathConstants<sample_t>::pi * 0.5f); 
+            sample = 1/juce::MathConstants<Sample>::pi * 2.0f 
+                   * std::atan(sample * juce::MathConstants<Sample>::pi * 0.5f); 
         }
     
         if (sample < -1.3f) { sample = -1.3f; }
@@ -147,23 +110,23 @@ static inline void waveShaping(sample_t *buffer, size_t nSamples) {
     }
 }
 
-static inline void hardClipping(sample_t *buffer, size_t nSamples) {
+static inline void hardClipping(Sample *buffer, size_t nSamples) {
 
     for (size_t i = 0; i < nSamples; i++) {
 
-        sample_t sample = buffer[i];
+        Sample sample = buffer[i];
 
-        buffer[i] = sample > 1.5f ? 1.5 : sample < -1.5f ? -1.5f : sample;
+        buffer[i] = sample > 1.5f ? 1.5f : sample < -1.5f ? -1.5f : sample;
     }
 
 }
 
-static inline void tableWaveshape(sample_t *buffer, size_t nSamples) {
+static inline void tableWaveshape(Sample *buffer, size_t nSamples) {
 
     for (size_t i = 0; i < nSamples; i++) {
     
-        sample_t sample = buffer[i];
-        sample_t normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
+        Sample sample = buffer[i];
+        Sample normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
         
         int tableIndex = (int)(normalizedPosition * WAVESHAPE_TABLE_SIZE);
         float interpCoeff = normalizedPosition * WAVESHAPE_TABLE_SIZE - (float)tableIndex;
@@ -210,7 +173,7 @@ static inline void tableWaveshape(sample_t *buffer, size_t nSamples) {
     }
 }
 
-void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
+void Preamp::processGainStages(Sample *buffer, size_t nSamples) {
     
     size_t index = 0;
     
@@ -225,7 +188,7 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
     stageOutputFilter1.processBufferLowpass(buffer, nSamples);
 
     for (index = 0; index < nSamples; index++) {
-        buffer[index] *= 0.9f * (sample_t)preGain.nextValue() * STAGE_GAIN;
+        buffer[index] *= 0.9f * (Sample)preGain.nextValue() * STAGE_GAIN;
     }
 
     brightCapFilter.processBuffer(buffer, nSamples);
@@ -274,7 +237,7 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
     stageOutputFilter3.processBufferLowpass(buffer, nSamples);
     
     for (index = 0; index < nSamples; index++) {
-        buffer[index] *= 0.5f;
+        buffer[index] *= 0.2f;
         buffer[index] *= STAGE_GAIN;
     }
     
@@ -287,18 +250,37 @@ void Preamp::processGainStages(sample_t *buffer, size_t nSamples) {
     }
 }
 
-void Preamp::process(sample_t *buffer, size_t nSamples) {
+void Preamp::process(Sample *buffer, size_t nSamples) {
     
     size_t blockSize = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
+    
+    // upsampling
+    memset(upSampledBlock, 0, blockSize * sizeof(Sample));
 
-    overSampler->upSample(buffer, upSampledBlock, nSamples, blockSize);
+    for (size_t i = 0; i < nSamples; i++) {
+        upSampledBlock[PREAMP_UP_SAMPLE_FACTOR*i] = buffer[i];
+    }
 
+    overSampler->upSampleFilter1.processBuffer(upSampledBlock, blockSize);    
+    overSampler->upSampleFilter2.processBuffer(upSampledBlock, blockSize);    
+
+
+    //processing
     processGainStages(upSampledBlock, blockSize);
            
     for (size_t index = 0; index < blockSize; index++) {
         upSampledBlock[index] *= OUTPUT_ATTENUATION;
-        upSampledBlock[index] *= (sample_t)DB_TO_GAIN(postGain.nextValue());
+        upSampledBlock[index] *= (Sample)dbtoa(postGain.nextValue());
     }
-    
-    overSampler->downSample(upSampledBlock, buffer, blockSize, nSamples);
+        
+        
+    // downsampling
+    assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
+
+    overSampler->downSampleFilter1.processBuffer(upSampledBlock, blockSize);
+    overSampler->downSampleFilter2.processBuffer(upSampledBlock, blockSize);
+
+    for (size_t i = 0; i < nSamples; i++) {
+        buffer[i] = upSampledBlock[i*PREAMP_UP_SAMPLE_FACTOR];
+    }
 }

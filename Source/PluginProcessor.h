@@ -162,7 +162,7 @@ struct Processor  : public juce::AudioProcessor,
 
     double samplerate = 44100.0;
 
-    sample_t *sideChainBuffer = nullptr;
+    Sample *sideChainBuffer = nullptr;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

@@ -190,7 +190,7 @@ static u64 parseWavFile(const std::string& filepath, float **buffer) {
                 sampleInt |= ~0xFFFFFF;
             }
 
-            sample_t sample = (sample_t)sampleInt / (sample_t)BITS_24_MAX / 2.0f;
+            Sample sample = (Sample)sampleInt / (Sample)BITS_24_MAX / 2.0f;
 
             (*buffer)[counter] = sample;
             counter++;
@@ -318,7 +318,7 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
 
 void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     
-    u64 newfftSize = nextPowTwo(irSize);
+    u64 newfftSize = nextPowTwo(irSize +1);
 
     reallocFFTEngine(newfftSize);
     
@@ -366,7 +366,7 @@ IRLoaderError IRLoader::loadIR(bool initIR) {
 }
 
 
-void IRLoader::process(float *input, size_t nSamples) {
+void IRLoader::process(Sample *input, size_t nSamples) {
 
     if (bypass) { return; }
 
@@ -393,9 +393,10 @@ void IRLoader::process(float *input, size_t nSamples) {
     }
 
     // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
+    Sample outputScaling = 1.0f / fftSize;
     for (size_t i = 0; i < nSamples; i++) {
         size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
-        input[i] = overlapAddBuffer[index] / fftSize;
+        input[i] = overlapAddBuffer[index] * outputScaling;
         overlapAddBuffer[index] = 0.0f;
     }
 

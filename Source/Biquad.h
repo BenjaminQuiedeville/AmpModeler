@@ -54,21 +54,21 @@ struct Biquad {
             case BIQUAD_LOWPASS:
                 a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (sample_t)((1.0 - cosw0) * 0.5 * a0inv);
-                b1 = (sample_t)(2.0 * b0);
-                b2 = (sample_t)(b0);
-                a1 = (sample_t)(-2.0 * cosw0 * a0inv);
-                a2 = (sample_t)((1.0 - alpha) * a0inv);
+                b0 = (Sample)((1.0 - cosw0) * 0.5 * a0inv);
+                b1 = (Sample)(2.0 * b0);
+                b2 = (Sample)(b0);
+                a1 = (Sample)(-2.0 * cosw0 * a0inv);
+                a2 = (Sample)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_HIGHPASS:
                 a0inv = 1.0/(1.0 + alpha);
     
-                b0 = (sample_t)((1.0 + cosw0) * 0.5 * a0inv);
-                b1 = (sample_t)(-2.0 * b0);
-                b2 = (sample_t)(b0);
-                a1 = (sample_t)(-2.0 * cosw0 * a0inv);
-                a2 = (sample_t)((1.0 - alpha) * a0inv);
+                b0 = (Sample)((1.0 + cosw0) * 0.5 * a0inv);
+                b1 = (Sample)(-2.0 * b0);
+                b2 = (Sample)(b0);
+                a1 = (Sample)(-2.0 * cosw0 * a0inv);
+                a2 = (Sample)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_PEAK: 
@@ -76,11 +76,11 @@ struct Biquad {
                 
                 a0inv = 1/(1 + alpha/A);
     
-                b0 = (sample_t)((1.0 + alpha * A) * a0inv);
-                b1 = (sample_t)(-2.0 * cosw0 * a0inv);
-                b2 = (sample_t)((1.0 - alpha * A) * a0inv); 
-                a1 = (sample_t)(b1);
-                a2 = (sample_t)((1.0 - alpha / A) * a0inv);
+                b0 = (Sample)((1.0 + alpha * A) * a0inv);
+                b1 = (Sample)(-2.0 * cosw0 * a0inv);
+                b2 = (Sample)((1.0 - alpha * A) * a0inv); 
+                a1 = (Sample)(b1);
+                a2 = (Sample)((1.0 - alpha / A) * a0inv);
                 break;
     
             case BIQUAD_LOWSHELF: 
@@ -89,11 +89,11 @@ struct Biquad {
 
                 a0inv = 1/((A+1) + (A-1)*cosw0 + beta*sinw0);
                 
-                b0 = (sample_t)((A*((A+1) - (A-1)*cosw0 + beta*sinw0)) * a0inv);
-                b1 = (sample_t)((2*A*((A-1) - (A+1)*cosw0)) * a0inv);
-                b2 = (sample_t)((A*((A+1) - (A-1)*cosw0 - beta*sinw0)) * a0inv);
-                a1 = (sample_t)((-2*((A-1) + (A+1)*cosw0)) * a0inv);
-                a2 = (sample_t)(((A+1) + (A-1)*cosw0 - beta*sinw0) * a0inv);
+                b0 = (Sample)((A*((A+1) - (A-1)*cosw0 + beta*sinw0)) * a0inv);
+                b1 = (Sample)((2*A*((A-1) - (A+1)*cosw0)) * a0inv);
+                b2 = (Sample)((A*((A+1) - (A-1)*cosw0 - beta*sinw0)) * a0inv);
+                a1 = (Sample)((-2*((A-1) + (A+1)*cosw0)) * a0inv);
+                a2 = (Sample)(((A+1) + (A-1)*cosw0 - beta*sinw0) * a0inv);
                 break;
     
             case BIQUAD_HIGHSHELF:
@@ -101,11 +101,11 @@ struct Biquad {
                 beta = sqrt(A)/Q;
                 a0inv = 1/((A+1) - (A-1)*cosw0 + beta*sinw0);
     
-                b0 = (sample_t)((A*((A+1) + (A-1)*cosw0 + beta*sinw0)) * a0inv);
-                b1 = (sample_t)((-2*A*((A-1) + (A+1)*cosw0)) * a0inv);
-                b2 = (sample_t)((A*((A+1) + (A-1)*cosw0 - beta*sinw0)) * a0inv);
-                a1 = (sample_t)((2*((A-1) - (A+1)*cosw0)) * a0inv);
-                a2 = (sample_t)(((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv);
+                b0 = (Sample)((A*((A+1) + (A-1)*cosw0 + beta*sinw0)) * a0inv);
+                b1 = (Sample)((-2*A*((A-1) + (A+1)*cosw0)) * a0inv);
+                b2 = (Sample)((A*((A+1) + (A-1)*cosw0 - beta*sinw0)) * a0inv);
+                a1 = (Sample)((2*((A-1) - (A+1)*cosw0)) * a0inv);
+                a2 = (Sample)(((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv);
                 break;
     
             default:
@@ -119,34 +119,27 @@ struct Biquad {
     }
 
 
-    void processBuffer(sample_t *signal, size_t nSamples) {
+    __forceinline void processBuffer(Sample *signal, size_t nSamples) {
 
         for (size_t i = 0; i < nSamples; i++) {
-            signal[i] = process(signal[i]);
+        
+            Sample w = signal[i] - a1*w1 - a2*w2;
+            signal[i] = b0*w + b1*w1 + b2*w2;
+            
+            w2 = w1;
+            w1 = w;        
+        
         }
     }
 
+    Sample b0 = 1.0;
+    Sample b1 = 0.0;
+    Sample b2 = 0.0;
+    Sample a1 = 0.0;
+    Sample a2 = 0.0;
 
-    sample_t process(sample_t sample) {
-
-        sample_t w = sample - a1*w1 - a2*w2;
-        sample_t outputSample = b0*w + b1*w1 + b2*w2;
-        
-        w2 = w1;
-        w1 = w;
-        
-        return outputSample;
-    }
-
-
-    sample_t b0 = 1.0;
-    sample_t b1 = 0.0;
-    sample_t b2 = 0.0;
-    sample_t a1 = 0.0;
-    sample_t a2 = 0.0;
-
-    sample_t w1 = 0.0f;
-    sample_t w2 = 0.0f;
+    Sample w1 = 0.0f;
+    Sample w2 = 0.0f;
     u8 filterType;
 
 };

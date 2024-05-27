@@ -107,7 +107,7 @@ Editor::Editor (Processor& p)
         irNameLabel.setText(defaultIRText,
                             juce::NotificationType::dontSendNotification);
                             
-        audioProcessor.valueTree.setProperty(irPath1, defaultIRText, nullptr);
+        audioProcessor.valueTree.setProperty(irPath1, "", nullptr);
         
     };
     
@@ -247,12 +247,12 @@ void Editor::resized() {
 
 
     irLoadButton.setBounds(computeXcoord(7), computeYcoord(0), 100, 50);
-    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, irLoadButton.getWidth(), 20);
-
 
     irLoaderBypassToggle.setBounds(computeXcoord(6), computeYcoord(0) - 20, 120, 30);
     irLoaderDefaultIRButton.setBounds(irLoaderBypassToggle.getX(), irLoaderBypassToggle.getY() + 40,
                                       120, 30);
+                                      
+    irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 200, 20);
 
     // testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
     // testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);

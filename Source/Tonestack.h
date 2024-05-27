@@ -7,8 +7,7 @@
 #ifndef TONE_STACK_H
 #define TONE_STACK_H
 
-#include "Biquad.h"
-
+#include "common.h"
 
 enum TonestackModel {
     EnglSavage = 0,
@@ -106,11 +105,11 @@ struct Tonestack {
     
     void updateCoefficients(float t, float m, float l, double samplerate);
 
-    void process(sample_t *buffer, size_t nSamples) { 
+    __forceinline void process(Sample *buffer, size_t nSamples) {
        
         for (size_t i = 0; i < nSamples; i++) {
         
-            sample_t outputSample = (sample_t)(buffer[i] * b0
+            Sample outputSample = (Sample)(buffer[i] * b0
                                   + x1 * b1
                                   + x2 * b2
                                   + x3 * b3
@@ -139,13 +138,13 @@ struct Tonestack {
     double a2 = 0.0;
     double a3 = 0.0;
 
-    sample_t x1 = 0.0;
-    sample_t x2 = 0.0;
-    sample_t x3 = 0.0;
+    Sample x1 = 0.0;
+    Sample x2 = 0.0;
+    Sample x3 = 0.0;
 
-    sample_t y1 = 0.0;
-    sample_t y2 = 0.0;
-    sample_t y3 = 0.0;
+    Sample y1 = 0.0;
+    Sample y2 = 0.0;
+    Sample y3 = 0.0;
 
     TonestackModel model;
     TonestackComponents *comps;
