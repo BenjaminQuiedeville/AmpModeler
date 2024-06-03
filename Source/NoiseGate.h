@@ -37,7 +37,7 @@ struct NoiseGate {
         gateGain.init(0.0);
     }
 
-    void process(Sample *input, Sample *sidechain, size_t nSamples) {
+    void process(Sample *bufferL, Sample *bufferR, Sample *sidechain, size_t nSamples) {
 
         for (size_t i = 0; i < nSamples; i++) {
             
@@ -54,7 +54,13 @@ struct NoiseGate {
                                isOpen ? attackTimeMs : releaseTimeMs,
                                samplerate);
             
-            input[i] *= (Sample)gateGain.nextValue();
+            Sample gateGainValue = (Sample)gateGain.nextValue(); 
+            
+            bufferL[i] *= gateGainValue;
+            
+            if (bufferR) {
+                bufferR[i] *= gateGainValue;
+            }
         }    
     }
 

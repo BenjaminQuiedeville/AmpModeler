@@ -89,13 +89,19 @@ struct Tonestack {
 
         updateCoefficients(0.5, 0.5, 0.5, _samplerate);
 
-        x1 = 0.0;
-        x2 = 0.0;
-        x3 = 0.0;
-
-        y1 = 0.0;
-        y2 = 0.0;
-        y3 = 0.0;
+        x1L = 0.0f;
+        x2L = 0.0f;
+        x3L = 0.0f;
+        y1L = 0.0f;
+        y2L = 0.0f;
+        y3L = 0.0f;
+        
+        x1R = 0.0f;
+        x2R = 0.0f;
+        x3R = 0.0f;
+        y1R = 0.0f;
+        y2R = 0.0f;
+        y3R = 0.0f;
     }
 
 
@@ -105,27 +111,70 @@ struct Tonestack {
     
     void updateCoefficients(float t, float m, float l, double samplerate);
 
-    __forceinline void process(Sample *buffer, size_t nSamples) {
+    __forceinline void processMono(Sample *buffer, size_t nSamples) {
        
         for (size_t i = 0; i < nSamples; i++) {
         
             Sample outputSample = (Sample)(buffer[i] * b0
-                                  + x1 * b1
-                                  + x2 * b2
-                                  + x3 * b3
-                                  - y1 * a1
-                                  - y2 * a2
-                                  - y3 * a3);
+                                  + x1L * b1
+                                  + x2L * b2
+                                  + x3L * b3
+                                  - y1L * a1
+                                  - y2L * a2
+                                  - y3L * a3);
 
-            x3 = x2; 
-            x2 = x1;
-            x1 = buffer[i];
+            x3L = x2L; 
+            x2L = x1L;
+            x1L = buffer[i];
             
-            y3 = y2; 
-            y2 = y1;
-            y1 = outputSample;
+            y3L = y2L; 
+            y2L = y1L;
+            y1L = outputSample;
 
             buffer[i] = outputSample;
+        }
+    }
+    
+    __forceinline void processStereo(Sample *bufferL, Sample *bufferR, size_t nSamples) {
+       
+        for (size_t i = 0; i < nSamples; i++) {
+        
+            Sample outputSample = (Sample)(bufferL[i] * b0
+                                + x1L * b1
+                                + x2L * b2
+                                + x3L * b3
+                                - y1L * a1
+                                - y2L * a2
+                                - y3L * a3);
+
+            x3L = x2L; 
+            x2L = x1L;
+            x1L = bufferL[i];
+            
+            y3L = y2L; 
+            y2L = y1L;
+            y1L = outputSample;
+
+            bufferL[i] = outputSample;
+            
+            
+            outputSample = (Sample)(bufferR[i] * b0
+                         + x1R * b1
+                         + x2R * b2
+                         + x3R * b3
+                         - y1R * a1
+                         - y2R * a2
+                         - y3R * a3);
+
+            x3R = x2R; 
+            x2R = x1R;
+            x1R = bufferR[i];
+            
+            y3R = y2R; 
+            y2R = y1R;
+            y1R = outputSample;
+
+            bufferR[i] = outputSample;
         }
     }
 
@@ -138,13 +187,21 @@ struct Tonestack {
     double a2 = 0.0;
     double a3 = 0.0;
 
-    Sample x1 = 0.0;
-    Sample x2 = 0.0;
-    Sample x3 = 0.0;
+    Sample x1L = 0.0f;
+    Sample x2L = 0.0f;
+    Sample x3L = 0.0f;
 
-    Sample y1 = 0.0;
-    Sample y2 = 0.0;
-    Sample y3 = 0.0;
+    Sample y1L = 0.0f;
+    Sample y2L = 0.0f;
+    Sample y3L = 0.0f;
+
+    Sample x1R = 0.0f;
+    Sample x2R = 0.0f;
+    Sample x3R = 0.0f;
+
+    Sample y1R = 0.0f;
+    Sample y2R = 0.0f;
+    Sample y3R = 0.0f;
 
     TonestackModel model;
     TonestackComponents *comps;

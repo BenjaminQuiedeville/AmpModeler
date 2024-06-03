@@ -13,6 +13,7 @@
 #include "SmoothParam.h"
 #include <assert.h>
 #include <memory>
+#include "FirstOrderShelf.h"
 
 constexpr u8 PREAMP_UP_SAMPLE_FACTOR = 4;
 
@@ -30,16 +31,18 @@ struct Preamp {
     Preamp();
     ~Preamp();
     
-    void prepareToPlay(double samplerate, int blockSize);
-    void processGainStages(Sample *buffer, size_t nSamples);
-    void process(Sample *buffer, size_t nSamples);
+    void prepareToPlay(double samplerate, u32 blockSize);
+    void processGainStagesMono(Sample *buffer, u32 nSamples);
+    void processGainStagesStereo(Sample *bufferL, Sample *bufferR, u32 nSamples);
+    void processMono(Sample *buffer, u32 nSamples);
+    void processStereo(Sample *bufferL, Sample *bufferR, u32 nSamples);
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
 
     OnepoleFilter inputFilter;
     
-    Biquad brightCapFilter {BIQUAD_LOWSHELF};
+    FirstOrderShelfFilter brightCapFilter {lowshelf};
     
     OnepoleFilter couplingFilter1;
     OnepoleFilter couplingFilter2;
@@ -51,13 +54,14 @@ struct Preamp {
     OnepoleFilter stageOutputFilter3;
     OnepoleFilter stageOutputFilter4;
 
-    Biquad cathodeBypassFilter1 {BIQUAD_LOWSHELF};
-    Biquad cathodeBypassFilter2 {BIQUAD_LOWSHELF};
-    Biquad cathodeBypassFilter3 {BIQUAD_LOWSHELF};
-    Biquad cathodeBypassFilter4 {BIQUAD_LOWSHELF};
+    FirstOrderShelfFilter cathodeBypassFilter1 {lowshelf};
+    FirstOrderShelfFilter cathodeBypassFilter2 {lowshelf};
+    FirstOrderShelfFilter cathodeBypassFilter3 {lowshelf};
+    FirstOrderShelfFilter cathodeBypassFilter4 {lowshelf};
 
     OverSampler *overSampler;
-    Sample *upSampledBlock = nullptr;
+    Sample *upSampledBlockL = nullptr;
+    Sample *upSampledBlockR = nullptr;
 
     u8 channel = 0;
 

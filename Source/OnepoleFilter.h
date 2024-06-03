@@ -16,7 +16,8 @@ struct OnepoleFilter {
     void prepareToPlay() {
         b0 = 1.0;
         a1 = 0.0;
-        y1 = 0.0f;
+        y1L = 0.0f;
+        y1R = 0.0f;
     }
 
     void setCoefficients(double frequency, double samplerate) {
@@ -24,33 +25,63 @@ struct OnepoleFilter {
         a1 = b0 - 1.0;
     }
 
-    inline Sample processLowpass(Sample sample) {
-        sample = (Sample)(sample * b0 - a1 * y1);
-        y1 = sample;
-        return sample;
-    }
-
-    inline Sample processHighpass(Sample sample) {
-        Sample lpSample = (Sample)(sample * b0 - a1 * y1);
-        y1 = lpSample;
-        return sample - lpSample;
-    }
-
-    void processBufferLowpass(Sample *buffer, size_t numSamples) {
-        for (size_t index = 0; index < numSamples; index++) {
-            buffer[index] = processLowpass(buffer[index]);
+    void processLowpassLeft(Sample *buffer, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            buffer[index] = (Sample)(buffer[index] * b0 - a1 * y1L);
+            y1L = buffer[index];                    
         }
     }
 
-    void processBufferHighpass(Sample *buffer, size_t numSamples) {
-        for (size_t index = 0; index < numSamples; index++) {
-            buffer[index] = processHighpass(buffer[index]);
+    void processLowpassRight(Sample *buffer, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            buffer[index] = (Sample)(buffer[index] * b0 - a1 * y1R);
+            y1R = buffer[index];                    
+        }
+    }
+
+    void processLowpassStereo(Sample *bufferL, Sample *bufferR, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            bufferL[index] = (Sample)(bufferL[index] * b0 - a1 * y1L);
+            y1L = bufferL[index];                    
+            
+            bufferR[index] = (Sample)(bufferR[index] * b0 - a1 * y1R);
+            y1R = bufferR[index];                    
+        }
+    }
+
+
+    void processHighpassLeft(Sample *buffer, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            Sample lpSample = (Sample)(buffer[index] * b0 - a1 * y1L);
+            y1L = lpSample;
+            buffer[index] -= lpSample;
+        }
+    }
+
+    void processHighpassRight(Sample *buffer, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            Sample lpSample = (Sample)(buffer[index] * b0 - a1 * y1R);
+            y1R = lpSample;
+            buffer[index] -= lpSample;
+        }
+    }
+
+    void processHighpassStereo(Sample *bufferL, Sample *bufferR, u64 numSamples) {
+        for (u64 index = 0; index < numSamples; index++) {
+            Sample lpSample = (Sample)(bufferL[index] * b0 - a1 * y1L);
+            y1L = lpSample;
+            bufferL[index] -= lpSample;
+
+            lpSample = (Sample)(bufferR[index] * b0 - a1 * y1R);
+            y1R = lpSample;
+            bufferR[index] -= lpSample;
         }
     }
     
     double b0 = 1.0;
     double a1 = 0.0;
-    Sample y1 = 0.0;
+    Sample y1L = 0.0f;
+    Sample y1R = 0.0f;
 };
 
 #endif // ONEPOLE_H

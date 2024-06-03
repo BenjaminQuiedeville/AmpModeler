@@ -62,7 +62,8 @@ struct Editor : public juce::AudioProcessorEditor
 
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
-
+    ComboBox channelConfigBox;
+    
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
 

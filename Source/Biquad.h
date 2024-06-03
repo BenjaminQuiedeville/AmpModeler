@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-enum FilterType {
+enum FilterType : u8 {
     BIQUAD_LOWPASS = 0,
     BIQUAD_HIGHPASS,
     BIQUAD_PEAK,
@@ -21,7 +21,7 @@ enum FilterType {
 //@TODO refactor to be thread safe
 struct Biquad {
 
-    Biquad(FilterType type) { filterType = (u8)type; }
+    Biquad(FilterType type) { filterType = type; }
 
     void prepareToPlay() {
 
@@ -34,8 +34,10 @@ struct Biquad {
     }
 
     void reset() {
-        w1 = 0.0f;
-        w2 = 0.0f;
+        w1L = 0.0f;
+        w2L = 0.0f;
+        w1R = 0.0f;
+        w2R = 0.0f;
     }
 
     void setCoefficients(double frequency, double Q, double gaindB, double samplerate) {
@@ -58,7 +60,7 @@ struct Biquad {
                 b1 = (Sample)(2.0 * b0);
                 b2 = (Sample)(b0);
                 a1 = (Sample)(-2.0 * cosw0 * a0inv);
-                a2 = (Sample)((1.0 - alpha) * a0inv);
+                    a2 = (Sample)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_HIGHPASS:
@@ -119,18 +121,49 @@ struct Biquad {
     }
 
 
-    __forceinline void processBuffer(Sample *signal, size_t nSamples) {
+    __forceinline void processLeft(Sample *buffer, size_t nSamples) {
 
         for (size_t i = 0; i < nSamples; i++) {
         
-            Sample w = signal[i] - a1*w1 - a2*w2;
-            signal[i] = b0*w + b1*w1 + b2*w2;
+            Sample w = buffer[i] - a1*w1L - a2*w2L;
+            buffer[i] = b0*w + b1*w1L + b2*w2L;
             
-            w2 = w1;
-            w1 = w;        
+            w2L = w1L;
+            w1L = w;        
         
         }
     }
+    
+    __forceinline void processRight(Sample *buffer, size_t nSamples) {
+
+        for (size_t i = 0; i < nSamples; i++) {
+        
+            Sample w = buffer[i] - a1*w1R - a2*w2R;
+            buffer[i] = b0*w + b1*w1R + b2*w2R;
+            
+            w2R = w1R;
+            w1R = w;        
+        }
+    }
+
+    __forceinline void processStereo(Sample *bufferL, Sample *bufferR, size_t nSamples) {
+
+        for (size_t index = 0; index < nSamples; index++) {
+        
+            Sample w = bufferL[index] - a1*w1L - a2*w2L;
+            bufferL[index] = b0*w + b1*w1L + b2*w2L;
+            
+            w2L = w1L;
+            w1L = w;        
+
+            w = bufferR[index] - a1*w1R - a2*w2R;
+            bufferR[index] = b0*w + b1*w1R + b2*w2R;
+            
+            w2R = w1R;
+            w1R = w;        
+        }
+    }
+
 
     Sample b0 = 1.0;
     Sample b1 = 0.0;
@@ -138,9 +171,11 @@ struct Biquad {
     Sample a1 = 0.0;
     Sample a2 = 0.0;
 
-    Sample w1 = 0.0f;
-    Sample w2 = 0.0f;
-    u8 filterType;
+    Sample w1L = 0.0f;
+    Sample w2L = 0.0f;
+    Sample w1R = 0.0f;
+    Sample w2R = 0.0f;
+    FilterType filterType;
 
 };
 

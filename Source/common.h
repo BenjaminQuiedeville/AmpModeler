@@ -9,6 +9,7 @@
 
 #include "juce_core/juce_core.h"
 #include "juce_audio_processors/juce_audio_processors.h"
+#include "cassert"
 
 typedef uint8_t  u8;
 typedef int8_t   s8;

@@ -15,11 +15,11 @@
 #include "Preamp.h"
 #include "Tonestack.h"
 #include "IRLoader.h"
+#include "FirstOrderShelf.h"
 
 #include "Biquad.h"
 
 #include <vector>
-#include <random>
 
 #ifndef  JucePlugin_Name
     #define JucePlugin_Name "AmpModeler"
@@ -28,12 +28,20 @@
 #define BOOST_BITE_Q     0.23
 
 #define RESONANCE_FREQUENCY 190.0
-#define RESONANCE_Q         0.4
 #define PRESENCE_FREQUENCY  500.0
-#define PRESENCE_Q          0.4
 
 
 /*
+Stereo 
+    MONO
+    FAKE STEREO
+    STEREO
+    
+pour tout le process :
+    faire des fonctions indépendantes pour les deux coté 
+    si on passe un nullptr dans les fontions pour le coté droit, on early return et on process pas à droite
+    
+
 RESTANT : 
 
 général 
@@ -74,6 +82,7 @@ enum Params {
     RESONANCE,
     PRESENCE,
     MASTER_VOLUME,
+    CHANNEL_CONFIG,
     N_PARAMS
 };
 
@@ -92,7 +101,14 @@ static std::vector<juce::Identifier> ParamIDs = {
     "PREAMP_VOLUME",
     "RESONANCE",
     "PRESENCE",
-    "MASTER_VOLUME"
+    "MASTER_VOLUME",
+    "CHANNEL_CONFIG"
+};
+
+enum ChannelConfig {
+    Mono, 
+    FakeStereo, 
+    Stereo
 };
 
 static juce::Identifier irPathTree("IR_PATHS");
@@ -155,14 +171,16 @@ struct Processor  : public juce::AudioProcessor,
     Tonestack *toneStack;
     IRLoader *irLoader;
 
-    Biquad resonanceFilter {BIQUAD_LOWSHELF};
-    Biquad presenceFilter {BIQUAD_HIGHSHELF};
+    FirstOrderShelfFilter resonanceFilter {lowshelf};
+    FirstOrderShelfFilter presenceFilter {highshelf};
 
 	SmoothParamLinear masterVolume;
 
     double samplerate = 44100.0;
 
     Sample *sideChainBuffer = nullptr;
+    
+    u8 channelConfig = Mono;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

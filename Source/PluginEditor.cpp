@@ -34,7 +34,8 @@ Editor::Editor (Processor& p)
     volumeKnob("MASTER_VOLUME_KNOB_LABEL", "Output Level", this),
 
     ampChannelBox("AMP_CHANNEL_BOX_LABEL", "Amp Channel", this),
-    toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", this)
+    toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", this),
+    channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config", this)
 {
 
     gateKnob.init(ParamIDs[GATE_THRESH].toString(), this);
@@ -52,7 +53,7 @@ Editor::Editor (Processor& p)
     volumeKnob.init(ParamIDs[MASTER_VOLUME].toString(), this);
     ampChannelBox.init(ParamIDs[CHANNEL].toString(), this);
     toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), this);
-
+    channelConfigBox.init(ParamIDs[CHANNEL_CONFIG].toString(), this);
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[CHANNEL]), 
@@ -62,6 +63,9 @@ Editor::Editor (Processor& p)
     toneStackModelBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1, 
                                      juce::NotificationType::dontSendNotification);
 
+    channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
+    channelConfigBox.setSelectedId((int)*audioProcessor.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
+                                    juce::NotificationType::dontSendNotification);
 
     irLoadButton.onClick = [&]() { 
     
@@ -95,8 +99,18 @@ Editor::Editor (Processor& p)
     irNameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     irNameLabel.setJustificationType(juce::Justification::left);
     irNameLabel.setFont(15.0f);
-    irNameLabel.setText(audioProcessor.irLoader->irFile.getFileNameWithoutExtension(), 
-                        juce::NotificationType::dontSendNotification);
+    
+    juce::String irNameText = audioProcessor.irLoader->irFile.getFileNameWithoutExtension();
+        
+        
+    if (irNameText == "") {
+        irNameLabel.setText(defaultIRText,
+                            juce::NotificationType::dontSendNotification);        
+    } else { 
+        irNameLabel.setText(audioProcessor.irLoader->irFile.getFileNameWithoutExtension(), 
+                            juce::NotificationType::dontSendNotification);
+    }
+    
     addAndMakeVisible(irNameLabel);
 
     irLoaderDefaultIRButton.onClick = [&]() {
@@ -244,6 +258,11 @@ void Editor::resized() {
                                        toneStackModelBox.getWidth(), 
                                        20);
 
+    channelConfigBox.setBounds(computeXcoord(1), computeYcoord(0) + 30, 120, 30);
+    channelConfigBox.label.setBounds(channelConfigBox.getX(),
+                                      channelConfigBox.getY() - 20,
+                                      channelConfigBox.getWidth(),
+                                      20);
 
 
     irLoadButton.setBounds(computeXcoord(7), computeYcoord(0), 100, 50);
@@ -253,9 +272,6 @@ void Editor::resized() {
                                       120, 30);
                                       
     irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 200, 20);
-
-    // testOscToggle.setBounds(computeXcoord(0), computeYcoord(3), 100, 50);
-    // testOscNoiseToggle.setBounds(computeXcoord(1), computeYcoord(3), 100, 50);
 
     // tabs.setBounds(0, 0, 1000, 400);
 

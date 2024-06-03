@@ -35,10 +35,11 @@ struct IRLoader {
 
     void init(double samplerate, size_t blockSize);
 
+    void deallocateFFTEngine();
     void reallocFFTEngine(u64 newSize);
     IRLoaderError loadIR(bool initIR);
     void prepareConvolution(float* irPtr, size_t irSize);
-    void process(float *input, size_t nSamples);
+    void process(float *bufferL, float *bufferR, size_t nSamples);
 
     PFFFT_Setup *fftEngine = nullptr;
     size_t fftSize = 16384;
@@ -57,15 +58,18 @@ struct IRLoader {
     
     juce::File irFile;
     
-    float *inputBufferPadded;
-    float *inputDftBuffer;
-    float *irDftBuffer;
-    float *convolutionResultBuffer;
-    float *convolutionResultDftBuffer;
-    float *overlapAddBuffer;
-    float *fftWorkBuffer;
-
-    
+    float *inputBufferPaddedL = nullptr;
+    float *inputBufferPaddedR = nullptr;
+    float *inputDftBufferL = nullptr;
+    float *inputDftBufferR = nullptr;
+    float *irDftBuffer = nullptr;
+    float *convolutionResultBufferL = nullptr;
+    float *convolutionResultBufferR = nullptr;
+    float *convolutionResultDftBufferL = nullptr;
+    float *convolutionResultDftBufferR = nullptr;
+    float *overlapAddBufferL = nullptr;
+    float *overlapAddBufferR = nullptr;
+    float *fftWorkBuffer = nullptr;
 };
 
 static size_t parseWavFile(const std::string& filepath, float **buffer);

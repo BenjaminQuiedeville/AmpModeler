@@ -192,41 +192,88 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    size_t numSamples = (size_t)buffer.getNumSamples();
+    u32 numSamples = (u32)buffer.getNumSamples();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, (int)numSamples);
     }
 
 
-    Sample *audioPtr = buffer.getWritePointer(0);
+    float *audioPtrL = buffer.getWritePointer(0);
+    float *audioPtrR = buffer.getWritePointer(1);
 
-    inputNoiseFilter.processBuffer(audioPtr, numSamples);
+    if (channelConfig == Mono) {
+    
+        audioPtrR = nullptr;
+        inputNoiseFilter.processLeft(audioPtrL, numSamples);
+    
+        memcpy(sideChainBuffer, audioPtrL, numSamples * sizeof(Sample));
+    
+        /******PROCESS********/
+        
+        tightFilter.processHighpassLeft(audioPtrL, numSamples);
+        biteFilter.processLeft(audioPtrL, numSamples);
+    
+        preamp->processStereo(audioPtrL, audioPtrR, numSamples);
+        toneStack->processMono(audioPtrL, numSamples);
+        
+        resonanceFilter.processLeft(audioPtrL, numSamples);
+        presenceFilter.processLeft(audioPtrL, numSamples);
+        
+        irLoader->process(audioPtrL, audioPtrR, numSamples);
+        
+        for (size_t i = 0; i < numSamples; i++) {
+            audioPtrL[i] *= (Sample)dbtoa(masterVolume.nextValue());
+        }
+        
+        noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
 
-    memcpy(sideChainBuffer, audioPtr, numSamples * sizeof(Sample));
+        if (channelConfig == Mono) {
+            // copy left channel into right channel if processing is in mono
+            buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
+        }
 
-    /******PROCESS********/
+    } else {
     
-    tightFilter.processBufferHighpass(audioPtr, numSamples);
-    biteFilter.processBuffer(audioPtr, numSamples);
 
-    preamp->process(audioPtr, numSamples);
-    toneStack->process(audioPtr, numSamples);
+        inputNoiseFilter.processStereo(audioPtrL, audioPtrR, numSamples);
     
-    resonanceFilter.processBuffer(audioPtr, numSamples);
-    presenceFilter.processBuffer(audioPtr, numSamples);
+        for (u32 i = 0; i < numSamples; i++) {
+            sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
+        }
     
-    irLoader->process(audioPtr, numSamples);
+        if (channelConfig == FakeStereo) {
+            for (u32 i = 0; i < numSamples; i++) {
+                audioPtrR[i] = -audioPtrL[i];
+            }
+        }
+        /******PROCESS********/
+        
+        tightFilter.processHighpassStereo(audioPtrL, audioPtrR, numSamples);
+        biteFilter.processStereo(audioPtrL, audioPtrR, numSamples);
     
-    for (size_t i = 0; i < numSamples; i++) {
-        audioPtr[i] *= (Sample)dbtoa(masterVolume.nextValue());
+        preamp->processStereo(audioPtrL, audioPtrR, numSamples);
+        toneStack->processStereo(audioPtrL, audioPtrR, numSamples);
+        
+        resonanceFilter.processStereo(audioPtrL, audioPtrR, numSamples);
+        presenceFilter.processStereo(audioPtrL, audioPtrR, numSamples);
+        
+        irLoader->process(audioPtrL, audioPtrR, numSamples);
+        
+        for (size_t i = 0; i < numSamples; i++) {
+            Sample masterVolumeValue = (Sample)dbtoa(masterVolume.nextValue()); 
+            audioPtrL[i] *= masterVolumeValue;
+            audioPtrR[i] *= masterVolumeValue;
+        }
+        
+        noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+
+        if (channelConfig == FakeStereo) {
+            for (u32 i = 0; i < numSamples; i++) {
+                audioPtrR[i] *= -1.0f;
+            }
+        }
     }
-    
-    noiseGate->process(audioPtr, sideChainBuffer, numSamples);
-
-    // copy left channel into right channel
-    buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
-
 }
 
 //==============================================================================
@@ -320,7 +367,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
                                   SMOOTH_PARAM_TIME, 
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
         preamp->brightCapFilter.setCoefficients(
-            750.0, 0.2, 
+            750.0, 
             scale_linear(newValue, paramRange.start, paramRange.end, -12.0f, 0.0f),
             samplerate*PREAMP_UP_SAMPLE_FACTOR
         );
@@ -360,12 +407,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[RESONANCE]) {
-        resonanceFilter.setCoefficients(RESONANCE_FREQUENCY, RESONANCE_Q, scale_linear(newValue, 0.0f, 10.0f, 3.0f, 18.0f), samplerate);
+        resonanceFilter.setCoefficients(RESONANCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 3.0f, 18.0f), samplerate);
         return;
     }
 
     if (id == ParamIDs[PRESENCE]) {
-        presenceFilter.setCoefficients(PRESENCE_FREQUENCY, PRESENCE_Q, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 12.0f), samplerate);
+        presenceFilter.setCoefficients(PRESENCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 12.0f), samplerate);
         return;
     }
 
@@ -373,6 +420,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         masterVolume.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
         return;
     }
+    
+    if (id == ParamIDs[CHANNEL_CONFIG]) {
+        channelConfig = (u8)newValue;
+        return;
+    }
+    
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLayout()
@@ -415,16 +468,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[TONESTACK_TREBBLE].toString(), "Trebble", 0.0f, 10.0f, 5.0f
     ));
-    
-    // params.push_back(std::make_unique<juce::AudioParameterInt>(
-    //     ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 1, 5, 1
-    // ));
 
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
         ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 
         juce::StringArray{"Savage", "JCM", "SLO", "Rect", "Orange"}, 0
     ));
-
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[PREAMP_VOLUME].toString(), "Post Gain", -18.0f, 32.0f, 0.0f
@@ -439,6 +487,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MASTER_VOLUME].toString(), "Master Vol", -20.0f, 0.0f, -3.0f
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(
+        ParamIDs[CHANNEL_CONFIG].toString(), "Channel config",
+        juce::StringArray{"Mono","Fake Stereo", "Stereo"}, 0
     ));
 
     return { params.begin(), params.end() };
