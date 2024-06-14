@@ -149,6 +149,7 @@ function main() :: Nothing
 
     toneStackSoldano     = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.47e-9, 20e-9, 20e-9)
     toneStackJCM800      = Components{Float64}(220e3, 1e6, 22e3, 33e3, 0.47e-9, 22e-9, 22e-9)
+    toneStackRockerverb  = Components{Float64}(250e3, 500e3, 25e3, 39e3, 0.56e-9, 22e-9, 22e-9)
     toneStackRectifier   = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
     toneStackCustom      = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
@@ -158,27 +159,30 @@ function main() :: Nothing
     signal = [1; zeros(nFreq - 1)]'
 
 
-    toneJCM =       toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
-    toneSoldano =   toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
-    toneEngl =      toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
-    toneInvader =   toneStackRational(toneStackEnglInvader, t, m, l, samplerate, Float64)
-    toneRectifier = toneStackRational(toneStackRectifier, t, m, l, samplerate, Float64)
+    toneJCM        = toneStackRational(toneStackJCM800, t, m, l, samplerate, Float64)
+    toneRockerverb = toneStackRational(toneStackRockerverb, t, m, l, samplerate, Float64)
+    toneSoldano    = toneStackRational(toneStackSoldano, t, m, l, samplerate, Float64)
+    toneEngl       = toneStackRational(toneStackEnglSavage, t, m, l, samplerate, Float64)
+    toneInvader    = toneStackRational(toneStackEnglInvader, t, m, l, samplerate, Float64)
+    toneRectifier  = toneStackRational(toneStackRectifier, t, m, l, samplerate, Float64)
 
     signal = zeros(nFreq)
     signal[1] = 1
-    yJCM = filter!(signal, toneJCM)
-    ySoldano = filter!(signal, toneSoldano)
-    yEngl = filter!(signal, toneEngl)
-    yInvader = filter!(signal, toneInvader)
-    yRectifier = filter!(signal, toneRectifier)
+    yJCM        = filter!(signal, toneJCM)
+    yRockerverb = filter!(signal, toneRockerverb)
+    ySoldano    = filter!(signal, toneSoldano)
+    yEngl       = filter!(signal, toneEngl)
+    yInvader    = filter!(signal, toneInvader)
+    yRectifier  = filter!(signal, toneRectifier)
 
     yFreqs = rfftfreq(size(yJCM)[1], samplerate) .+ 1.0
 
-    yJCMSpectre       = yJCM |> rfft .|> abs .|> to_db
-    ySoldanoSpectre   = ySoldano |> rfft .|> abs .|> to_db
-    yEnglSpectre      = yEngl |> rfft .|> abs .|> to_db
-    yInvaderSpectre   = yInvader |> rfft .|> abs .|> to_db
-    yRectifierSpectre = yRectifier |> rfft .|> abs .|> to_db
+    yJCMSpectre        = yJCM |> rfft .|> abs .|> to_db
+    yRockerverbSpectre = yRockerverb |> rfft .|> abs .|> to_db
+    ySoldanoSpectre    = ySoldano |> rfft .|> abs .|> to_db
+    yEnglSpectre       = yEngl |> rfft .|> abs .|> to_db
+    yInvaderSpectre    = yInvader |> rfft .|> abs .|> to_db
+    yRectifierSpectre  = yRectifier |> rfft .|> abs .|> to_db
 
 
     fig = Figure(size = (1200, 400))
@@ -230,16 +234,17 @@ function main() :: Nothing
         [ySpectre...] 
     end
 
-    lines!(ax1, yFreqs, customCurve, label = "custom curve")
+    # lines!(ax1, yFreqs, customCurve, label = "custom curve")
     # lines!(ax1, yFreqs, otherCurves, label = "model curve")
-    # lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
-    # lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
+    lines!(ax1, yFreqs, yRockerverbSpectre, label = "Rockerverb Curve")
+    lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
+    lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
     lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
     lines!(ax1, yFreqs, yInvaderSpectre, label = "Engl Invader")
-    # lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
+    lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
     
     
-    limits!(ax1, 20, 20000, -30, 0)
+    limits!(ax1, 20, 20000, -20, 0)
     axislegend(position = :rb)
 
     display(fig)
