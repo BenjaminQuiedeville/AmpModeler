@@ -239,8 +239,8 @@ function main() :: Nothing
     lines!(ax1, yFreqs, yRockerverbSpectre, label = "Rockerverb Curve")
     lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
     lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
-    lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
-    lines!(ax1, yFreqs, yInvaderSpectre, label = "Engl Invader")
+    # lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
+    # lines!(ax1, yFreqs, yInvaderSpectre, label = "Engl Invader")
     lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
     
     

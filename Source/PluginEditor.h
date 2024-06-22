@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "juce_gui_basics/juce_gui_basics.h"
+
 #include "PluginProcessor.h"
 
 using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
@@ -15,7 +17,7 @@ struct Editor;
 
 struct Knob : public juce::Slider {
 
-    Knob(juce::String labelID, juce::String name, Editor* editor);
+    Knob(juce::String labelID, juce::String name, juce::Component* comp);
     
     void init(juce::String paramID, Editor *editor);
     
@@ -26,13 +28,74 @@ struct Knob : public juce::Slider {
 
 struct ComboBox : public juce::ComboBox {
     
-    ComboBox(juce::String labelID, juce::String name, Editor* editor); 
+    ComboBox(juce::String labelID, juce::String name, juce::Component* comp); 
 
     void init(juce::String paramID, Editor *editor);
 
     juce::Label label;
     std::unique_ptr<ComboBoxAttachment> boxAttachment;
 };
+
+
+struct GateBoostPage : public juce::Component {
+    GateBoostPage() {
+    
+    }
+    
+    void resized() {
+    
+    }
+};
+
+
+struct AmplifierPage : public juce::Component {
+    AmplifierPage() {
+    
+    }
+    
+    void resized() {
+    
+    }
+};
+
+
+struct GainStagesPage : public juce::Component {
+    GainStagesPage() {
+    
+    }
+    
+    void resized() {
+    
+    }
+};
+
+
+struct IRLoaderPage : public juce::Component {
+    IRLoaderPage() {
+    
+    }
+    
+    void resized() {
+    
+    }
+};
+
+
+// struct TabsComponent : public juce::TabbedComponent {
+    
+//     TabsComponent() : juce::TabbedComponent(juce::TabbedButtonBar::TabsAtTop) {
+        
+//         auto colour = findColour (juce::ResizableWindow::backgroundColourId);
+        
+//         addTab("Gate Boost", colour, new GateBoostPage(),  true);
+//         addTab("Amp",        colour, new AmplifierPage(),  true);
+//         addTab("GainStages", colour, new GainStagesPage(), true);
+//         addTab("IRLoader",   colour, new IRLoaderPage(),   true);
+
+//     }
+    
+//     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TabsComponent)
+// };
 
 
 struct Editor : public juce::AudioProcessorEditor
@@ -70,7 +133,14 @@ struct Editor : public juce::AudioProcessorEditor
     juce::TextButton irLoaderDefaultIRButton {"Load default IR"};
     juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
 
-    juce::TabbedComponent tabs {juce::TabbedButtonBar::Orientation::TabsAtTop};
+    juce::TabbedComponent tabs {juce::TabbedButtonBar::TabsAtTop};
+    juce::Component statusBar;
+
+    GateBoostPage gateBoostPage;
+    AmplifierPage ampPage;
+    GainStagesPage gainStagesPage;
+    IRLoaderPage irLoaderPage;
+
 
     Processor& audioProcessor;
 

@@ -144,7 +144,9 @@ void Tonestack::updateConstants() {
 //@TODO refactor to be thread safe
 void Tonestack::updateCoefficients(float t, float m, float l, double samplerate) {
 
-    l = scale_linear(l, 0.0f, 1.0f, -1.0f, 2.0f);
+    l = scale(l, 0.0f, 1.0f, -1.0f, 2.0f, 3.0f);
+    // m = scale_linear(m, 0.0f, 1.0f, 0.0f, 1.5f);
+    t = scale(t, 0.0f, 1.0f, 0.0f, 1.0f, 3.0f);
     
     double L = std::exp((l-1.0)*3.4);
 

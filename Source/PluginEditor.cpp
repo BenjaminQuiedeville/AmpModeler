@@ -39,18 +39,36 @@ Editor::Editor (Processor& p)
 {
 
     gateKnob.init(ParamIDs[GATE_THRESH].toString(), this);
+    gateKnob.setTextValueSuffix(" dB");
+
     boostAttackKnob.init(ParamIDs[BITE].toString(), this);
+    boostAttackKnob.setTextValueSuffix(" dB");
+    
     boostFreqKnob.init(ParamIDs[BITE_FREQ].toString(), this);
+    boostFreqKnob.setTextValueSuffix(" Hz");
+    
     boostTightKnob.init(ParamIDs[TIGHT].toString(), this);
+    boostTightKnob.setTextValueSuffix(" Hz");
+    
     gainKnob.init(ParamIDs[PREAMP_GAIN].toString(), this);
+    gainKnob.setNumDecimalPlacesToDisplay(2);
     inputFilterKnob.init(ParamIDs[INPUT_FILTER].toString(), this);
+    inputFilterKnob.setTextValueSuffix(" Hz");
+    
     bassEQKnob.init(ParamIDs[TONESTACK_BASS].toString(), this);
+    
     midEQKnob.init(ParamIDs[TONESTACK_MIDDLE].toString(), this);
+    
     trebbleEQKnob.init(ParamIDs[TONESTACK_TREBBLE].toString(), this);
+    
     preampVolumeKnob.init(ParamIDs[PREAMP_VOLUME].toString(), this);
+    preampVolumeKnob.setTextValueSuffix(" dB");
+ 
     resonanceKnob.init(ParamIDs[RESONANCE].toString(), this);
     presenceKnob.init(ParamIDs[PRESENCE].toString(), this);
     volumeKnob.init(ParamIDs[MASTER_VOLUME].toString(), this);
+    volumeKnob.setTextValueSuffix(" dB");
+ 
     ampChannelBox.init(ParamIDs[CHANNEL].toString(), this);
     toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), this);
     channelConfigBox.init(ParamIDs[CHANNEL_CONFIG].toString(), this);
@@ -134,7 +152,16 @@ Editor::Editor (Processor& p)
 
     addAndMakeVisible(irLoaderBypassToggle);
 
-    setSize(1200, 600);
+    juce::Colour colour = findColour (juce::ResizableWindow::backgroundColourId);
+    tabs.addTab("Gate Boost", colour, &gateBoostPage,  true);
+    tabs.addTab("Amp",        colour, &ampPage,  true);
+    tabs.addTab("GainStages", colour, &gainStagesPage, true);
+    tabs.addTab("IRLoader",   colour, &irLoaderPage,   true);
+    
+    addAndMakeVisible(tabs);
+
+
+    setSize(1100, 500);
     setResizable(true, true);
 }
 
@@ -149,83 +176,89 @@ void Editor::paint (juce::Graphics& g)
 }
 
 void Editor::resized() {
+#if 0
     
-    int knobSize = 100;
-    int horizontalMargin = 25;
-    int verticalMargin = 50;
+    tabs.setBounds(getLocalBounds());
+
+    gateBoostPage.resized();
+#else
+    constexpr int knobSize = 100;
+    constexpr int horizontalMargin = 25;
+    constexpr int verticalMargin = 50;
 
     int HEIGHT = getHeight() - 2*verticalMargin;
     int WIDTH = getWidth() - 2*horizontalMargin;
 
-    int nRows = 4;
-    int nCols = 8;
+    constexpr int nRows = 3;
+    constexpr int nCols = 8;
 
     auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
     auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
 
     gateKnob.setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
     gateKnob.label.setBounds(gateKnob.getX(), 
-                              gateKnob.getY() - 20, 
+                              gateKnob.getY() - 15, 
                               gateKnob.getWidth(), 
                               20);
 
+
     boostAttackKnob.setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
     boostAttackKnob.label.setBounds(boostAttackKnob.getX(),
-                                  boostAttackKnob.getY() - 20,
+                                  boostAttackKnob.getY() - 15,
                                   boostAttackKnob.getWidth(), 
                                   20);
     
     boostFreqKnob.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
     boostFreqKnob.label.setBounds(boostFreqKnob.getX(),
-                                  boostFreqKnob.getY() - 20,
+                                  boostFreqKnob.getY() - 15,
                                   boostFreqKnob.getWidth(), 
                                   20);
 
     boostTightKnob.setBounds(computeXcoord(0), computeYcoord(2), knobSize, knobSize);
     boostTightKnob.label.setBounds(boostTightKnob.getX(),
-                                    boostTightKnob.getY() - 20,
+                                    boostTightKnob.getY() - 15,
                                     boostTightKnob.getWidth(),
                                     20);
 
     gainKnob.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
     gainKnob.label.setBounds(gainKnob.getX(), 
-                              gainKnob.getY() - 20, 
+                              gainKnob.getY() - 15, 
                               gainKnob.getWidth(), 
                               20);
     
     inputFilterKnob.setBounds(computeXcoord(2), computeYcoord(2), knobSize, knobSize);
     inputFilterKnob.label.setBounds(inputFilterKnob.getX(), 
-                                     inputFilterKnob.getY() - 20, 
+                                     inputFilterKnob.getY() - 15, 
                                      inputFilterKnob.getWidth(), 
                                      20);
 
     bassEQKnob.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
     bassEQKnob.label.setBounds(bassEQKnob.getX(), 
-                                bassEQKnob.getY() - 20, 
+                                bassEQKnob.getY() - 15, 
                                 bassEQKnob.getWidth(), 
                                 20);
 
     midEQKnob.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
     midEQKnob.label.setBounds(midEQKnob.getX(), 
-                               midEQKnob.getY() - 20, 
+                               midEQKnob.getY() - 15, 
                                midEQKnob.getWidth(), 
                                20);
     
     trebbleEQKnob.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
     trebbleEQKnob.label.setBounds(trebbleEQKnob.getX(), 
-                                   trebbleEQKnob.getY() - 20, 
+                                   trebbleEQKnob.getY() - 15, 
                                    trebbleEQKnob.getWidth(), 
                                    20);
 
     resonanceKnob.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
     resonanceKnob.label.setBounds(resonanceKnob.getX(),
-                                   resonanceKnob.getY() - 20,
+                                   resonanceKnob.getY() - 15,
                                    resonanceKnob.getWidth(), 
                                    20);
 
     presenceKnob.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
     presenceKnob.label.setBounds(presenceKnob.getX(),
-                                   presenceKnob.getY() - 20,
+                                   presenceKnob.getY() - 15,
                                    presenceKnob.getWidth(), 
                                    20);
 
@@ -233,7 +266,7 @@ void Editor::resized() {
 
     preampVolumeKnob.setBounds(computeXcoord(7), computeYcoord(1), knobSize, knobSize);
     preampVolumeKnob.label.setBounds(preampVolumeKnob.getX(), 
-                                      preampVolumeKnob.getY() - 20, 
+                                      preampVolumeKnob.getY() - 15, 
                                       preampVolumeKnob.getWidth(), 
                                       20);
 
@@ -242,7 +275,7 @@ void Editor::resized() {
 
     volumeKnob.setBounds(computeXcoord(7), computeYcoord(2), knobSize, knobSize);
     volumeKnob.label.setBounds(volumeKnob.getX(), 
-                                volumeKnob.getY() - 20, 
+                                volumeKnob.getY() - 15, 
                                 volumeKnob.getWidth(), 
                                 20);
 
@@ -274,21 +307,21 @@ void Editor::resized() {
     irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 200, 20);
 
     // tabs.setBounds(0, 0, 1000, 400);
-
-
+#endif
 }
 
-Knob::Knob(juce::String labelID, juce::String name, Editor *editor) 
+
+Knob::Knob(juce::String labelID, juce::String name, juce::Component *comp) 
 : label{labelID, name} 
 {    
     setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 25);
-    editor->addAndMakeVisible(*this);
+    setTextBoxStyle(juce::Slider::TextBoxBelow, false, 75, 25);
+    comp->addAndMakeVisible(*this);
 
     label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     label.setJustificationType(juce::Justification::centred);
     label.setFont(15.0f);
-    editor->addAndMakeVisible(label);
+    comp->addAndMakeVisible(label);
 }
 
 void Knob::init(juce::String paramID, Editor *editor) {
@@ -298,18 +331,18 @@ void Knob::init(juce::String paramID, Editor *editor) {
 }
 
 
-ComboBox::ComboBox(juce::String labelID, juce::String name, Editor *editor) 
+ComboBox::ComboBox(juce::String labelID, juce::String name, juce::Component *comp) 
          : label {labelID, name}
 {
     setEditableText(false);
     setJustificationType(juce::Justification::centred);
-    editor->addAndMakeVisible(*this);
+    comp->addAndMakeVisible(*this);
     
     label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     label.setJustificationType(juce::Justification::centred);
     label.setFont(15.0f);
     
-    editor->addAndMakeVisible(label);
+    comp->addAndMakeVisible(label);
     
 }
 

@@ -14,9 +14,9 @@
 #include <iostream>
 
 
-#define BITS_24_MAX (double)((1 << 23) - 1)
+constexpr double BITS_24_MAX = (double)((1 << 23) - 1);
 
-#define BASE_IR_SIZE 1440
+#define BASE_IR_SIZE 1323
 static float baseIR[BASE_IR_SIZE] = {
 #include "data/baseIR.inc"
 };
@@ -423,7 +423,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     
         pffft_transform(fftEngine, convolutionResultDftBufferR, convolutionResultBufferR, fftWorkBuffer, PFFFT_BACKWARD);
     
-        size_t overlapAddBufferSize = 2 * fftSize;
+        overlapAddBufferSize = 2 * fftSize;
     
         // mettre les samples dans l'overlap add
         for (size_t i = 0; i < convolutionResultSize; i++) {
@@ -432,7 +432,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
         }
     
         // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
-        Sample outputScaling = 1.0f / fftSize;
+        outputScaling = 1.0f / fftSize;
         for (size_t i = 0; i < nSamples; i++) {
             size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
             bufferR[i] = overlapAddBufferR[index] * outputScaling;
