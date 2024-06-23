@@ -7,6 +7,16 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
+static int computeXcoord(int col, int height) { 
+    return horizontalMargin + int((height - 2*verticalMargin)/nCols) * col; 
+}
+
+static int computeYcoord(int row, int width) { 
+    return verticalMargin + int((width - 2*horizontalMargin)/nRows) * row; 
+}
+
+
 GateBoostPage::GateBoostPage(Apvts &apvts) :
     gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
     boostAttackKnob("BOOST_ATTACK_KNOB_LABEL" , "Boost Top", this),
@@ -28,44 +38,37 @@ GateBoostPage::GateBoostPage(Apvts &apvts) :
 }
 
 void GateBoostPage::resized() {
-    constexpr int knobSize = 100;
-    constexpr int horizontalMargin = 25;
-    constexpr int verticalMargin = 50;
 
-    int HEIGHT = getHeight() - 2*verticalMargin;
-    int WIDTH = getWidth() - 2*horizontalMargin;
+    int width = getWidth();
+    int height = getHeight();
+    
 
-    constexpr int nRows = 3;
-    constexpr int nCols = 8;
-
-    auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
-    auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
-
-    gateKnob.setBounds(computeXcoord(0), computeYcoord(0), knobSize, knobSize);
+    gateKnob.setBounds(computeXcoord(0, width), computeYcoord(0, height), knobSize, knobSize);
     gateKnob.label.setBounds(gateKnob.getX(), 
                               gateKnob.getY() - 15, 
                               gateKnob.getWidth(), 
                               20);
 
 
-    boostAttackKnob.setBounds(computeXcoord(0), computeYcoord(1), knobSize, knobSize);
+    boostAttackKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
     boostAttackKnob.label.setBounds(boostAttackKnob.getX(),
                                   boostAttackKnob.getY() - 15,
                                   boostAttackKnob.getWidth(), 
                                   20);
     
-    boostFreqKnob.setBounds(computeXcoord(1), computeYcoord(1), knobSize, knobSize);
+    boostFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
     boostFreqKnob.label.setBounds(boostFreqKnob.getX(),
                                   boostFreqKnob.getY() - 15,
                                   boostFreqKnob.getWidth(), 
                                   20);
 
-    boostTightKnob.setBounds(computeXcoord(0), computeYcoord(2), knobSize, knobSize);
+    boostTightKnob.setBounds(computeXcoord(0, width), computeYcoord(2, height), knobSize, knobSize);
     boostTightKnob.label.setBounds(boostTightKnob.getX(),
                                     boostTightKnob.getY() - 15,
                                     boostTightKnob.getWidth(),
                                     20);
 }
+
 
 AmplifierPage::AmplifierPage(Apvts &apvts) :
     gainKnob("GAIN_KNOB_LABEL", "Pre Gain", this),
@@ -124,57 +127,49 @@ AmplifierPage::AmplifierPage(Apvts &apvts) :
 
 }
 
+
 void AmplifierPage::resized() {
-    constexpr int knobSize = 100;
-    constexpr int horizontalMargin = 25;
-    constexpr int verticalMargin = 50;
 
-    int HEIGHT = getHeight() - 2*verticalMargin;
-    int WIDTH = getWidth() - 2*horizontalMargin;
-
-    constexpr int nRows = 3;
-    constexpr int nCols = 8;
-
-    auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
-    auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
-
-    gainKnob.setBounds(computeXcoord(2), computeYcoord(1), knobSize, knobSize);
+    int width = getWidth();
+    int height = getHeight();
+    
+    gainKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
     gainKnob.label.setBounds(gainKnob.getX(), 
                               gainKnob.getY() - 15, 
                               gainKnob.getWidth(), 
                               20);
     
-    inputFilterKnob.setBounds(computeXcoord(2), computeYcoord(2), knobSize, knobSize);
+    inputFilterKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
     inputFilterKnob.label.setBounds(inputFilterKnob.getX(), 
                                      inputFilterKnob.getY() - 15, 
                                      inputFilterKnob.getWidth(), 
                                      20);
 
-    bassEQKnob.setBounds(computeXcoord(3), computeYcoord(1), knobSize, knobSize);
+    bassEQKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), knobSize, knobSize);
     bassEQKnob.label.setBounds(bassEQKnob.getX(), 
                                 bassEQKnob.getY() - 15, 
                                 bassEQKnob.getWidth(), 
                                 20);
 
-    midEQKnob.setBounds(computeXcoord(4), computeYcoord(1), knobSize, knobSize);
+    midEQKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), knobSize, knobSize);
     midEQKnob.label.setBounds(midEQKnob.getX(), 
                                midEQKnob.getY() - 15, 
                                midEQKnob.getWidth(), 
                                20);
     
-    trebbleEQKnob.setBounds(computeXcoord(5), computeYcoord(1), knobSize, knobSize);
+    trebbleEQKnob.setBounds(computeXcoord(4, width), computeYcoord(0, height), knobSize, knobSize);
     trebbleEQKnob.label.setBounds(trebbleEQKnob.getX(), 
                                    trebbleEQKnob.getY() - 15, 
                                    trebbleEQKnob.getWidth(), 
                                    20);
 
-    resonanceKnob.setBounds(computeXcoord(6), computeYcoord(2), knobSize, knobSize);
+    resonanceKnob.setBounds(computeXcoord(5, width), computeYcoord(1, height), knobSize, knobSize);
     resonanceKnob.label.setBounds(resonanceKnob.getX(),
                                    resonanceKnob.getY() - 15,
                                    resonanceKnob.getWidth(), 
                                    20);
 
-    presenceKnob.setBounds(computeXcoord(6), computeYcoord(1), knobSize, knobSize);
+    presenceKnob.setBounds(computeXcoord(5, width), computeYcoord(0, height), knobSize, knobSize);
     presenceKnob.label.setBounds(presenceKnob.getX(),
                                    presenceKnob.getY() - 15,
                                    presenceKnob.getWidth(), 
@@ -182,7 +177,7 @@ void AmplifierPage::resized() {
 
     
 
-    preampVolumeKnob.setBounds(computeXcoord(7), computeYcoord(1), knobSize, knobSize);
+    preampVolumeKnob.setBounds(computeXcoord(6, width), computeYcoord(0, height), knobSize, knobSize);
     preampVolumeKnob.label.setBounds(preampVolumeKnob.getX(), 
                                       preampVolumeKnob.getY() - 15, 
                                       preampVolumeKnob.getWidth(), 
@@ -191,25 +186,25 @@ void AmplifierPage::resized() {
 
 
 
-    volumeKnob.setBounds(computeXcoord(7), computeYcoord(2), knobSize, knobSize);
+    volumeKnob.setBounds(computeXcoord(6, width), computeYcoord(1, height), knobSize, knobSize);
     volumeKnob.label.setBounds(volumeKnob.getX(), 
                                 volumeKnob.getY() - 15, 
                                 volumeKnob.getWidth(), 
                                 20);
 
-    ampChannelBox.setBounds(computeXcoord(3), computeYcoord(2) + 30, 120, 30);
+    ampChannelBox.setBounds(computeXcoord(2, width), computeYcoord(1, height) + 30, 120, 30);
     ampChannelBox.label.setBounds(ampChannelBox.getX(),
                                    ampChannelBox.getY() - 20,
                                    ampChannelBox.getWidth(), 
                                    20);
 
-    toneStackModelBox.setBounds(computeXcoord(4), computeYcoord(2) + 30, 120, 30);
+    toneStackModelBox.setBounds(computeXcoord(3, width), computeYcoord(1, height) + 30, 120, 30);
     toneStackModelBox.label.setBounds(toneStackModelBox.getX(),
                                        toneStackModelBox.getY() - 20,
                                        toneStackModelBox.getWidth(), 
                                        20);
 
-    channelConfigBox.setBounds(computeXcoord(1), computeYcoord(0) + 30, 120, 30);
+    channelConfigBox.setBounds(computeXcoord(0, width), computeYcoord(0, height) + 30, 120, 30);
     channelConfigBox.label.setBounds(channelConfigBox.getX(),
                                       channelConfigBox.getY() - 20,
                                       channelConfigBox.getWidth(),
@@ -221,7 +216,6 @@ void AmplifierPage::resized() {
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     irLoadButton.onClick = [&]() { 
-    
         auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
 
         bool fileChoosed = chooser->browseForFileToOpen();
@@ -244,7 +238,6 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
                             juce::NotificationType::dontSendNotification);
                             
         audioProcessor.valueTree.setProperty(irPath1, returnedFile.getFullPathName(), nullptr);
-    
     };
     
     addAndMakeVisible(irLoadButton);
@@ -275,7 +268,6 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
                             juce::NotificationType::dontSendNotification);
                             
         audioProcessor.valueTree.setProperty(irPath1, "", nullptr);
-        
     };
     
     addAndMakeVisible(irLoaderDefaultIRButton);
@@ -290,28 +282,19 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 }
 
 void IRLoaderPage::resized() {
-    constexpr int knobSize = 100;
-    constexpr int horizontalMargin = 25;
-    constexpr int verticalMargin = 50;
 
-    int HEIGHT = getHeight() - 2*verticalMargin;
-    int WIDTH = getWidth() - 2*horizontalMargin;
+    int width = getWidth();
+    int height = getHeight();
 
-    constexpr int nRows = 3;
-    constexpr int nCols = 8;
+    irLoadButton.setBounds(computeXcoord(6, width), computeYcoord(0, height), 100, 50);
 
-    auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
-    auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
-
-
-    irLoadButton.setBounds(computeXcoord(7), computeYcoord(0), 100, 50);
-
-    irLoaderBypassToggle.setBounds(computeXcoord(6), computeYcoord(0) - 20, 120, 30);
+    irLoaderBypassToggle.setBounds(computeXcoord(5, width), computeYcoord(0, height) - 20, 120, 30);
     irLoaderDefaultIRButton.setBounds(irLoaderBypassToggle.getX(), irLoaderBypassToggle.getY() + 40,
                                       120, 30);
                                       
-    irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 200, 20);
-
+    irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), 
+                          irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 
+                          200, 20);
 }
 
 
@@ -327,7 +310,7 @@ Editor::Editor (Processor& p)
 
     juce::Colour colour = findColour (juce::ResizableWindow::backgroundColourId);
     tabs.addTab("Gate Boost", colour, &gateBoostPage,  true);
-    tabs.addTab("Amp",        colour, &ampPage,  true);
+    tabs.addTab("Amp",        colour, &ampPage,        true);
     tabs.addTab("GainStages", colour, &gainStagesPage, true);
     tabs.addTab("IRLoader",   colour, &irLoaderPage,   true);
     
@@ -346,20 +329,6 @@ void Editor::paint (juce::Graphics& g)
 
 void Editor::resized() {
     
-    constexpr int knobSize = 100;
-    constexpr int horizontalMargin = 25;
-    constexpr int verticalMargin = 50;
-
-    int HEIGHT = getHeight() - 2*verticalMargin;
-    int WIDTH = getWidth() - 2*horizontalMargin;
-
-    constexpr int nRows = 3;
-    constexpr int nCols = 8;
-
-    auto computeXcoord = [&](int col) { return horizontalMargin + int(WIDTH/nCols) * col; };
-    auto computeYcoord = [&](int row) { return verticalMargin + int(HEIGHT/nRows) * row; };
-
-
     tabs.setBounds(getLocalBounds());
 
     gateBoostPage.resized();

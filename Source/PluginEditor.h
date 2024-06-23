@@ -12,12 +12,17 @@
 
 const juce::String defaultIRText = "Default IR, made by JuanPabloZed";
 
+const int knobSize = 100;
+const int horizontalMargin = 25;
+const int verticalMargin = 50;
+const int nRows = 3;
+const int nCols = 7;
+
+
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;
 
-
-struct Editor;
 
 struct Knob : public juce::Slider {
 
