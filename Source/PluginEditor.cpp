@@ -19,12 +19,26 @@ static int computeYcoord(int row, int width) {
 
 GateBoostPage::GateBoostPage(Apvts &apvts) :
     gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
+    gateAttackKnob("GATE_Attack_LABEL", "Gate Attack", this),
+    gateReleaseKnob("GATE_RELEASE_LABEL", "Gate Release", this), 
+    gateReturnKnob("GATE_RETURN_LABEL", "Gate Hysteresis", this),
+
     boostAttackKnob("BOOST_ATTACK_KNOB_LABEL" , "Boost Top", this),
     boostFreqKnob("BOOST_FREQ_KNOB_LABEL", "Boost Freq", this),
     boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this)
 {
     gateKnob.init(ParamIDs[GATE_THRESH].toString(), apvts);
     gateKnob.setTextValueSuffix(" dB");
+
+    gateAttackKnob.init(ParamIDs[GATE_ATTACK].toString(), apvts);
+    gateAttackKnob.setTextValueSuffix(" ms");
+    
+    gateReleaseKnob.init(ParamIDs[GATE_RELEASE].toString(), apvts);
+    gateReleaseKnob.setTextValueSuffix(" ms");
+    
+    gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), apvts);
+    gateReleaseKnob.setTextValueSuffix(" dB");
+
 
     boostAttackKnob.init(ParamIDs[BITE].toString(), apvts);
     boostAttackKnob.setTextValueSuffix(" dB");
@@ -49,20 +63,39 @@ void GateBoostPage::resized() {
                               gateKnob.getWidth(), 
                               20);
 
+    gateAttackKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
+    gateAttackKnob.label.setBounds(gateAttackKnob.getX(),
+                                   gateAttackKnob.getY() - 15, 
+                                   gateAttackKnob.getWidth(), 
+                                   20);
+                                    
+    gateReleaseKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
+    gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(),
+                                    gateReleaseKnob.getY() - 15, 
+                                    gateReleaseKnob.getWidth(), 
+                                    20);
+                                    
+    gateReturnKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
+    gateReturnKnob.label.setBounds(gateReturnKnob.getX(),
+                                   gateReturnKnob.getY() - 15, 
+                                   gateReturnKnob.getWidth(), 
+                                   20);
+                                    
 
-    boostAttackKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
+
+    boostAttackKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), knobSize, knobSize);
     boostAttackKnob.label.setBounds(boostAttackKnob.getX(),
                                   boostAttackKnob.getY() - 15,
                                   boostAttackKnob.getWidth(), 
                                   20);
     
-    boostFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
+    boostFreqKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), knobSize, knobSize);
     boostFreqKnob.label.setBounds(boostFreqKnob.getX(),
                                   boostFreqKnob.getY() - 15,
                                   boostFreqKnob.getWidth(), 
                                   20);
 
-    boostTightKnob.setBounds(computeXcoord(0, width), computeYcoord(2, height), knobSize, knobSize);
+    boostTightKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), knobSize, knobSize);
     boostTightKnob.label.setBounds(boostTightKnob.getX(),
                                     boostTightKnob.getY() - 15,
                                     boostTightKnob.getWidth(),
@@ -286,15 +319,15 @@ void IRLoaderPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    irLoadButton.setBounds(computeXcoord(6, width), computeYcoord(0, height), 100, 50);
+    irLoadButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 50);
 
-    irLoaderBypassToggle.setBounds(computeXcoord(5, width), computeYcoord(0, height) - 20, 120, 30);
+    irLoaderBypassToggle.setBounds(computeXcoord(1, width), computeYcoord(0, height) - 20, 120, 30);
     irLoaderDefaultIRButton.setBounds(irLoaderBypassToggle.getX(), irLoaderBypassToggle.getY() + 40,
                                       120, 30);
                                       
-    irNameLabel.setBounds(irLoaderDefaultIRButton.getX(), 
-                          irLoaderDefaultIRButton.getY() + irLoaderDefaultIRButton.getHeight() + 5, 
-                          200, 20);
+    irNameLabel.setBounds(irLoadButton.getX(), 
+                          irLoadButton.getY() + irLoadButton.getHeight() + 5, 
+                          300, 20);
 }
 
 

@@ -336,10 +336,29 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     const auto id = juce::Identifier(parameterId);
 
-    if (id == ParamIDs[GATE_THRESH]) {
-        noiseGate->threshold = dbtoa(newValue);
+    if (id == ParamIDs[GATE_THRESH] 
+        || id == ParamIDs[GATE_RETURN]) 
+    {
+        float thresh = *apvts.getRawParameterValue(ParamIDs[GATE_THRESH]);
+        float hysteresis = *apvts.getRawParameterValue(ParamIDs[GATE_RETURN]);
+    
+        noiseGate->threshold = dbtoa(thresh);
+        noiseGate->hysteresis = newValue;
+        noiseGate->returnGain = dbtoa(thresh - hysteresis); 
+            
         return;
     }
+    
+    if (id == ParamIDs[GATE_ATTACK]) {
+        noiseGate->attackTimeMs = newValue;
+        return;
+    }
+    
+    if (id == ParamIDs[GATE_RELEASE]) {
+        noiseGate->releaseTimeMs = newValue;
+        return;
+    }
+    
 
     if (id == ParamIDs[BITE] || id == ParamIDs[BITE_FREQ]) {
 
@@ -447,6 +466,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[GATE_THRESH].toString(), "Gate Thresh", 
         juce::NormalisableRange<float>(-96.0f, -40.0f, 0.1f, 1.0f), -75.0f, attributes
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[GATE_ATTACK].toString(), "Attack Time", 
+        juce::NormalisableRange<float>(0.1f, 15.0f, 0.1f, 1.0f), 1.0f, attributes
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[GATE_RELEASE].toString(), "Release Time", 
+        juce::NormalisableRange<float>(1.0f, 25.0f, 0.1f, 1.0f), 15.0f, attributes
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[GATE_RETURN].toString(), "Hysteresis (not implemented)", 
+        juce::NormalisableRange<float>(0.0f, 20.0f, 0.1f, 1.0f), 0.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

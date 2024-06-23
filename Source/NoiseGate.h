@@ -26,6 +26,7 @@ struct NoiseGate {
         gateBufferIndex = 0;
         absoluteSum = 0.0;
         threshold = dbtoa(-70.0);
+        returnGain = threshold;
 
         if (gateBuffer == nullptr) {
             gateBuffer = (Sample *)calloc(gateBufferLength, sizeof(Sample));
@@ -49,7 +50,18 @@ struct NoiseGate {
             gateBufferIndex++;
             if (gateBufferIndex == gateBufferLength) { gateBufferIndex = 0; }
 
-            bool isOpen = (absoluteSum / gateBufferLength) > threshold;
+            // if close && > thresh -> open 
+            // if close && < thresh -> close
+            // if open && > thresh - hyst -> open 
+            // if open && < thresh -hyst -> close
+            
+            bool isOpen = false;
+            double amplitude = absoluteSum / gateBufferLength;
+            
+            if (amplitude < returnGain)           { isOpen = false; }
+            if (amplitude > threshold)            { isOpen = true; }
+            if (isOpen && amplitude > returnGain) { isOpen = true; }
+            
             gateGain.newTarget(isOpen ? 1.0 : 0.0, 
                                isOpen ? attackTimeMs : releaseTimeMs,
                                samplerate);
@@ -77,5 +89,6 @@ struct NoiseGate {
     
     double attackTimeMs = 1.0;
     double releaseTimeMs = 15.0;
-
+    double hysteresis = 0.0;
+    double returnGain = 0.0;
 };

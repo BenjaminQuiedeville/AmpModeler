@@ -51,6 +51,10 @@ struct GateBoostPage : public juce::Component {
     void resized();
     
     Knob gateKnob;
+    Knob gateAttackKnob;
+    Knob gateReleaseKnob; 
+    Knob gateReturnKnob;
+
     Knob boostAttackKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;

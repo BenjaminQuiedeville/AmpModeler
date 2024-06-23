@@ -68,6 +68,9 @@ irloader
 
 enum Params {
     GATE_THRESH,
+    GATE_ATTACK,
+    GATE_RELEASE,
+    GATE_RETURN,
     BITE,
     BITE_FREQ,
     TIGHT,
@@ -88,6 +91,9 @@ enum Params {
 
 static std::vector<juce::Identifier> ParamIDs = {
     "GATE_THRESH",
+    "GATE_ATTACK",
+    "GATE_RELEASE",
+    "GATE_RETURN",
     "BITE",
     "BITE_FREQ",
     "TIGHT",
