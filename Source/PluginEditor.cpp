@@ -37,7 +37,7 @@ GateBoostPage::GateBoostPage(Apvts &apvts) :
     gateReleaseKnob.setTextValueSuffix(" ms");
     
     gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), apvts);
-    gateReleaseKnob.setTextValueSuffix(" dB");
+    gateReleaseKnob.setTextValueSuffix(" ms");
 
 
     boostAttackKnob.init(ParamIDs[BITE].toString(), apvts);

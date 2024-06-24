@@ -58,9 +58,18 @@ struct NoiseGate {
             bool isOpen = false;
             double amplitude = absoluteSum / gateBufferLength;
             
-            if (amplitude < returnGain)           { isOpen = false; }
-            if (amplitude > threshold)            { isOpen = true; }
-            if (isOpen && amplitude > returnGain) { isOpen = true; }
+            if (amplitude > threshold) { 
+                isOpen = true;  
+            }
+            
+            if (isOpen && amplitude > returnGain) { 
+                isOpen = true;  
+            }
+            
+            if (amplitude < returnGain) { 
+                isOpen = false; 
+            }
+            
             
             gateGain.newTarget(isOpen ? 1.0 : 0.0, 
                                isOpen ? attackTimeMs : releaseTimeMs,
@@ -73,7 +82,7 @@ struct NoiseGate {
             if (bufferR) {
                 bufferR[i] *= gateGainValue;
             }
-        }    
+        }
     }
 
     double samplerate = 0.0;

@@ -339,10 +339,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == ParamIDs[GATE_THRESH] 
         || id == ParamIDs[GATE_RETURN]) 
     {
-        float thresh = *apvts.getRawParameterValue(ParamIDs[GATE_THRESH]);
+        float thresh     = *apvts.getRawParameterValue(ParamIDs[GATE_THRESH]);
         float hysteresis = *apvts.getRawParameterValue(ParamIDs[GATE_RETURN]);
     
-        noiseGate->threshold = dbtoa(thresh);
+        noiseGate->threshold  = dbtoa(thresh);
         noiseGate->hysteresis = newValue;
         noiseGate->returnGain = dbtoa(thresh - hysteresis); 
             
