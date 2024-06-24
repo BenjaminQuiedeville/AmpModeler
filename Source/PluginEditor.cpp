@@ -306,6 +306,8 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     addAndMakeVisible(irLoaderDefaultIRButton);
 
 
+    irLoaderBypassToggle.setToggleState(audioProcessor.irLoader->bypass, 
+                                        juce::NotificationType::dontSendNotification);
     irLoaderBypassToggle.onClick = [&]() {
         audioProcessor.irLoader->bypass = irLoaderBypassToggle.getToggleState();
     };
