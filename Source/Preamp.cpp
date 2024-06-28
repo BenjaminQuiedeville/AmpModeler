@@ -41,7 +41,7 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     couplingFilter3.prepareToPlay();
     couplingFilter4.prepareToPlay();
     
-    stageOutputFilter1.prepareToPlay();
+    stageOutputFilter0.prepareToPlay();
     stageOutputFilter2.prepareToPlay();
     stageOutputFilter3.prepareToPlay();
     stageOutputFilter4.prepareToPlay();
@@ -56,12 +56,12 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    stageOutputFilter1.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter0.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    cathodeBypassFilter1.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter0.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter2.setCoefficients(200.0, -2.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter3.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter4.setCoefficients(200.0, -3.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
@@ -188,254 +188,207 @@ static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
     }
 }
 
-void Preamp::processGainStagesMono(Sample *buffer, u32 nSamples) {
+void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     u32 index = 0;
     
     // Stage 0
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= STAGE_0_GAIN;
+    if (bufferR) {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_0_GAIN;
+            bufferR[index] *= STAGE_0_GAIN;
+        }
+    } else {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_0_GAIN;
+        }    
     }
             
-    waveShaping2(buffer, nSamples);
-    cathodeBypassFilter1.processLeft(buffer, nSamples);
+    waveShaping2(bufferL, nSamples);
+    waveShaping2(bufferR, nSamples);
+    cathodeBypassFilter0.process(bufferL, bufferR, nSamples);
     
-    inputFilter.processHighpassLeft(buffer, nSamples);
-    stageOutputFilter1.processLowpassLeft(buffer, nSamples);
+    inputFilter.processHighpass(bufferL, bufferR, nSamples);
+    stageOutputFilter0.processLowpass(bufferL, bufferR, nSamples);
     
     
     // Stage 1
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= (Sample)preGain.nextValue() * STAGE_1_GAIN;
+    if (bufferR) {
+        for (index = 0; index < nSamples; index++) {
+            Sample preGainValue = (Sample)preGain.nextValue() * STAGE_1_GAIN; 
+            bufferL[index] *= preGainValue;
+            bufferR[index] *= preGainValue;
+        }
+    } else {
+        for (index = 0; index < nSamples; index++) {
+            Sample preGainValue = (Sample)preGain.nextValue() * STAGE_1_GAIN; 
+            bufferL[index] *= preGainValue;
+        }
     }
 
-    brightCapFilter.processLeft(buffer, nSamples);
+    brightCapFilter.process(bufferL, bufferR, nSamples);
 
-    waveShaping2(buffer, nSamples);
-    couplingFilter1.processHighpassLeft(buffer, nSamples);
+    waveShaping2(bufferL, nSamples);
+    waveShaping2(bufferR, nSamples);
+    couplingFilter1.processHighpass(bufferL, bufferR, nSamples);
 
     if (channel == 1) {
-        for (index = 0; index < nSamples; index++) {
-            buffer[index] *= STAGE_ONE_COMPENSATION;
+        if (bufferR) {
+            for (index = 0; index < nSamples; index++) {
+                bufferL[index] *= STAGE_ONE_COMPENSATION;
+                bufferR[index] *= STAGE_ONE_COMPENSATION;
+            }
+        } else {
+            for (index = 0; index < nSamples; index++) {
+                bufferL[index] *= STAGE_ONE_COMPENSATION;
+            }
         }
         return;
     }
     
     
     // Stage 2
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= STAGE_2_GAIN;
+    if (bufferR) {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_2_GAIN;
+            bufferR[index] *= STAGE_2_GAIN;
+        }
+    } else {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_2_GAIN;
+        }
     }
 
-    waveShaping2(buffer, nSamples);
-    cathodeBypassFilter2.processLeft(buffer, nSamples);
-    couplingFilter2.processHighpassLeft(buffer, nSamples);
+    waveShaping2(bufferL, nSamples);
+    waveShaping2(bufferR, nSamples);
+    cathodeBypassFilter2.process(bufferL, bufferR, nSamples);
+    couplingFilter2.processHighpass(bufferL, bufferR, nSamples);
 
     if (channel == 2) {
-        for (index = 0; index < nSamples; index++) {
-            buffer[index] *= -STAGE_TWO_COMPENSATION;
+        if (bufferR) {
+            for (index = 0; index < nSamples; index++) {
+                bufferL[index] *= -STAGE_TWO_COMPENSATION;
+                bufferR[index] *= -STAGE_TWO_COMPENSATION;
+            }
+        } else {
+            for (index = 0; index < nSamples; index++) {
+                bufferL[index] *= -STAGE_TWO_COMPENSATION;
+            }
         }
         return;
     }
 
-    stageOutputFilter2.processLowpassLeft(buffer, nSamples);
+    stageOutputFilter2.processLowpass(bufferL, bufferR, nSamples);
 
     
     // Stage 3
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= STAGE_3_GAIN;
+    if (bufferR) {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_3_GAIN;
+            bufferR[index] *= STAGE_3_GAIN;
+        }
+    } else {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= STAGE_3_GAIN;
+        }
     }
     
-    waveShaping2(buffer, nSamples);
-    cathodeBypassFilter3.processLeft(buffer, nSamples);
-    couplingFilter3.processHighpassLeft(buffer, nSamples);
+    waveShaping2(bufferL, nSamples);
+    waveShaping2(bufferR, nSamples);
+    cathodeBypassFilter3.process(bufferL, bufferR, nSamples);
+    couplingFilter3.processHighpass(bufferL, bufferR, nSamples);
 
     if (channel == 3) {
         return;        
     }
 
-    stageOutputFilter3.processLowpassLeft(buffer, nSamples);
+    stageOutputFilter3.processLowpass(bufferL, bufferR, nSamples);
     
     
     // Stage 4
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= STAGE_4_GAIN;
-    }
-    
-    waveShaping2(buffer, nSamples);
-    cathodeBypassFilter4.processLeft(buffer, nSamples);
-    couplingFilter4.processHighpassLeft(buffer, nSamples);
-
-    for (index = 0; index < nSamples; index++) {
-        buffer[index] *= -1.0f;
-    }
-}
-
-void Preamp::processGainStagesStereo(Sample *bufferL, Sample *bufferR, u32 nSamples) {
-    
-    u32 index = 0;
-    
-    // Stage 0
-    for (index = 0; index < nSamples; index++) {
-        bufferL[index] *= STAGE_0_GAIN;
-        bufferR[index] *= STAGE_0_GAIN;
-    }
-            
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
-    cathodeBypassFilter1.processStereo(bufferL, bufferR, nSamples);
-    
-    inputFilter.processHighpassStereo(bufferL, bufferR, nSamples);
-    stageOutputFilter1.processLowpassStereo(bufferL, bufferR, nSamples);
-    
-    
-    // Stage 1
-    for (index = 0; index < nSamples; index++) {
-        Sample preGainValue = (Sample)preGain.nextValue() * STAGE_1_GAIN; 
-        
-        bufferL[index] *= preGainValue;
-        bufferR[index] *= preGainValue;
-    }
-
-    brightCapFilter.processStereo(bufferL, bufferR, nSamples);
-
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
-    couplingFilter1.processHighpassStereo(bufferL, bufferR, nSamples);
-
-    if (channel == 1) {
+    if (bufferR) {
         for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_ONE_COMPENSATION;
-            bufferR[index] *= STAGE_ONE_COMPENSATION;
+            bufferL[index] *= STAGE_4_GAIN;
+            bufferR[index] *= STAGE_4_GAIN;
         }
-        return;
-    }
-    
-    
-    // Stage 2
-    for (index = 0; index < nSamples; index++) {
-        bufferL[index] *= STAGE_2_GAIN;
-        bufferR[index] *= STAGE_2_GAIN;
-    }
-
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
-    cathodeBypassFilter2.processStereo(bufferL, bufferR, nSamples);
-    couplingFilter2.processHighpassStereo(bufferL, bufferR, nSamples);
-
-    if (channel == 2) {
+    } else {
         for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= -STAGE_TWO_COMPENSATION;
-            bufferR[index] *= -STAGE_TWO_COMPENSATION;
+            bufferL[index] *= STAGE_4_GAIN;
         }
-        return;
-    }
-
-    stageOutputFilter2.processLowpassStereo(bufferL, bufferR, nSamples);
-
-    
-    // Stage 3
-    for (index = 0; index < nSamples; index++) {
-        bufferL[index] *= STAGE_3_GAIN;
-        bufferR[index] *= STAGE_3_GAIN;
     }
     
     waveShaping2(bufferL, nSamples);
     waveShaping2(bufferR, nSamples);
-    cathodeBypassFilter3.processStereo(bufferL, bufferR, nSamples);
-    couplingFilter3.processHighpassStereo(bufferL, bufferR, nSamples);
+    cathodeBypassFilter4.process(bufferL, bufferR, nSamples);
+    couplingFilter4.processHighpass(bufferL, bufferR, nSamples);
 
-    if (channel == 3) {
-        return;        
-    }
-
-    stageOutputFilter3.processLowpassStereo(bufferL, bufferR, nSamples);
-    
-    
-    // Stage 4
-    for (index = 0; index < nSamples; index++) {
-        bufferL[index] *= STAGE_4_GAIN;
-        bufferR[index] *= STAGE_4_GAIN;
-    }
-    
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
-    cathodeBypassFilter4.processStereo(bufferL, bufferR, nSamples);
-    couplingFilter4.processHighpassStereo(bufferL, bufferR, nSamples);
-
-    for (index = 0; index < nSamples; index++) {
-        bufferL[index] *= -1.0f;
-        bufferR[index] *= -1.0f;
+    if (bufferR) {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= -1.0f;
+            bufferR[index] *= -1.0f;
+        }
+    } else {
+        for (index = 0; index < nSamples; index++) {
+            bufferL[index] *= -1.0f;
+        }
     }
 }
 
 
-void Preamp::processStereo(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     u32 blockSize = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
     
+    // upsampling
     if (bufferR) {  
-        // if bufferR is not nullptr : process in stereo
-        // upsampling
         memset(upSampledBlockL, 0, blockSize * sizeof(Sample));
         memset(upSampledBlockR, 0, blockSize * sizeof(Sample));
         for (u32 i = 0; i < nSamples; i++) {
             upSampledBlockL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
             upSampledBlockR[PREAMP_UP_SAMPLE_FACTOR*i] = bufferR[i];
         }
+    } else {
+        memset(upSampledBlockL, 0, blockSize * sizeof(Sample));
+        for (u32 i = 0; i < nSamples; i++) {
+            upSampledBlockL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
+        }    
+    }
 
-        overSampler->upSampleFilter1.processStereo(upSampledBlockL, upSampledBlockR, blockSize);    
-        overSampler->upSampleFilter2.processStereo(upSampledBlockL, upSampledBlockR, blockSize);    
+    overSampler->upSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);    
+    overSampler->upSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);    
     
-        //processing
-        processGainStagesStereo(upSampledBlockL, upSampledBlockR, blockSize);
+    //processing
+    processGainStages(upSampledBlockL, upSampledBlockR, blockSize);
 
+    if (bufferR) {
         for (u32 index = 0; index < blockSize; index++) {
             Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
             
             upSampledBlockL[index] *= postGainValue;
             upSampledBlockR[index] *= postGainValue;
         }
+    } else {
+        for (u32 index = 0; index < blockSize; index++) {
+            Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
+                        
+            upSampledBlockL[index] *= postGainValue;
+        }
+    }
             
-        // downsampling
-        assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
+    // downsampling
+    assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
     
-        overSampler->downSampleFilter1.processStereo(upSampledBlockL, upSampledBlockR, blockSize);
-        overSampler->downSampleFilter2.processStereo(upSampledBlockL, upSampledBlockR, blockSize);
-    
+    overSampler->downSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);
+    overSampler->downSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);
+
+    if (bufferR) {
         for (u32 i = 0; i < nSamples; i++) {
             bufferL[i] = upSampledBlockL[i*PREAMP_UP_SAMPLE_FACTOR];
             bufferR[i] = upSampledBlockR[i*PREAMP_UP_SAMPLE_FACTOR];
         }
-    
     } else {
-        // otherwise : process in mono
-        // upsampling
-        memset(upSampledBlockL, 0, blockSize * sizeof(Sample));
-        for (u32 i = 0; i < nSamples; i++) {
-            upSampledBlockL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
-        }
-
-        overSampler->upSampleFilter1.processLeft(upSampledBlockL, blockSize);    
-        overSampler->upSampleFilter2.processLeft(upSampledBlockL, blockSize);    
-    
-        //processing
-        processGainStagesMono(upSampledBlockL, blockSize);
-
-        for (u32 index = 0; index < blockSize; index++) {
-            Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
-            
-            upSampledBlockL[index] *= postGainValue;
-        }
-            
-        // downsampling
-        assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
-    
-        overSampler->downSampleFilter1.processLeft(upSampledBlockL, blockSize);
-        overSampler->downSampleFilter2.processLeft(upSampledBlockL, blockSize);
-    
         for (u32 i = 0; i < nSamples; i++) {
             bufferL[i] = upSampledBlockL[i*PREAMP_UP_SAMPLE_FACTOR];
-        }
+        }    
     }
 }

@@ -44,49 +44,31 @@ struct FirstOrderShelfFilter {
         a1 = (Sample)((rho + alpha1)/(1 + rho * alpha1));
     }
 
-    void processLeft(Sample *buffer, u32 nSamples) {
-        for (u32 i = 0; i < nSamples; i++) {
-            Sample outSample = b0 * buffer[i] 
-                             + b1 * x1L 
-                             - a1 * y1L;
-
-            x1L = buffer[i];
-            y1L = outSample;
-            buffer[i] = outSample * outGain; 
+    void process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+        if (bufferL) {
+            for (u32 i = 0; i < nSamples; i++) {
+                Sample outSample = b0 * bufferL[i] 
+                                 + b1 * x1L 
+                                 - a1 * y1L;
+    
+                x1L = bufferL[i];
+                y1L = outSample;
+                bufferL[i] = outSample * outGain; 
+    
+            }
         }
-    }
+        
+        if (bufferR) {
+            for (u32 i = 0; i < nSamples; i++) {
+                Sample outSample = b0 * bufferR[i] 
+                          + b1 * x1R 
+                          - a1 * y1R;
     
-    void processRight(Sample *buffer, u32 nSamples) {
-        for (u32 i = 0; i < nSamples; i++) {
-            Sample outSample = b0 * buffer[i] 
-                             + b1 * x1R 
-                             - a1 * y1R;
-
-            x1R = buffer[i];
-            y1R = outSample;
-            buffer[i] = outSample * outGain; 
-        }    
-    }
-    
-    void processStereo(Sample *bufferL, Sample *bufferR, u32 nSamples) {
-        for (u32 i = 0; i < nSamples; i++) {
-            Sample outSample = b0 * bufferL[i] 
-                             + b1 * x1L 
-                             - a1 * y1L;
-
-            x1L = bufferL[i];
-            y1L = outSample;
-            bufferL[i] = outSample * outGain; 
-
-
-            outSample = b0 * bufferR[i] 
-                      + b1 * x1R 
-                      - a1 * y1R;
-
-            x1R = bufferR[i];
-            y1R = outSample;
-            bufferR[i] = outSample * outGain; 
-        }    
+                x1R = bufferR[i];
+                y1R = outSample;
+                bufferR[i] = outSample * outGain; 
+            }    
+        }
     }
 
     Sample b0 = 1.0f;

@@ -27,21 +27,11 @@
 
 #define BOOST_BITE_Q     0.25
 
-#define RESONANCE_FREQUENCY 250.0
+#define RESONANCE_FREQUENCY 170.0
 #define PRESENCE_FREQUENCY  500.0
 
 
 /*
-Stereo 
-    MONO
-    FAKE STEREO
-    STEREO
-    
-pour tout le process :
-    faire des fonctions indépendantes pour les deux coté 
-    si on passe un nullptr dans les fontions pour le coté droit, on early return et on process pas à droite
-    
-
 RESTANT : 
 
 général 
@@ -110,6 +100,7 @@ static std::vector<juce::Identifier> ParamIDs = {
     "MASTER_VOLUME",
     "CHANNEL_CONFIG"
 };
+
 
 enum ChannelConfig {
     Mono, 

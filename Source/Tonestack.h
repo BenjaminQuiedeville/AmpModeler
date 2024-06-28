@@ -110,72 +110,53 @@ struct Tonestack {
     void updateConstants();
     
     void updateCoefficients(float t, float m, float l, double samplerate);
-
-    __forceinline void processMono(Sample *buffer, size_t nSamples) {
-       
-        for (size_t i = 0; i < nSamples; i++) {
-        
-            Sample outputSample = (Sample)(buffer[i] * b0
-                                  + x1L * b1
-                                  + x2L * b2
-                                  + x3L * b3
-                                  - y1L * a1
-                                  - y2L * a2
-                                  - y3L * a3);
-
-            x3L = x2L; 
-            x2L = x1L;
-            x1L = buffer[i];
-            
-            y3L = y2L; 
-            y2L = y1L;
-            y1L = outputSample;
-
-            buffer[i] = outputSample;
-        }
-    }
     
-    __forceinline void processStereo(Sample *bufferL, Sample *bufferR, size_t nSamples) {
-       
-        for (size_t i = 0; i < nSamples; i++) {
-        
-            Sample outputSample = (Sample)(bufferL[i] * b0
-                                + x1L * b1
-                                + x2L * b2
-                                + x3L * b3
-                                - y1L * a1
-                                - y2L * a2
-                                - y3L * a3);
-
-            x3L = x2L; 
-            x2L = x1L;
-            x1L = bufferL[i];
+    void process(Sample *bufferL, Sample *bufferR, size_t nSamples) {
+        if (bufferL) {
+            for (size_t i = 0; i < nSamples; i++) {
             
-            y3L = y2L; 
-            y2L = y1L;
-            y1L = outputSample;
-
-            bufferL[i] = outputSample;
-            
-            
-            outputSample = (Sample)(bufferR[i] * b0
-                         + x1R * b1
-                         + x2R * b2
-                         + x3R * b3
-                         - y1R * a1
-                         - y2R * a2
-                         - y3R * a3);
-
-            x3R = x2R; 
-            x2R = x1R;
-            x1R = bufferR[i];
-            
-            y3R = y2R; 
-            y2R = y1R;
-            y1R = outputSample;
-
-            bufferR[i] = outputSample;
+                Sample outputSample = (Sample)(bufferL[i] * b0
+                                    + x1L * b1
+                                    + x2L * b2
+                                    + x3L * b3
+                                    - y1L * a1
+                                    - y2L * a2
+                                    - y3L * a3);
+    
+                x3L = x2L; 
+                x2L = x1L;
+                x1L = bufferL[i];
+                
+                y3L = y2L; 
+                y2L = y1L;
+                y1L = outputSample;
+    
+                bufferL[i] = outputSample;
+            }
         }
+        
+        if (bufferR) {    
+            for (size_t i = 0; i < nSamples; i++) {
+                
+                Sample outputSample = (Sample)(bufferR[i] * b0
+                                    + x1R * b1
+                                    + x2R * b2
+                                    + x3R * b3
+                                    - y1R * a1
+                                    - y2R * a2
+                                    - y3R * a3);
+    
+                x3R = x2R; 
+                x2R = x1R;
+                x1R = bufferR[i];
+                
+                y3R = y2R; 
+                y2R = y1R;
+                y1R = outputSample;
+    
+                bufferR[i] = outputSample;
+            }
+        }           
     }
 
     double b0 = 1.0;

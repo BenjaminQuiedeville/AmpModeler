@@ -202,79 +202,66 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     float *audioPtrL = buffer.getWritePointer(0);
     float *audioPtrR = buffer.getWritePointer(1);
 
-    if (channelConfig == Mono) {
-    
+    if (channelConfig == Mono) { 
         audioPtrR = nullptr;
-        inputNoiseFilter.processLeft(audioPtrL, numSamples);
-    
-        memcpy(sideChainBuffer, audioPtrL, numSamples * sizeof(Sample));
-    
-        /******PROCESS********/
-        
-        tightFilter.processHighpassLeft(audioPtrL, numSamples);
-        biteFilter.processLeft(audioPtrL, numSamples);
-    
-        preamp->processStereo(audioPtrL, audioPtrR, numSamples);
-        toneStack->processMono(audioPtrL, numSamples);
-        
-        resonanceFilter.processLeft(audioPtrL, numSamples);
-        presenceFilter.processLeft(audioPtrL, numSamples);
-        
-        irLoader->process(audioPtrL, audioPtrR, numSamples);
-        
-        for (size_t i = 0; i < numSamples; i++) {
-            audioPtrL[i] *= (Sample)dbtoa(masterVolume.nextValue());
+    }
+
+    if (channelConfig == FakeStereo) {
+        for (u32 i = 0; i < numSamples; i++) {
+            audioPtrR[i] = -audioPtrL[i];
         }
-        
-        noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+    }
 
-        if (channelConfig == Mono) {
-            // copy left channel into right channel if processing is in mono
-            buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
-        }
+    inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
 
-    } else {
-    
-
-        inputNoiseFilter.processStereo(audioPtrL, audioPtrR, numSamples);
-    
+    if (channelConfig == Stereo) {
         for (u32 i = 0; i < numSamples; i++) {
             sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
         }
-    
-        if (channelConfig == FakeStereo) {
-            for (u32 i = 0; i < numSamples; i++) {
-                audioPtrR[i] = -audioPtrL[i];
-            }
+    } else {
+        for (u32 i = 0; i < numSamples; i++) {
+            sideChainBuffer[i] = audioPtrL[i];
         }
-        /******PROCESS********/
-        
-        tightFilter.processHighpassStereo(audioPtrL, audioPtrR, numSamples);
-        biteFilter.processStereo(audioPtrL, audioPtrR, numSamples);
+    }
     
-        preamp->processStereo(audioPtrL, audioPtrR, numSamples);
-        toneStack->processStereo(audioPtrL, audioPtrR, numSamples);
+    /******PROCESS********/
         
-        resonanceFilter.processStereo(audioPtrL, audioPtrR, numSamples);
-        presenceFilter.processStereo(audioPtrL, audioPtrR, numSamples);
+    tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
+    biteFilter.process(audioPtrL, audioPtrR, numSamples);
+    
+    preamp->process(audioPtrL, audioPtrR, numSamples);
+    toneStack->process(audioPtrL, audioPtrR, numSamples);
+    
+    resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
+    presenceFilter.process(audioPtrL, audioPtrR, numSamples);
         
-        irLoader->process(audioPtrL, audioPtrR, numSamples);
-        
+    irLoader->process(audioPtrL, audioPtrR, numSamples);
+
+    if (audioPtrR) {
         for (size_t i = 0; i < numSamples; i++) {
             Sample masterVolumeValue = (Sample)dbtoa(masterVolume.nextValue()); 
             audioPtrL[i] *= masterVolumeValue;
             audioPtrR[i] *= masterVolumeValue;
         }
-        
-        noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
-
-        if (channelConfig == FakeStereo) {
-            for (u32 i = 0; i < numSamples; i++) {
-                audioPtrR[i] *= -1.0f;
-            }
+    } else {
+        for (size_t i = 0; i < numSamples; i++) {
+            audioPtrL[i] *= (Sample)dbtoa(masterVolume.nextValue());
         }
     }
+        
 
+    noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+
+    if (channelConfig == Mono) {
+        // copy left channel into right channel if processing is in mono
+        buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
+    }
+
+    if (channelConfig == FakeStereo) {
+        for (u32 i = 0; i < numSamples; i++) {
+            audioPtrR[i] *= -1.0f;
+        }
+    }
 }
 
 //==============================================================================

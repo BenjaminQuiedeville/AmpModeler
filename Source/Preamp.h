@@ -32,10 +32,8 @@ struct Preamp {
     ~Preamp();
     
     void prepareToPlay(double samplerate, u32 blockSize);
-    void processGainStagesMono(Sample *buffer, u32 nSamples);
-    void processGainStagesStereo(Sample *bufferL, Sample *bufferR, u32 nSamples);
-    void processMono(Sample *buffer, u32 nSamples);
-    void processStereo(Sample *bufferL, Sample *bufferR, u32 nSamples);
+    void processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples);
+    void process(Sample *bufferL, Sample *bufferR, u32 nSamples);
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
@@ -49,12 +47,12 @@ struct Preamp {
     OnepoleFilter couplingFilter3;
     OnepoleFilter couplingFilter4;
 
-    OnepoleFilter stageOutputFilter1;
+    OnepoleFilter stageOutputFilter0;
     OnepoleFilter stageOutputFilter2;
     OnepoleFilter stageOutputFilter3;
     OnepoleFilter stageOutputFilter4;
 
-    FirstOrderShelfFilter cathodeBypassFilter1 {lowshelf};
+    FirstOrderShelfFilter cathodeBypassFilter0 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter2 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter3 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter4 {lowshelf};

@@ -120,47 +120,28 @@ struct Biquad {
         }
     }
 
+    void process(Sample *bufferL, Sample *bufferR, size_t nSamples) {
 
-    __forceinline void processLeft(Sample *buffer, size_t nSamples) {
-
-        for (size_t i = 0; i < nSamples; i++) {
+        if (bufferL) {
+            for (size_t index = 0; index < nSamples; index++) {
         
-            Sample w = buffer[i] - a1*w1L - a2*w2L;
-            buffer[i] = b0*w + b1*w1L + b2*w2L;
-            
-            w2L = w1L;
-            w1L = w;        
-        
+                Sample w = bufferL[index] - a1*w1L - a2*w2L;
+                bufferL[index] = b0*w + b1*w1L + b2*w2L;
+                
+                w2L = w1L;
+                w1L = w;        
+            }
         }
-    }
+        
+        if (bufferR) {
+            for (size_t index = 0; index < nSamples; index++) {
     
-    __forceinline void processRight(Sample *buffer, size_t nSamples) {
-
-        for (size_t i = 0; i < nSamples; i++) {
-        
-            Sample w = buffer[i] - a1*w1R - a2*w2R;
-            buffer[i] = b0*w + b1*w1R + b2*w2R;
-            
-            w2R = w1R;
-            w1R = w;        
-        }
-    }
-
-    __forceinline void processStereo(Sample *bufferL, Sample *bufferR, size_t nSamples) {
-
-        for (size_t index = 0; index < nSamples; index++) {
-        
-            Sample w = bufferL[index] - a1*w1L - a2*w2L;
-            bufferL[index] = b0*w + b1*w1L + b2*w2L;
-            
-            w2L = w1L;
-            w1L = w;        
-
-            w = bufferR[index] - a1*w1R - a2*w2R;
-            bufferR[index] = b0*w + b1*w1R + b2*w2R;
-            
-            w2R = w1R;
-            w1R = w;        
+                Sample w = bufferR[index] - a1*w1R - a2*w2R;
+                bufferR[index] = b0*w + b1*w1R + b2*w2R;
+                
+                w2R = w1R;
+                w1R = w;        
+            }
         }
     }
 
