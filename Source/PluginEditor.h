@@ -10,14 +10,13 @@
 
 #include "PluginProcessor.h"
 
-const juce::String defaultIRText = "Default IR, made by JuanPabloZed";
+const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
 
 const int knobSize = 100;
 const int horizontalMargin = 25;
 const int verticalMargin = 50;
 const int nRows = 3;
-const int nCols = 7;
-
+const int nCols = 6;
 
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
@@ -27,6 +26,16 @@ using ComboBoxAttachment = Apvts::ComboBoxAttachment;
 struct Knob : public juce::Slider {
 
     Knob(juce::String labelID, juce::String name, juce::Component* comp);
+    
+    void init(juce::String paramID, Apvts &apvts);
+    
+    juce::Label label;
+    std::unique_ptr<SliderAttachment> sliderAttachment;
+};
+
+
+struct Slider : public juce::Slider {
+    Slider(juce::String labelID, juce::String name, juce::Component* comp);
     
     void init(juce::String paramID, Apvts &apvts);
     
@@ -76,7 +85,6 @@ struct AmplifierPage : public juce::Component {
     Knob resonanceKnob;
     Knob presenceKnob;
 
-    Knob volumeKnob;
 
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
@@ -108,6 +116,35 @@ struct IRLoaderPage : public juce::Component {
 };
 
 
+struct MasterVolPanel : public juce::Component {
+
+    MasterVolPanel(Processor &p) :     
+        volumeSlider("MASTER_VOLUME_KNOB_LABEL", "Output Level", this)
+    {
+        volumeSlider.init(ParamIDs[MASTER_VOLUME].toString(), p.apvts);
+        volumeSlider.setTextValueSuffix(" dB");
+        
+    }
+    
+    void paint(juce::Graphics& g) override {
+        g.fillAll(juce::Colours::darkgrey);
+    }
+
+
+    void resized() {
+    
+        volumeSlider.setBounds(10, 50, getWidth(), 300);
+        volumeSlider.label.setBounds(volumeSlider.getX(), 
+                                    volumeSlider.getY() - 15, 
+                                    volumeSlider.getWidth(), 
+                                    20);
+    } 
+
+
+    Slider volumeSlider;
+
+};
+
 
 struct Editor : public juce::AudioProcessorEditor
 {
@@ -124,7 +161,8 @@ struct Editor : public juce::AudioProcessorEditor
     AmplifierPage ampPage;
     GainStagesPage gainStagesPage;
     IRLoaderPage irLoaderPage;
-
+    
+    MasterVolPanel volumePanel;
 
     Processor& audioProcessor;
 

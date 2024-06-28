@@ -8,12 +8,13 @@
 #include "PluginEditor.h"
 
 
-static int computeXcoord(int col, int height) { 
-    return horizontalMargin + int((height - 2*verticalMargin)/nCols) * col; 
+static int computeXcoord(float col, int width) {    
+    int usableWidth = width - 2*horizontalMargin - knobSize;
+    return horizontalMargin + int(usableWidth/nCols * col); 
 }
 
-static int computeYcoord(int row, int width) { 
-    return verticalMargin + int((width - 2*horizontalMargin)/nRows) * row; 
+static int computeYcoord(float row, int height) { 
+    return verticalMargin + int((height - 2*verticalMargin)/nRows * row); 
 }
 
 
@@ -37,7 +38,7 @@ GateBoostPage::GateBoostPage(Apvts &apvts) :
     gateReleaseKnob.setTextValueSuffix(" ms");
     
     gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), apvts);
-    gateReleaseKnob.setTextValueSuffix(" ms");
+    gateReturnKnob.setTextValueSuffix(" dB");
 
 
     boostAttackKnob.init(ParamIDs[BITE].toString(), apvts);
@@ -117,8 +118,6 @@ AmplifierPage::AmplifierPage(Apvts &apvts) :
     resonanceKnob("RESONANCE_KNOB_LABEL", "Resonance", this),
     presenceKnob("PRESENCE_KNOB_LABEL", "Presence", this),
 
-    volumeKnob("MASTER_VOLUME_KNOB_LABEL", "Output Level", this),
-
     ampChannelBox("AMP_CHANNEL_BOX_LABEL", "Amp Channel", this),
     toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", this),
     channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config", this)
@@ -139,8 +138,6 @@ AmplifierPage::AmplifierPage(Apvts &apvts) :
  
     resonanceKnob.init(ParamIDs[RESONANCE].toString(), apvts);
     presenceKnob.init(ParamIDs[PRESENCE].toString(), apvts);
-    volumeKnob.init(ParamIDs[MASTER_VOLUME].toString(), apvts);
-    volumeKnob.setTextValueSuffix(" dB");
  
     ampChannelBox.init(ParamIDs[CHANNEL].toString(), apvts);
     toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), apvts);
@@ -216,14 +213,6 @@ void AmplifierPage::resized() {
                                       preampVolumeKnob.getWidth(), 
                                       20);
 
-
-
-
-    volumeKnob.setBounds(computeXcoord(6, width), computeYcoord(1, height), knobSize, knobSize);
-    volumeKnob.label.setBounds(volumeKnob.getX(), 
-                                volumeKnob.getY() - 15, 
-                                volumeKnob.getWidth(), 
-                                20);
 
     ampChannelBox.setBounds(computeXcoord(2, width), computeYcoord(1, height) + 30, 120, 30);
     ampChannelBox.label.setBounds(ampChannelBox.getX(),
@@ -329,7 +318,7 @@ void IRLoaderPage::resized() {
                                       
     irNameLabel.setBounds(irLoadButton.getX(), 
                           irLoadButton.getY() + irLoadButton.getHeight() + 5, 
-                          300, 20);
+                          400, 50);
 }
 
 
@@ -339,7 +328,8 @@ Editor::Editor (Processor& p)
 
     gateBoostPage(p.apvts),
     ampPage(p.apvts),
-    irLoaderPage(p)
+    irLoaderPage(p), 
+    volumePanel(p)
 {
 
 
@@ -350,7 +340,7 @@ Editor::Editor (Processor& p)
     tabs.addTab("IRLoader",   colour, &irLoaderPage,   true);
     
     addAndMakeVisible(tabs);
-
+    addAndMakeVisible(volumePanel);
 
     setSize(1100, 500);
     setResizable(true, true);
@@ -360,14 +350,25 @@ Editor::Editor (Processor& p)
 void Editor::paint (juce::Graphics& g)
 {
 	g.fillAll(juce::Colours::darkgrey);
+    volumePanel.paint(g);
 }
 
 void Editor::resized() {
     
-    tabs.setBounds(getLocalBounds());
+    juce::Rectangle<int> bounds = getLocalBounds();
+    
+    volumePanel.setBounds(bounds.removeFromRight(100));
+
+    gateBoostPage.setBounds(bounds);
+    ampPage.setBounds(bounds);
+    irLoaderPage.setBounds(bounds);
+    
+    tabs.setBounds(bounds);
+    
 
     gateBoostPage.resized();
     ampPage.resized();
+    irLoaderPage.resized();
 }
 
 
@@ -389,6 +390,27 @@ void Knob::init(juce::String paramID, Apvts &apvts) {
         apvts, paramID, *this
     );
 }
+
+
+Slider::Slider(juce::String labelID, juce::String name, juce::Component *comp) 
+: label{labelID, name} 
+{    
+    setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+    setTextBoxStyle(juce::Slider::TextBoxBelow, false, 75, 25);
+    comp->addAndMakeVisible(*this);
+
+    label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    label.setJustificationType(juce::Justification::centred);
+    label.setFont(15.0f);
+    comp->addAndMakeVisible(label);
+}
+
+void Slider::init(juce::String paramID, Apvts &apvts) {
+    sliderAttachment = std::make_unique<SliderAttachment>(
+        apvts, paramID, *this
+    );
+}
+
 
 
 ComboBox::ComboBox(juce::String labelID, juce::String name, juce::Component *comp) 
