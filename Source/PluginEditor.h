@@ -119,7 +119,7 @@ struct IRLoaderPage : public juce::Component {
 struct MasterVolPanel : public juce::Component {
 
     MasterVolPanel(Processor &p) :     
-        volumeSlider("MASTER_VOLUME_KNOB_LABEL", "Output Level", this)
+        volumeSlider("MASTER_VOLUME_KNOB_LABEL", "Master Vol", this)
     {
         volumeSlider.init(ParamIDs[MASTER_VOLUME].toString(), p.apvts);
         volumeSlider.setTextValueSuffix(" dB");
@@ -133,7 +133,7 @@ struct MasterVolPanel : public juce::Component {
 
     void resized() {
     
-        volumeSlider.setBounds(10, 50, getWidth(), 300);
+        volumeSlider.setBounds(0, 50, getWidth(), 300);
         volumeSlider.label.setBounds(volumeSlider.getX(), 
                                     volumeSlider.getY() - 15, 
                                     volumeSlider.getWidth(), 
