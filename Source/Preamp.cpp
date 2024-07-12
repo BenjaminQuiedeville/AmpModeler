@@ -204,8 +204,8 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         }    
     }
             
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
+    waveShaping(bufferL, nSamples);
+    waveShaping(bufferR, nSamples);
     cathodeBypassFilter0.process(bufferL, bufferR, nSamples);
     
     inputFilter.processHighpass(bufferL, bufferR, nSamples);
@@ -228,8 +228,8 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
 
     brightCapFilter.process(bufferL, bufferR, nSamples);
 
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
+    waveShaping(bufferL, nSamples);
+    waveShaping(bufferR, nSamples);
     couplingFilter1.processHighpass(bufferL, bufferR, nSamples);
 
     if (channel == 1) {
@@ -259,8 +259,8 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         }
     }
 
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
+    waveShaping(bufferL, nSamples);
+    waveShaping(bufferR, nSamples);
     cathodeBypassFilter2.process(bufferL, bufferR, nSamples);
     couplingFilter2.processHighpass(bufferL, bufferR, nSamples);
 
@@ -293,8 +293,8 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         }
     }
     
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
+    waveShaping(bufferL, nSamples);
+    waveShaping(bufferR, nSamples);
     cathodeBypassFilter3.process(bufferL, bufferR, nSamples);
     couplingFilter3.processHighpass(bufferL, bufferR, nSamples);
 
@@ -317,8 +317,8 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         }
     }
     
-    waveShaping2(bufferL, nSamples);
-    waveShaping2(bufferR, nSamples);
+    waveShaping(bufferL, nSamples);
+    waveShaping(bufferR, nSamples);
     cathodeBypassFilter4.process(bufferL, bufferR, nSamples);
     couplingFilter4.processHighpass(bufferL, bufferR, nSamples);
 
