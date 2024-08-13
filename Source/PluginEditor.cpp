@@ -263,7 +263,9 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     };
     
     addAndMakeVisible(irLoadButton);
-
+    
+    
+    // @BUG le label se reset sur le nom de l'IR custom au reload du GUI apres avoir reset la default IR 
     irNameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     irNameLabel.setJustificationType(juce::Justification::left);
     irNameLabel.setFont(15.0f);
