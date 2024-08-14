@@ -349,6 +349,8 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
 }
 
 IRLoaderError IRLoader::loadIR(bool initIR) {
+    
+    defaultIR = initIR;
 
     if (initIR) {
         prepareConvolution(baseIR, BASE_IR_SIZE);

@@ -49,6 +49,7 @@ struct IRLoader {
 
     bool bypass = false;
     bool updateIR = false;
+    bool defaultIR = true;
     float *irBuffer = nullptr;
     size_t irBufferSize;
 
@@ -57,7 +58,9 @@ struct IRLoader {
     int overlapAddIndex = 0;
     
     juce::File irFile;
-    
+    juce::Array<juce::File> directoryWavFiles;
+    int indexOfCurrentFile = 0;
+
     float *inputBufferPaddedL = nullptr;
     float *inputBufferPaddedR = nullptr;
     float *inputDftBufferL = nullptr;

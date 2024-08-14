@@ -85,7 +85,6 @@ struct AmplifierPage : public juce::Component {
     Knob resonanceKnob;
     Knob presenceKnob;
 
-
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
     ComboBox channelConfigBox;    
@@ -106,9 +105,12 @@ struct GainStagesPage : public juce::Component {
 struct IRLoaderPage : public juce::Component {
     IRLoaderPage(Processor &audioProcessor);
     void resized();
-    
+        
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
+
+    juce::TextButton nextIRButton {"Next"};
+    juce::TextButton prevIRButton {"Previous"};
 
     juce::TextButton irLoaderDefaultIRButton {"Load default IR"};
     juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};

@@ -177,7 +177,7 @@ struct Processor  : public juce::AudioProcessor,
 
     Sample *sideChainBuffer = nullptr;
     
-    u8 channelConfig = Mono;
+    u8 channelConfig = Mono;    
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

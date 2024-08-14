@@ -300,7 +300,19 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
             juce::File openedFile(irPath);
             irLoader->irFile = openedFile;
             irLoader->loadIR(false);
+            
+            // get the list of files in the same directory
+            juce::File parentFolder = openedFile.getParentDirectory();
+            irLoader->directoryWavFiles = parentFolder.findChildFiles(
+                juce::File::TypesOfFileToFind::findFiles,
+                false, 
+                "*.wav",
+                juce::File::FollowSymlinks::no
+            );
+
+            irLoader->indexOfCurrentFile = irLoader->directoryWavFiles.indexOf(openedFile);            
             DBG("ir file properly loaded from saved state");
+
         } else {
             irLoader->irFile = juce::File();
             irLoader->loadIR(true);

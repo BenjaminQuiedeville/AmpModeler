@@ -238,7 +238,8 @@ void AmplifierPage::resized() {
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     irLoadButton.onClick = [&]() { 
-        auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
+        auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", 
+                                                           juce::File(), "*.wav");
 
         bool fileChoosed = chooser->browseForFileToOpen();
         if (!fileChoosed) { 
@@ -260,12 +261,65 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
                             juce::NotificationType::dontSendNotification);
                             
         audioProcessor.valueTree.setProperty(irPath1, returnedFile.getFullPathName(), nullptr);
+    
+        // get the list of files in the same directory
+        juce::File parentFolder = returnedFile.getParentDirectory();
+        audioProcessor.irLoader->directoryWavFiles = parentFolder.findChildFiles(
+            juce::File::TypesOfFileToFind::findFiles,
+            false, 
+            "*.wav",
+            juce::File::FollowSymlinks::no
+        );
+        
+        audioProcessor.irLoader->indexOfCurrentFile = audioProcessor.irLoader->directoryWavFiles.indexOf(returnedFile);
     };
     
     addAndMakeVisible(irLoadButton);
     
+    nextIRButton.onClick = [&]() {
+        
+        // if the defualt ir is loader, ignore the button
+        if (audioProcessor.irLoader->defaultIR) { return; }
     
-    // @BUG le label se reset sur le nom de l'IR custom au reload du GUI apres avoir reset la default IR 
+        audioProcessor.irLoader->indexOfCurrentFile = (audioProcessor.irLoader->indexOfCurrentFile + 1) % audioProcessor.irLoader->directoryWavFiles.size();
+        
+        juce::File fileToLoad = audioProcessor.irLoader->directoryWavFiles[audioProcessor.irLoader->indexOfCurrentFile];
+        audioProcessor.irLoader->irFile = fileToLoad;
+        IRLoaderError error = audioProcessor.irLoader->loadIR(false);
+
+        if (error == IRLoaderError::Error) { return; }
+    
+        irNameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
+                            juce::NotificationType::dontSendNotification);
+                            
+        audioProcessor.valueTree.setProperty(irPath1, fileToLoad.getFullPathName(), nullptr);        
+    
+    };
+    
+    prevIRButton.onClick = [&]() {
+        
+        if (audioProcessor.irLoader->defaultIR) { return; }
+        
+        audioProcessor.irLoader->indexOfCurrentFile--; 
+        if (audioProcessor.irLoader->indexOfCurrentFile < 0) {
+            audioProcessor.irLoader->indexOfCurrentFile +=  audioProcessor.irLoader->directoryWavFiles.size();
+        }
+        
+        juce::File fileToLoad = audioProcessor.irLoader->directoryWavFiles[audioProcessor.irLoader->indexOfCurrentFile];
+        audioProcessor.irLoader->irFile = fileToLoad;
+        IRLoaderError error = audioProcessor.irLoader->loadIR(false);
+
+        if (error == IRLoaderError::Error) { return; }
+    
+        irNameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
+                            juce::NotificationType::dontSendNotification);
+                            
+        audioProcessor.valueTree.setProperty(irPath1, fileToLoad.getFullPathName(), nullptr);        
+    };
+    
+    addAndMakeVisible(nextIRButton);
+    addAndMakeVisible(prevIRButton);
+    
     irNameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     irNameLabel.setJustificationType(juce::Justification::left);
     irNameLabel.setFont(15.0f);
@@ -273,11 +327,11 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     juce::String irNameText = audioProcessor.irLoader->irFile.getFileNameWithoutExtension();
         
         
-    if (irNameText == "") {
+    if (audioProcessor.irLoader->defaultIR) {
         irNameLabel.setText(defaultIRText,
                             juce::NotificationType::dontSendNotification);        
     } else { 
-        irNameLabel.setText(audioProcessor.irLoader->irFile.getFileNameWithoutExtension(), 
+        irNameLabel.setText(irNameText,
                             juce::NotificationType::dontSendNotification);
     }
     
@@ -321,6 +375,10 @@ void IRLoaderPage::resized() {
     irNameLabel.setBounds(irLoadButton.getX(), 
                           irLoadButton.getY() + irLoadButton.getHeight() + 5, 
                           400, 50);
+
+    nextIRButton.setBounds(computeXcoord(0, width), computeYcoord(1, height), 120, 30);
+    prevIRButton.setBounds(nextIRButton.getX(), nextIRButton.getY() + 50, 120, 30);
+
 }
 
 
