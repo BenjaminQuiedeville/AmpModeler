@@ -270,13 +270,13 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
 
     inputBufferPaddedL          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
     inputBufferPaddedR          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputDftBufferL             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputDftBufferR             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    irDftBuffer                 = (float *)pffft_aligned_malloc(fftSize * sizeof(float));    
+    inputDftBufferL             = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
+    inputDftBufferR             = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
+    irDftBuffer                 = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));    
     convolutionResultBufferL    = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
     convolutionResultBufferR    = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
-    convolutionResultDftBufferL = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    convolutionResultDftBufferR = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    convolutionResultDftBufferL = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
+    convolutionResultDftBufferR = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
     overlapAddBufferL           = (float *)calloc(2 * fftSize, sizeof(float));
     overlapAddBufferR           = (float *)calloc(2 * fftSize, sizeof(float));
     
@@ -290,29 +290,13 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
         inputBufferPaddedL[i] = 0.0f;
         inputBufferPaddedR[i] = 0.0f;
     }
-    
 }
 
-IRLoader::IRLoader() {
-
-    // fftEngine = pffft_new_setup((int)fftSize, PFFFT_REAL);
-
-    // inputBufferPadded          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    // inputDftBuffer             = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    // irDftBuffer                = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    // convolutionResultDftBuffer = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    // convolutionResultBuffer    = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
-    // fftWorkBuffer              = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    // overlapAddBuffer           = (float *)calloc(2 * fftSize, sizeof(float));
-
-    // for (u32 i = 0; i < fftSize; i++) {
-    //     inputBufferPadded[i] = 0.0f;
-    // }    
-}
 
 IRLoader::~IRLoader() {
     deallocateFFTEngine();
 }
+
 
 void IRLoader::init(double _samplerate, size_t _blockSize) {
     samplerate = _samplerate;

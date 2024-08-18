@@ -30,7 +30,6 @@ enum IRLoaderError {
 
 struct IRLoader {
 
-    IRLoader();
     ~IRLoader();
 
     void init(double samplerate, size_t blockSize);

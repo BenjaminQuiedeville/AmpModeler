@@ -237,7 +237,7 @@ void AmplifierPage::resized() {
 
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
-    irLoadButton.onClick = [&]() { 
+    irLoadButton.onClick = [&audioProcessor, this]() { 
         auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", 
                                                            juce::File(), "*.wav");
 
@@ -276,7 +276,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     
     addAndMakeVisible(irLoadButton);
     
-    nextIRButton.onClick = [&]() {
+    nextIRButton.onClick = [&audioProcessor, this]() {
         
         // if the defualt ir is loader, ignore the button
         if (audioProcessor.irLoader->defaultIR) { return; }
@@ -296,7 +296,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     
     };
     
-    prevIRButton.onClick = [&]() {
+    prevIRButton.onClick = [&audioProcessor, this]() {
         
         if (audioProcessor.irLoader->defaultIR) { return; }
         
@@ -337,7 +337,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     
     addAndMakeVisible(irNameLabel);
 
-    irLoaderDefaultIRButton.onClick = [&]() {
+    irLoaderDefaultIRButton.onClick = [&audioProcessor, this]() {
         IRLoaderError error = audioProcessor.irLoader->loadIR(true);
 
         if (error == IRLoaderError::Error) { return; }
@@ -353,7 +353,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     irLoaderBypassToggle.setToggleState(audioProcessor.irLoader->bypass, 
                                         juce::NotificationType::dontSendNotification);
-    irLoaderBypassToggle.onClick = [&]() {
+    irLoaderBypassToggle.onClick = [&audioProcessor, this]() {
         audioProcessor.irLoader->bypass = irLoaderBypassToggle.getToggleState();
     };
 
