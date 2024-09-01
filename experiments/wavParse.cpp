@@ -38,7 +38,16 @@ struct ChunkData {
     int32_t signalSizeBytes;
 };
 
-void wavParse(FILE *wavFile, Signal *outSignal) {
+static uint64_t wavParse(std::string &filepath, Signal *outSignal) {
+
+    FILE *wavFile = nullptr;
+    
+    fopen_s(&wavFile, filepath.data(), "rb");
+
+    if (ferror(wavFile)) {
+        fclose(wavFile);
+        return 0;
+    }
 
     ChunkData chunk_data;
 
@@ -46,6 +55,8 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
     int8_t buffer[4] = {0};
     
     fread(chunk_data.riffString, 1, 4, wavFile);
+    assert(memcmp(chunk_data.riffString, "RIFF", 4) == 0);
+
     fread((int8_t *)(&chunk_data.fileSize), 1, 4, wavFile);
     
     int8_t *file_data = (int8_t *)malloc(chunk_data.fileSize);
@@ -68,10 +79,10 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
     memcpy(chunk_data.subChunk1ID, file_data + file_data_index, 4);
     file_data_index += 4;
 
-    assert(memcmp(chunk_data.subChunk1ID, "fmt ", 4) == 0);
 
     chunk_data.subChunk1Size = *(int32_t *)(file_data + file_data_index); 
-    file_data_index += sizeof(chunk_data.subChunk1Size);
+    file_data_index += sizeof(chunk_data.subChunk1Size);    
+    assert(memcmp(chunk_data.subChunk1ID, "fmt ", 4) == 0);
     
     chunk_data.audioFormat = *(int16_t *)(file_data + file_data_index); 
     file_data_index += sizeof(chunk_data.audioFormat);
@@ -91,7 +102,12 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
     chunk_data.bitsPerSample = *(int16_t *)(file_data + file_data_index); 
     file_data_index += sizeof(chunk_data.bitsPerSample);
         
-    assert(chunk_data.numChannels == 1);
+    assert(chunk_data.subChunk1Size == 16);
+    assert(chunk_data.audioFormat == 1);
+    assert(chunk_data.numChannels == 1); // only mono signals
+    assert(chunk_data.byteRate == chunk_data.samplerate * chunk_data.numChannels * chunk_data.bitsPerSample / 8);
+    assert(chunk_data.blockAlign == chunk_data.numChannels * chunk_data.bitsPerSample / 8);    
+        
     printf("subChunk1ID = %4s \n", chunk_data.subChunk1ID);
     printf("subChunk1Size = %d \n", chunk_data.subChunk1Size);
     printf("audioFormat = %d \n", chunk_data.audioFormat);
@@ -102,18 +118,9 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
     printf("blockAlign = %d \n", chunk_data.blockAlign);
     printf("bitsPerSample = %d \n", chunk_data.bitsPerSample);
 
-    if (chunk_data.byteRate != (chunk_data.samplerate * chunk_data.numChannels * chunk_data.bitsPerSample/8)) {
-        printf("byte Rate error");
-    }
-
-    if (chunk_data.blockAlign != (chunk_data.numChannels * chunk_data.bitsPerSample/8)) {
-        printf("blockAlign Rate error");
-    }
-
     while (memcmp(file_data + file_data_index, "data", 4)) {
         file_data_index++;
     }
-    
     memcpy(chunk_data.subChunk2ID, file_data + file_data_index, 4);
     file_data_index += 4;
     
@@ -123,7 +130,7 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
 
     chunk_data.signalSizeBytes = *(int32_t*)(file_data + file_data_index);
     file_data_index += sizeof(chunk_data.signalSizeBytes);
-    
+        
     printf("signalSizeBytes = %d \n", chunk_data.signalSizeBytes);
     
     size_t sampleSizeBytes = chunk_data.blockAlign/chunk_data.numChannels;
@@ -209,6 +216,7 @@ void wavParse(FILE *wavFile, Signal *outSignal) {
     printf("\n");    
 
     free(file_data);
+    fclose(wavFile);
 
     return;
 }
@@ -222,15 +230,12 @@ int main(int argc, char **argv) {
     
     Signal signal;
 
-    FILE *wavFile = fopen(filepath.data(), "rb");
 
-    wavParse(wavFile, &signal);
+    wavParse(filepath, &signal);
 
     for (size_t i = 0; i < 50; i++) {
         printf("%.3f ", signal.data[i]);
     }
-
-    fclose(wavFile);
 
     return 0;
 }
