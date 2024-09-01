@@ -60,7 +60,7 @@ struct Biquad {
                 b1 = (Sample)(2.0 * b0);
                 b2 = (Sample)(b0);
                 a1 = (Sample)(-2.0 * cosw0 * a0inv);
-                    a2 = (Sample)((1.0 - alpha) * a0inv);
+                a2 = (Sample)((1.0 - alpha) * a0inv);
                 break;
     
             case BIQUAD_HIGHPASS:

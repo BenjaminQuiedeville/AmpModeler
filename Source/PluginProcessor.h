@@ -25,10 +25,10 @@
     #define JucePlugin_Name "AmpModeler"
 #endif
 
-#define BOOST_BITE_Q     0.25
+const float BOOST_BITE_Q        = 0.25f;
 
-#define RESONANCE_FREQUENCY 170.0
-#define PRESENCE_FREQUENCY  500.0
+const float RESONANCE_FREQUENCY = 150.0f;
+const float PRESENCE_FREQUENCY  = 500.0f;
 
 
 /*
