@@ -38,7 +38,7 @@ struct ChunkData {
     int32_t signalSizeBytes;
 };
 
-static uint64_t wavParse(std::string &filepath, Signal *outSignal) {
+static void wavParse(std::string &filepath, Signal *outSignal) {
 
     FILE *wavFile = nullptr;
     
@@ -46,7 +46,7 @@ static uint64_t wavParse(std::string &filepath, Signal *outSignal) {
 
     if (ferror(wavFile)) {
         fclose(wavFile);
-        return 0;
+        return;
     }
 
     ChunkData chunk_data;
