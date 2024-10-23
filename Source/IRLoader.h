@@ -60,15 +60,11 @@ struct IRLoader {
     juce::Array<juce::File> directoryWavFiles;
     int indexOfCurrentFile = 0;
 
-    float *inputBufferPaddedL = nullptr;
-    float *inputBufferPaddedR = nullptr;
-    float *inputDftBufferL = nullptr;
-    float *inputDftBufferR = nullptr;
+    float *inputBufferPadded = nullptr;
+    float *inputDftBuffer = nullptr;
     float *irDftBuffer = nullptr;
-    float *convolutionResultBufferL = nullptr;
-    float *convolutionResultBufferR = nullptr;
-    float *convolutionResultDftBufferL = nullptr;
-    float *convolutionResultDftBufferR = nullptr;
+    float *convolutionResultBuffer = nullptr;
+    float *convolutionResultDftBuffer = nullptr;
     float *overlapAddBufferL = nullptr;
     float *overlapAddBufferR = nullptr;
     float *fftWorkBuffer = nullptr;

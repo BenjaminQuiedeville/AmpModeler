@@ -73,17 +73,10 @@ struct TonestackComponents {
 
 struct Tonestack {
 
-    Tonestack() {
-    
-        comps = new TonestackComponents();
-        ctes  = new TonestackConstants();
+    Tonestack() {    
         setModel(EnglSavage);
     }
 
-    ~Tonestack() {
-        delete comps;
-        delete ctes;
-    }
 
     void prepareToPlay(double _samplerate) {
 
@@ -185,9 +178,9 @@ struct Tonestack {
     Sample y3R = 0.0f;
 
     TonestackModel model;
-    TonestackComponents *comps;
+    TonestackComponents comps;
 
-    TonestackConstants *ctes;
+    TonestackConstants ctes;
 };
 
 #endif // TONE_STACK_H

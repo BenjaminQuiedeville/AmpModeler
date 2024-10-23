@@ -60,9 +60,6 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
     }
     
     ChunkData chunk_data;
-
-    int8_t temp[1] = {0};
-    int8_t buffer[4] = {0};
     
     fread(chunk_data.riffString, 1, 4, wavFile);
 
@@ -200,7 +197,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
 
         int8_t sampleChar[2] = {0x00, 0x00};
         
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
             
             memcpy(sampleChar, signal_ptr + byte_counter, 2);
             byte_counter += 2;
@@ -212,7 +209,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
                 sampleInt |= ~0xFFFF;
             }            
 
-            float sample = sampleInt / (float)_I16_MAX / 2.0;
+            float sample = sampleInt / (float)_I16_MAX * 0.5f;
 
             (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
@@ -221,12 +218,12 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
     } else if (chunk_data.bitsPerSample == 24) {
     
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
             
             memcpy(sampleChar, signal_ptr + byte_counter, 3);
             byte_counter += 3;
 
-            int64_t mask = 0x01 << (chunk_data.bitsPerSample - 1);
+            int64_t mask = 0x01i64 << (chunk_data.bitsPerSample - 1);
             // uint32_t mask = 0x800000;
             int32_t sampleInt = *(int32_t *)sampleChar;
 
@@ -234,7 +231,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
                 sampleInt |= ~0xFFFFFF;
             }
 
-            float sample = sampleInt / BITS_24_MAX / 2.0;
+            float sample = (float)(sampleInt / BITS_24_MAX * 0.5f);
 
             (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
@@ -244,19 +241,19 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
         
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
 
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
 
             memcpy(sampleChar, signal_ptr + byte_counter, 4);
             byte_counter += 4;
             
-            int64_t mask = 0x01 << (chunk_data.bitsPerSample - 1);
+            int64_t mask = 0x01i64 << (chunk_data.bitsPerSample - 1);
             int32_t sampleInt = *(int32_t *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFFFFFF;
             }
 
-            float sample = sampleInt / (float)_I32_MAX / 2.0;
+            float sample = sampleInt / (float)_I32_MAX * 0.5f;
 
             (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
@@ -288,15 +285,11 @@ void IRLoader::deallocateFFTEngine() {
         pffft_destroy_setup(fftEngine);
     }
     
-    pffft_aligned_free(inputBufferPaddedL);
-    pffft_aligned_free(inputBufferPaddedR);
-    pffft_aligned_free(inputDftBufferL);
-    pffft_aligned_free(inputDftBufferR);
+    pffft_aligned_free(inputBufferPadded);
+    pffft_aligned_free(inputDftBuffer);
     pffft_aligned_free(irDftBuffer);
-    pffft_aligned_free(convolutionResultBufferL);
-    pffft_aligned_free(convolutionResultBufferR);
-    pffft_aligned_free(convolutionResultDftBufferL);
-    pffft_aligned_free(convolutionResultDftBufferR);
+    pffft_aligned_free(convolutionResultBuffer);
+    pffft_aligned_free(convolutionResultDftBuffer);
     pffft_aligned_free(fftWorkBuffer);
     free(overlapAddBufferL);
     free(overlapAddBufferR);
@@ -313,15 +306,11 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
     
     fftEngine = pffft_new_setup((int)fftSize, PFFFT_REAL);
 
-    inputBufferPaddedL          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputBufferPaddedR          = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
-    inputDftBufferL             = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
-    inputDftBufferR             = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
+    inputBufferPadded           = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
+    inputDftBuffer              = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
     irDftBuffer                 = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));    
-    convolutionResultBufferL    = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
-    convolutionResultBufferR    = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
-    convolutionResultDftBufferL = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
-    convolutionResultDftBufferR = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
+    convolutionResultBuffer     = (float *)pffft_aligned_malloc(2 * fftSize * sizeof(float));
+    convolutionResultDftBuffer  = (float *)pffft_aligned_malloc((fftSize + 2) * sizeof(float));
     overlapAddBufferL           = (float *)calloc(2 * fftSize, sizeof(float));
     overlapAddBufferR           = (float *)calloc(2 * fftSize, sizeof(float));
     
@@ -332,8 +321,8 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
     }
 
     for (u32 i = 0; i < fftSize; i++) {
-        inputBufferPaddedL[i] = 0.0f;
-        inputBufferPaddedR[i] = 0.0f;
+        inputBufferPadded[i] = 0.0f;
+        inputBufferPadded[i] = 0.0f;
     }
 }
 
@@ -408,25 +397,25 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     if (bypass) { return; }
     
     for (size_t i = 0; i < nSamples; i++) {
-        inputBufferPaddedL[i] = bufferL[i];
+        inputBufferPadded[i] = bufferL[i];
     }
 
-    pffft_transform(fftEngine, inputBufferPaddedL, inputDftBufferL, fftWorkBuffer, PFFFT_FORWARD);
+    pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
 
     for (size_t i = 0; i < fftSize; i++) {
-        convolutionResultDftBufferL[i] = 0.0f;
+        convolutionResultDftBuffer[i] = 0.0f;
     }
 
-    pffft_zconvolve_accumulate(fftEngine, inputDftBufferL, irDftBuffer, convolutionResultDftBufferL, 1.0f);
+    pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
 
-    pffft_transform(fftEngine, convolutionResultDftBufferL, convolutionResultBufferL, fftWorkBuffer, PFFFT_BACKWARD);
+    pffft_transform(fftEngine, convolutionResultDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
 
     size_t overlapAddBufferSize = 2 * fftSize;
 
     // mettre les samples dans l'overlap add
     for (size_t i = 0; i < convolutionResultSize; i++) {
         size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
-        overlapAddBufferL[index] += convolutionResultBufferL[i];
+        overlapAddBufferL[index] += convolutionResultBuffer[i];
     }
 
     // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
@@ -441,25 +430,25 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     if (bufferR) {
     
         for (size_t i = 0; i < nSamples; i++) {
-            inputBufferPaddedR[i] = bufferR[i];
+            inputBufferPadded[i] = bufferR[i];
         }
     
-        pffft_transform(fftEngine, inputBufferPaddedR, inputDftBufferR, fftWorkBuffer, PFFFT_FORWARD);
+        pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
     
         for (size_t i = 0; i < fftSize; i++) {
-            convolutionResultDftBufferR[i] = 0.0f;
+            convolutionResultDftBuffer[i] = 0.0f;
         }
     
-        pffft_zconvolve_accumulate(fftEngine, inputDftBufferR, irDftBuffer, convolutionResultDftBufferR, 1.0f);
+        pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
     
-        pffft_transform(fftEngine, convolutionResultDftBufferR, convolutionResultBufferR, fftWorkBuffer, PFFFT_BACKWARD);
+        pffft_transform(fftEngine, convolutionResultDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
     
         overlapAddBufferSize = 2 * fftSize;
     
         // mettre les samples dans l'overlap add
         for (size_t i = 0; i < convolutionResultSize; i++) {
             size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
-            overlapAddBufferR[index] += convolutionResultBufferR[i];
+            overlapAddBufferR[index] += convolutionResultBuffer[i];
         }
     
         // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
