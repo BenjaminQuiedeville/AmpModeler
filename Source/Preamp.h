@@ -57,7 +57,7 @@ struct Preamp {
     FirstOrderShelfFilter cathodeBypassFilter3 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter4 {lowshelf};
 
-    OverSampler *overSampler;
+    OverSampler overSampler;
     Sample *upSampledBlockL = nullptr;
     Sample *upSampledBlockR = nullptr;
 

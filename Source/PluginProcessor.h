@@ -163,10 +163,10 @@ struct Processor  : public juce::AudioProcessor,
     OnepoleFilter tightFilter;
     Biquad biteFilter {BIQUAD_PEAK};
 
-    NoiseGate *noiseGate;
-    Preamp *preamp;
-    Tonestack *toneStack;
-    IRLoader *irLoader;
+    NoiseGate noiseGate;
+    Preamp preamp;
+    Tonestack toneStack;
+    IRLoader irLoader;
 
     FirstOrderShelfFilter resonanceFilter {lowshelf};
     FirstOrderShelfFilter presenceFilter {highshelf};

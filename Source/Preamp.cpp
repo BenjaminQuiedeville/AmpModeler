@@ -7,24 +7,10 @@
 #include "Preamp.h"
 #include "data/waveshape_table.inc"
 
-static const Sample STAGE_0_GAIN = (Sample)dbtoa(35.0) * 0.2f;
-static const Sample STAGE_1_GAIN = (Sample)dbtoa(35.0) * 0.9f;
-static const Sample STAGE_2_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-static const Sample STAGE_3_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
-
-static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-32.0);
-static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
-static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
-
-
-
 Preamp::Preamp() {
-    overSampler = new OverSampler();
 }
 
 Preamp::~Preamp() {
-    delete overSampler; 
 
     if (upSampledBlockL) { free(upSampledBlockL); }
     if (upSampledBlockR) { free(upSampledBlockR); }
@@ -66,16 +52,16 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     cathodeBypassFilter3.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter4.setCoefficients(200.0, -3.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    overSampler->upSampleFilter1.prepareToPlay();
-    overSampler->upSampleFilter2.prepareToPlay();
-    overSampler->downSampleFilter1.prepareToPlay();
-    overSampler->downSampleFilter2.prepareToPlay();
+    overSampler.upSampleFilter1.prepareToPlay();
+    overSampler.upSampleFilter2.prepareToPlay();
+    overSampler.downSampleFilter1.prepareToPlay();
+    overSampler.downSampleFilter2.prepareToPlay();
 
     // earlevel.com/main/2016/09/29/cascading-filters
-    overSampler->upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler->upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler->downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler->downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     if (upSampledBlockL) {
         upSampledBlockL = (Sample *)realloc(upSampledBlockL, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample));
@@ -190,6 +176,15 @@ static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
 
 void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
+    static const Sample STAGE_0_GAIN = (Sample)dbtoa(35.0) * 0.2f;
+    static const Sample STAGE_1_GAIN = (Sample)dbtoa(35.0) * 0.9f;
+    static const Sample STAGE_2_GAIN = (Sample)dbtoa(35.0) * 0.5f;
+    static const Sample STAGE_3_GAIN = (Sample)dbtoa(35.0) * 0.5f;
+    static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
+    
+    static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
+    static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
+ 
     u32 index = 0;
     
     // Stage 0
@@ -336,7 +331,9 @@ void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
 
 
 void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
-    
+
+    static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-32.0);
+
     u32 blockSize = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
     
     // upsampling
@@ -354,8 +351,8 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         }    
     }
 
-    overSampler->upSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);    
-    overSampler->upSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);    
+    overSampler.upSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);    
+    overSampler.upSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);    
     
     //processing
     processGainStages(upSampledBlockL, upSampledBlockR, blockSize);
@@ -378,8 +375,8 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     // downsampling
     assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
     
-    overSampler->downSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);
-    overSampler->downSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);
+    overSampler.downSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);
+    overSampler.downSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);
 
     if (bufferR) {
         for (u32 i = 0; i < nSamples; i++) {

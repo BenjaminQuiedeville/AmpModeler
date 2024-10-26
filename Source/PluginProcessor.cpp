@@ -25,11 +25,6 @@ valueTree(irPathTree),
 apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
 {
     
-    noiseGate = new NoiseGate();
-    preamp    = new Preamp();
-    toneStack = new Tonestack();
-    irLoader  = new IRLoader();
-
     for (u8 i = 0; i < N_PARAMS; i++) {
         apvts.addParameterListener(ParamIDs[i], this);
     }
@@ -45,11 +40,6 @@ Processor::~Processor() {
     for (u8 i = 0; i < N_PARAMS; i++) {
         apvts.removeParameterListener(ParamIDs[i], this);
     }
-
-    delete noiseGate;
-    delete preamp;
-    delete toneStack;
-    delete irLoader;
 
     if (sideChainBuffer) {
         free(sideChainBuffer);
@@ -133,17 +123,17 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     tightFilter.prepareToPlay();
     biteFilter.prepareToPlay();
     
-    noiseGate->prepareToPlay(sampleRate);
+    noiseGate.prepareToPlay(sampleRate);
 
-    preamp->prepareToPlay(sampleRate, samplesPerBlock);
+    preamp.prepareToPlay(sampleRate, samplesPerBlock);
 
     masterVolume.init(0.0);
 
     
-    toneStack->prepareToPlay(sampleRate);
-    toneStack->setModel(EnglSavage);
+    toneStack.prepareToPlay(sampleRate);
+    toneStack.setModel(EnglSavage); // change to current selected model
     
-    irLoader->init(sampleRate, samplesPerBlock);
+    irLoader.init(sampleRate, samplesPerBlock);
 
     if (!sideChainBuffer) {
         sideChainBuffer = (Sample *)calloc(samplesPerBlock,  sizeof(Sample));
@@ -229,13 +219,13 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
     biteFilter.process(audioPtrL, audioPtrR, numSamples);
     
-    preamp->process(audioPtrL, audioPtrR, numSamples);
-    toneStack->process(audioPtrL, audioPtrR, numSamples);
+    preamp.process(audioPtrL, audioPtrR, numSamples);
+    toneStack.process(audioPtrL, audioPtrR, numSamples);
     
     resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
     presenceFilter.process(audioPtrL, audioPtrR, numSamples);
         
-    irLoader->process(audioPtrL, audioPtrR, numSamples);
+    irLoader.process(audioPtrL, audioPtrR, numSamples);
 
     if (audioPtrR) {
         for (size_t i = 0; i < numSamples; i++) {
@@ -250,7 +240,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
         
 
-    noiseGate->process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+    noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
 
     if (channelConfig == Mono) {
         // copy left channel into right channel if processing is in mono
@@ -298,24 +288,24 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
         
         if (irPath.endsWith(".wav")){
             juce::File openedFile(irPath);
-            irLoader->irFile = openedFile;
-            irLoader->loadIR(false);
+            irLoader.irFile = openedFile;
+            irLoader.loadIR(false);
             
             // get the list of files in the same directory
             juce::File parentFolder = openedFile.getParentDirectory();
-            irLoader->directoryWavFiles = parentFolder.findChildFiles(
+            irLoader.directoryWavFiles = parentFolder.findChildFiles(
                 juce::File::TypesOfFileToFind::findFiles,
                 false, 
                 "*.wav",
                 juce::File::FollowSymlinks::no
             );
 
-            irLoader->indexOfCurrentFile = irLoader->directoryWavFiles.indexOf(openedFile);            
+            irLoader.indexOfCurrentFile = irLoader.directoryWavFiles.indexOf(openedFile);            
             DBG("ir file properly loaded from saved state");
 
         } else {
-            irLoader->irFile = juce::File();
-            irLoader->loadIR(true);
+            irLoader.irFile = juce::File();
+            irLoader.loadIR(true);
             DBG("could not load the stored ir file");
         }
         
@@ -341,20 +331,20 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         float thresh     = *apvts.getRawParameterValue(ParamIDs[GATE_THRESH]);
         float hysteresis = *apvts.getRawParameterValue(ParamIDs[GATE_RETURN]);
     
-        noiseGate->threshold  = dbtoa(thresh);
-        noiseGate->hysteresis = newValue;
-        noiseGate->returnGain = dbtoa(thresh - hysteresis); 
+        noiseGate.threshold  = dbtoa(thresh);
+        noiseGate.hysteresis = newValue;
+        noiseGate.returnGain = dbtoa(thresh - hysteresis); 
             
         return;
     }
     
     if (id == ParamIDs[GATE_ATTACK]) {
-        noiseGate->attackTimeMs = newValue;
+        noiseGate.attackTimeMs = newValue;
         return;
     }
     
     if (id == ParamIDs[GATE_RELEASE]) {
-        noiseGate->releaseTimeMs = newValue;
+        noiseGate.releaseTimeMs = newValue;
         return;
     }
     
@@ -375,17 +365,17 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[INPUT_FILTER]) {
-        preamp->inputFilter.setCoefficients(newValue, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+        preamp.inputFilter.setCoefficients(newValue, samplerate*PREAMP_UP_SAMPLE_FACTOR);
         return;
     }
 
     if (id == ParamIDs[PREAMP_GAIN]) {
         auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
-        preamp->preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
                                   SMOOTH_PARAM_TIME, 
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
-        preamp->brightCapFilter.setCoefficients(
+        preamp.brightCapFilter.setCoefficients(
             750.0, 
             scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
             samplerate*PREAMP_UP_SAMPLE_FACTOR
@@ -396,13 +386,13 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     if (id == ParamIDs[CHANNEL]) {
         
-        preamp->channel = (u8)newValue;
+        preamp.channel = (u8)newValue;
         return;
     }
 
     if (id == ParamIDs[PREAMP_VOLUME]) {
 
-        preamp->postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
+        preamp.postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
 
         return;
     }        
@@ -414,14 +404,14 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     {
         TonestackModel model = static_cast<TonestackModel>((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]));
         
-        if (toneStack->model != model) {
-            toneStack->setModel(model);
+        if (toneStack.model != model) {
+            toneStack.setModel(model);
         }
         
         float bassParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
         float trebbleParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
         float midParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
-        toneStack->updateCoefficients(trebbleParam/10.0f, midParam/10.0f, bassParam/10.0f, samplerate);
+        toneStack.updateCoefficients(trebbleParam/10.0f, midParam/10.0f, bassParam/10.0f, samplerate);
         return;
     }
 
