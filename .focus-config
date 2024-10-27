@@ -29,7 +29,7 @@ libs/juce/examples
 [[build commands]]
 build_working_dir:      %PROJECT_CONFIG_DIR%
 open_panel_on_build:    true  #  <- any settings specified here will apply to all commands unless overridden
-close_panel_on_success: false
+close_panel_on_success: true
 
 [Debug Build]   # <- command name. Can be arbitrary
 build_command:          cmake --build build --config Debug  # should be an executable or a script

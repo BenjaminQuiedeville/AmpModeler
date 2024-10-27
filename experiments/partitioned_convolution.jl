@@ -5,6 +5,11 @@ using GLMakie
 pad(vector :: Vector, target_length :: Integer)  = [vector; zeros(target_length - length(vector))]
 spectrum(signal :: Vector) = 20 .* log10.(abs.(rfft(signal)))
 
+# un delay de m samples équivaut à altérer la dft par : 
+# for bin in dft
+#     bin *= exp(-j * 2pi/fft_size * m * bin_index)
+# end  
+
 function main() :: Nothing
 
     GLMakie.closeall()

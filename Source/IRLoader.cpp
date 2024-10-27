@@ -329,6 +329,8 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
 
 IRLoader::~IRLoader() {
     deallocateFFTEngine();
+    
+    if (irBuffer) { free(irBuffer); }
 }
 
 
