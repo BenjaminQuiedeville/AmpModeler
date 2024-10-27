@@ -36,7 +36,7 @@ struct IRLoader {
 
     void deallocateFFTEngine();
     void reallocFFTEngine(u64 newSize);
-    IRLoaderError loadIR(bool initIR);
+    IRLoaderError loadIR();
     void prepareConvolution(float* irPtr, size_t irSize);
     void process(float *bufferL, float *bufferR, size_t nSamples);
 

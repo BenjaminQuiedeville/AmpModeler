@@ -337,7 +337,7 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
     overlapAddIndex = 0;
     blockSize = _blockSize;
 
-    loadIR(true);
+    loadIR();
 }
 
 void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
@@ -366,11 +366,9 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     return;
 }
 
-IRLoaderError IRLoader::loadIR(bool initIR) {
+IRLoaderError IRLoader::loadIR() {
     
-    defaultIR = initIR;
-
-    if (initIR) {
+    if (defaultIR) {
         prepareConvolution(baseIR, BASE_IR_SIZE);
         return IRLoaderError::OK;
     }

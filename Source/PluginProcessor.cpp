@@ -29,8 +29,8 @@ apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
         apvts.addParameterListener(ParamIDs[i], this);
     }
     
-    valueTree.setProperty(irPath1, "C:/", nullptr);
-    valueTree.setProperty(irPath2, "C:/", nullptr);
+    valueTree.setProperty(irPath1, "", nullptr);
+    valueTree.setProperty(irPath2, "", nullptr);
     
     apvts.state.appendChild(valueTree, nullptr);
 }
@@ -284,12 +284,14 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
         apvts.state = importedTree;
         valueTree = apvts.state.getChildWithName(irPathTree);
                 
+        initParameters();
+        
         juce::String irPath = valueTree.getProperty(irPath1);
         
         if (irPath.endsWith(".wav")){
             juce::File openedFile(irPath);
             irLoader.irFile = openedFile;
-            irLoader.loadIR(false);
+            irLoader.loadIR();
             
             // get the list of files in the same directory
             juce::File parentFolder = openedFile.getParentDirectory();
@@ -305,11 +307,10 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
 
         } else {
             irLoader.irFile = juce::File();
-            irLoader.loadIR(true);
+            irLoader.loadIR();
             DBG("could not load the stored ir file");
         }
         
-        initParameters();
     }
 }
 
@@ -424,6 +425,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         presenceFilter.setCoefficients(PRESENCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 18.0f), samplerate);
         return;
     }
+    
+    if (id == ParamIDs[BYPASS_IR]) {
+        irLoader.bypass = (bool)newValue;
+    }
 
     if (id == ParamIDs[MASTER_VOLUME]) {
         masterVolume.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
@@ -531,6 +536,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), 5.0f, attributes
     ));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[BYPASS_IR].toString(), "Bypass IR Loader", 
+        false
+    ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MASTER_VOLUME].toString(), "Master Vol",

@@ -74,10 +74,12 @@ enum Params {
     PREAMP_VOLUME,
     RESONANCE,
     PRESENCE,
+    BYPASS_IR,
     MASTER_VOLUME,
     CHANNEL_CONFIG,
     N_PARAMS
 };
+
 
 static std::vector<juce::Identifier> ParamIDs = {
     "GATE_THRESH",
@@ -97,6 +99,7 @@ static std::vector<juce::Identifier> ParamIDs = {
     "PREAMP_VOLUME",
     "RESONANCE",
     "PRESENCE",
+    "BYPASS_IR",
     "MASTER_VOLUME",
     "CHANNEL_CONFIG"
 };

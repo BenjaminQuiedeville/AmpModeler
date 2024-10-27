@@ -21,7 +21,7 @@ const int nCols = 6;
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;
-
+using ButtonAttachment = Apvts::ButtonAttachment;
 
 struct Knob : public juce::Slider {
 
@@ -112,8 +112,10 @@ struct IRLoaderPage : public juce::Component {
     juce::TextButton nextIRButton {"Next"};
     juce::TextButton prevIRButton {"Previous"};
 
-    juce::TextButton irLoaderDefaultIRButton {"Load default IR"};
-    juce::ToggleButton irLoaderBypassToggle {"Bypass IRloader"};
+    juce::TextButton defaultIRButton {"Load default IR"};
+    
+    juce::ToggleButton bypassToggle {"Bypass IRloader"};
+    std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 
 };
 

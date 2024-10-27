@@ -237,6 +237,10 @@ void AmplifierPage::resized() {
 
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
+    bypassButtonAttachment = std::make_unique<ButtonAttachment>(
+        audioProcessor.apvts, ParamIDs[BYPASS_IR].toString(), bypassToggle
+    );
+
     irLoadButton.onClick = [&audioProcessor, this]() { 
         auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", 
                                                            juce::File(), "*.wav");
@@ -253,7 +257,8 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         }
 
         audioProcessor.irLoader.irFile = returnedFile;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(false); 
+        audioProcessor.irLoader.defaultIR = false;
+        IRLoaderError error = audioProcessor.irLoader.loadIR(); 
         
         if (error == IRLoaderError::Error) { return; }
     
@@ -285,7 +290,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         
         juce::File fileToLoad = audioProcessor.irLoader.directoryWavFiles[audioProcessor.irLoader.indexOfCurrentFile];
         audioProcessor.irLoader.irFile = fileToLoad;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(false);
+        IRLoaderError error = audioProcessor.irLoader.loadIR();
 
         if (error == IRLoaderError::Error) { return; }
     
@@ -307,7 +312,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         
         juce::File fileToLoad = audioProcessor.irLoader.directoryWavFiles[audioProcessor.irLoader.indexOfCurrentFile];
         audioProcessor.irLoader.irFile = fileToLoad;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(false);
+        IRLoaderError error = audioProcessor.irLoader.loadIR();
 
         if (error == IRLoaderError::Error) { return; }
     
@@ -337,8 +342,9 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     
     addAndMakeVisible(irNameLabel);
 
-    irLoaderDefaultIRButton.onClick = [&audioProcessor, this]() {
-        IRLoaderError error = audioProcessor.irLoader.loadIR(true);
+    defaultIRButton.onClick = [&audioProcessor, this]() {
+        audioProcessor.irLoader.defaultIR = true;
+        IRLoaderError error = audioProcessor.irLoader.loadIR();
 
         if (error == IRLoaderError::Error) { return; }
     
@@ -348,16 +354,16 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         audioProcessor.valueTree.setProperty(irPath1, "", nullptr);
     };
     
-    addAndMakeVisible(irLoaderDefaultIRButton);
+    addAndMakeVisible(defaultIRButton);
 
 
-    irLoaderBypassToggle.setToggleState(audioProcessor.irLoader.bypass, 
+    bypassToggle.setToggleState(audioProcessor.irLoader.bypass, 
                                         juce::NotificationType::dontSendNotification);
-    irLoaderBypassToggle.onClick = [&audioProcessor, this]() {
-        audioProcessor.irLoader.bypass = irLoaderBypassToggle.getToggleState();
+    bypassToggle.onClick = [&audioProcessor, this]() {
+        audioProcessor.irLoader.bypass = bypassToggle.getToggleState();
     };
 
-    addAndMakeVisible(irLoaderBypassToggle);
+    addAndMakeVisible(bypassToggle);
 
 }
 
@@ -368,8 +374,8 @@ void IRLoaderPage::resized() {
 
     irLoadButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 50);
 
-    irLoaderBypassToggle.setBounds(computeXcoord(1, width), computeYcoord(0, height) - 20, 120, 30);
-    irLoaderDefaultIRButton.setBounds(irLoaderBypassToggle.getX(), irLoaderBypassToggle.getY() + 40,
+    bypassToggle.setBounds(computeXcoord(1, width), computeYcoord(0, height) - 20, 120, 30);
+    defaultIRButton.setBounds(bypassToggle.getX(), bypassToggle.getY() + 40,
                                       120, 30);
                                       
     irNameLabel.setBounds(irLoadButton.getX(), 
