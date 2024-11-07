@@ -1,4 +1,4 @@
-/*
+ /*
   ==============================================================================
     Author:  Benjamin Quiedeville 
   ==============================================================================
@@ -12,8 +12,7 @@ Preamp::Preamp() {
 
 Preamp::~Preamp() {
 
-    if (upSampledBlockL) { free(upSampledBlockL); }
-    if (upSampledBlockR) { free(upSampledBlockR); }
+    if (upBufferL) { free(upBufferL); }
 }
 
 void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
@@ -58,21 +57,18 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     overSampler.downSampleFilter2.prepareToPlay();
 
     // earlevel.com/main/2016/09/29/cascading-filters
-    overSampler.upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler.upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, atodb(PREAMP_UP_SAMPLE_FACTOR), samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    overSampler.upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler.downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    if (upSampledBlockL) {
-        upSampledBlockL = (Sample *)realloc(upSampledBlockL, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample));
+
+    if (upBufferL) {
+        upBufferL = (Sample *)realloc(upBufferL, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample) * 2);
+        upBufferR = upBufferL + blockSize * PREAMP_UP_SAMPLE_FACTOR;
     } else {
-        upSampledBlockL = (Sample *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(Sample));
-    }
-    
-    if (upSampledBlockR) {
-        upSampledBlockR = (Sample *)realloc(upSampledBlockR, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample));
-    } else {
-        upSampledBlockR = (Sample *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR, sizeof(Sample));
+        upBufferL = (Sample *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR * 2,  sizeof(Sample));
+        upBufferR = upBufferL + blockSize * PREAMP_UP_SAMPLE_FACTOR;
     }
 }
 
@@ -108,15 +104,34 @@ static inline void waveShaping(Sample *buffer, u32 nSamples) {
     }
 }
 
-static inline void hardClipping(Sample *buffer, u32 nSamples) {
 
+static void tube_sim(Sample *buffer, u32 nSamples, Sample gain) {
+        
     if (!buffer) { return; }
+        
+    const float gridCondThresh = 1.0f;
+    const float gridCondRatio  = 4.0f;
+    const float gridCondKnee   = 0.01f;
+    
+    for (u32 index = 0; index < nSamples; index++) {
+        Sample sample = buffer[index];
+        
+        if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
+            sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
+        } else if (2.0 * abs(sample - gridCondThresh) <= gridCondKnee) {
+            sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
+                        /(2.0f * gridCondKnee);
+        }
 
-    for (u32 i = 0; i < nSamples; i++) {
+        sample *= -1.0f;  
+        if (sample > 0.0f) {
+            sample = tanh(sample);
+        } else if (sample < -3.0f) {
+            // sample = (tanh(sample + 2.0f) - 2.0f) * gain;
+            sample = -3.0f;
+        }
 
-        Sample sample = buffer[i];
-
-        buffer[i] = sample > 1.5f ? 1.5f : sample < -1.5f ? -1.5f : sample;
+        buffer[index] = sample * gain;    
     }
 }
 
@@ -174,218 +189,169 @@ static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
     }
 }
 
-void Preamp::processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples) {
-    
-    static const Sample STAGE_0_GAIN = (Sample)dbtoa(35.0) * 0.2f;
-    static const Sample STAGE_1_GAIN = (Sample)dbtoa(35.0) * 0.9f;
-    static const Sample STAGE_2_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-    static const Sample STAGE_3_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-    static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
-    
-    static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
-    static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
- 
-    u32 index = 0;
-    
-    // Stage 0
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_0_GAIN;
-            bufferR[index] *= STAGE_0_GAIN;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_0_GAIN;
-        }    
-    }
-            
-    waveShaping(bufferL, nSamples);
-    waveShaping(bufferR, nSamples);
-    cathodeBypassFilter0.process(bufferL, bufferR, nSamples);
-    
-    inputFilter.processHighpass(bufferL, bufferR, nSamples);
-    stageOutputFilter0.processLowpass(bufferL, bufferR, nSamples);
-    
-    
-    // Stage 1
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            Sample preGainValue = (Sample)preGain.nextValue() * STAGE_1_GAIN; 
-            bufferL[index] *= preGainValue;
-            bufferR[index] *= preGainValue;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            Sample preGainValue = (Sample)preGain.nextValue() * STAGE_1_GAIN; 
-            bufferL[index] *= preGainValue;
-        }
-    }
-
-    brightCapFilter.process(bufferL, bufferR, nSamples);
-
-    waveShaping(bufferL, nSamples);
-    waveShaping(bufferR, nSamples);
-    couplingFilter1.processHighpass(bufferL, bufferR, nSamples);
-
-    if (channel == 1) {
-        if (bufferR) {
-            for (index = 0; index < nSamples; index++) {
-                bufferL[index] *= STAGE_ONE_COMPENSATION;
-                bufferR[index] *= STAGE_ONE_COMPENSATION;
-            }
-        } else {
-            for (index = 0; index < nSamples; index++) {
-                bufferL[index] *= STAGE_ONE_COMPENSATION;
-            }
-        }
-        return;
-    }
-    
-    
-    // Stage 2
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_2_GAIN;
-            bufferR[index] *= STAGE_2_GAIN;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_2_GAIN;
-        }
-    }
-
-    waveShaping(bufferL, nSamples);
-    waveShaping(bufferR, nSamples);
-    cathodeBypassFilter2.process(bufferL, bufferR, nSamples);
-    couplingFilter2.processHighpass(bufferL, bufferR, nSamples);
-
-    if (channel == 2) {
-        if (bufferR) {
-            for (index = 0; index < nSamples; index++) {
-                bufferL[index] *= -STAGE_TWO_COMPENSATION;
-                bufferR[index] *= -STAGE_TWO_COMPENSATION;
-            }
-        } else {
-            for (index = 0; index < nSamples; index++) {
-                bufferL[index] *= -STAGE_TWO_COMPENSATION;
-            }
-        }
-        return;
-    }
-
-    stageOutputFilter2.processLowpass(bufferL, bufferR, nSamples);
-
-    
-    // Stage 3
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_3_GAIN;
-            bufferR[index] *= STAGE_3_GAIN;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_3_GAIN;
-        }
-    }
-    
-    waveShaping(bufferL, nSamples);
-    waveShaping(bufferR, nSamples);
-    cathodeBypassFilter3.process(bufferL, bufferR, nSamples);
-    couplingFilter3.processHighpass(bufferL, bufferR, nSamples);
-
-    if (channel == 3) {
-        return;        
-    }
-
-    stageOutputFilter3.processLowpass(bufferL, bufferR, nSamples);
-    
-    
-    // Stage 4
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_4_GAIN;
-            bufferR[index] *= STAGE_4_GAIN;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= STAGE_4_GAIN;
-        }
-    }
-    
-    waveShaping(bufferL, nSamples);
-    waveShaping(bufferR, nSamples);
-    cathodeBypassFilter4.process(bufferL, bufferR, nSamples);
-    couplingFilter4.processHighpass(bufferL, bufferR, nSamples);
-
-    if (bufferR) {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= -1.0f;
-            bufferR[index] *= -1.0f;
-        }
-    } else {
-        for (index = 0; index < nSamples; index++) {
-            bufferL[index] *= -1.0f;
-        }
-    }
-}
-
-
 void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
 
     static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-32.0);
 
-    u32 blockSize = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
+    u32 upNumSamples = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
     
     // upsampling
+    memset(upBufferL, 0, upNumSamples * sizeof(Sample));
+    for (u32 i = 0; i < nSamples; i++) {
+        upBufferL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
+    }
+
     if (bufferR) {  
-        memset(upSampledBlockL, 0, blockSize * sizeof(Sample));
-        memset(upSampledBlockR, 0, blockSize * sizeof(Sample));
+        memset(upBufferR, 0, upNumSamples * sizeof(Sample));
         for (u32 i = 0; i < nSamples; i++) {
-            upSampledBlockL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
-            upSampledBlockR[PREAMP_UP_SAMPLE_FACTOR*i] = bufferR[i];
-        }
-    } else {
-        memset(upSampledBlockL, 0, blockSize * sizeof(Sample));
-        for (u32 i = 0; i < nSamples; i++) {
-            upSampledBlockL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
+            upBufferR[PREAMP_UP_SAMPLE_FACTOR*i] = bufferR[i];
         }    
     }
 
-    overSampler.upSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);    
-    overSampler.upSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);    
+    overSampler.upSampleFilter1.process(upBufferL, upBufferR, upNumSamples);    
+    overSampler.upSampleFilter2.process(upBufferL, upBufferR, upNumSamples);    
     
-    //processing
-    processGainStages(upSampledBlockL, upSampledBlockR, blockSize);
+    //processing the gain stages
+    {
+        static const Sample STAGE_0_GAIN = (Sample)dbtoa(35.0) * 0.2f;
+        static const Sample STAGE_1_GAIN = (Sample)dbtoa(35.0) * 0.9f;
+        static const Sample STAGE_2_GAIN = (Sample)dbtoa(35.0) * 0.5f;
+        static const Sample STAGE_3_GAIN = (Sample)dbtoa(35.0) * 0.5f;
+        static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
+        
+        static const Sample STAGE_0_BIAS = 0.0;
+        static const Sample STAGE_1_BIAS = 0.0;
+        static const Sample STAGE_2_BIAS = 0.0;
+        static const Sample STAGE_3_BIAS = 0.0;
+        static const Sample STAGE_4_BIAS = 0.0;
 
+        static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
+        static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
+     
+        u32 index = 0;
+        
+        // Stage 0
+        tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN);
+        tube_sim(upBufferR, upNumSamples, STAGE_0_GAIN);
+        cathodeBypassFilter0.process(upBufferL, upBufferR, upNumSamples);
+        
+        inputFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
+        stageOutputFilter0.processLowpass(upBufferL, upBufferR, upNumSamples);
+        
+        
+        // Stage 1
+        if (upBufferR) {
+            for (index = 0; index < upNumSamples; index++) {
+                Sample preGainValue = (Sample)preGain.nextValue(); 
+                upBufferL[index] *= preGainValue;
+                upBufferR[index] *= preGainValue;
+            }
+        } else {
+            for (index = 0; index < upNumSamples; index++) {
+                Sample preGainValue = (Sample)preGain.nextValue(); 
+                upBufferL[index] *= preGainValue;
+            }
+        }
+    
+        brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
+    
+        tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN);
+        tube_sim(upBufferR, upNumSamples, STAGE_1_GAIN);
+        couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
+    
+        if (channel == 1) {
+            for (index = 0; index < upNumSamples; index++) {
+                upBufferL[index] *= STAGE_ONE_COMPENSATION;
+            }
+            if (upBufferR) {
+                for (index = 0; index < upNumSamples; index++) {
+                    upBufferR[index] *= STAGE_ONE_COMPENSATION;
+                }
+            }
+            goto gain_stages_end_of_scope;
+        }
+        
+        
+        // Stage 2
+        tube_sim(upBufferL, upNumSamples, STAGE_2_GAIN);
+        tube_sim(upBufferR, upNumSamples, STAGE_2_GAIN);
+        cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples);
+        couplingFilter2.processHighpass(upBufferL, upBufferR, upNumSamples);
+    
+        if (channel == 2) {
+            for (index = 0; index < upNumSamples; index++) {
+                upBufferL[index] *= -STAGE_TWO_COMPENSATION;
+            }
+            if (upBufferR) {
+                for (index = 0; index < upNumSamples; index++) {
+                    upBufferR[index] *= -STAGE_TWO_COMPENSATION;
+                }
+            }
+            goto gain_stages_end_of_scope;
+        }
+    
+        stageOutputFilter2.processLowpass(upBufferL, upBufferR, upNumSamples);
+    
+        
+        // Stage 3
+        tube_sim(upBufferL, upNumSamples, STAGE_3_GAIN);
+        tube_sim(upBufferR, upNumSamples, STAGE_3_GAIN);
+        cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples);
+        couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
+    
+        if (channel == 3) {
+            goto gain_stages_end_of_scope;        
+        }
+    
+        stageOutputFilter3.processLowpass(upBufferL, upBufferR, upNumSamples);
+        
+        
+        // Stage 4
+        tube_sim(upBufferL, upNumSamples, STAGE_4_GAIN);
+        tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN);
+        cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
+        couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
+    
+        for (index = 0; index < upNumSamples; index++) {
+            upBufferL[index] *= -1.0f;
+        }
+        if (upBufferR) {
+            for (index = 0; index < upNumSamples; index++) {
+                upBufferR[index] *= -1.0f;
+            }
+        }
+        
+        gain_stages_end_of_scope:;
+    }
+    
+    
     if (bufferR) {
-        for (u32 index = 0; index < blockSize; index++) {
+        for (u32 index = 0; index < upNumSamples; index++) {
             Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
             
-            upSampledBlockL[index] *= postGainValue;
-            upSampledBlockR[index] *= postGainValue;
+            upBufferL[index] *= postGainValue;
+            upBufferR[index] *= postGainValue;
         }
     } else {
-        for (u32 index = 0; index < blockSize; index++) {
+        for (u32 index = 0; index < upNumSamples; index++) {
             Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
                         
-            upSampledBlockL[index] *= postGainValue;
+            upBufferL[index] *= postGainValue;
         }
     }
             
     // downsampling
-    assert(blockSize == nSamples*PREAMP_UP_SAMPLE_FACTOR);
+    assert(upNumSamples == nSamples*PREAMP_UP_SAMPLE_FACTOR);
     
-    overSampler.downSampleFilter1.process(upSampledBlockL, upSampledBlockR, blockSize);
-    overSampler.downSampleFilter2.process(upSampledBlockL, upSampledBlockR, blockSize);
+    overSampler.downSampleFilter1.process(upBufferL, upBufferR, upNumSamples);
+    overSampler.downSampleFilter2.process(upBufferL, upBufferR, upNumSamples);
 
+    for (u32 i = 0; i < nSamples; i++) {
+        bufferL[i] = upBufferL[i*PREAMP_UP_SAMPLE_FACTOR];
+    }
     if (bufferR) {
         for (u32 i = 0; i < nSamples; i++) {
-            bufferL[i] = upSampledBlockL[i*PREAMP_UP_SAMPLE_FACTOR];
-            bufferR[i] = upSampledBlockR[i*PREAMP_UP_SAMPLE_FACTOR];
-        }
-    } else {
-        for (u32 i = 0; i < nSamples; i++) {
-            bufferL[i] = upSampledBlockL[i*PREAMP_UP_SAMPLE_FACTOR];
+            bufferR[i] = upBufferR[i*PREAMP_UP_SAMPLE_FACTOR];
         }    
     }
 }

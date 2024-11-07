@@ -384,7 +384,6 @@ void IRLoaderPage::resized() {
 
     nextIRButton.setBounds(computeXcoord(0, width), computeYcoord(1, height), 120, 30);
     prevIRButton.setBounds(nextIRButton.getX(), nextIRButton.getY() + 50, 120, 30);
-
 }
 
 
@@ -398,7 +397,6 @@ Editor::Editor (Processor& p)
     volumePanel(p)
 {
 
-
     juce::Colour colour = findColour (juce::ResizableWindow::backgroundColourId);
     tabs.addTab("Gate Boost", colour, &gateBoostPage,  true);
     tabs.addTab("Amp",        colour, &ampPage,        true);
@@ -408,7 +406,7 @@ Editor::Editor (Processor& p)
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);
 
-    setSize(1100, 500);
+    setSize(1000, 400);
     setResizable(true, true);
 }
 
@@ -491,7 +489,6 @@ ComboBox::ComboBox(juce::String labelID, juce::String name, juce::Component *com
     label.setFont(15.0f);
     
     comp->addAndMakeVisible(label);
-    
 }
 
 void ComboBox::init(juce::String paramID, Apvts &apvts) {

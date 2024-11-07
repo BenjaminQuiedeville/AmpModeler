@@ -35,10 +35,18 @@ close_panel_on_success: true
 build_command:          cmake --build build --config Debug  # should be an executable or a script
 build_working_dir:      %PROJECT_CONFIG_DIR%
 # timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
-# run_command:            test.exe      # will be run if build succeeds
+error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
+key_binding:            F5
+
+[Debug Build & Run]   # <- command name. Can be arbitrary
+build_command:          cmake --build build --config Debug  # should be an executable or a script
+build_working_dir:      %PROJECT_CONFIG_DIR%
+# timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
+run_command:            "C:\Program Files\Cycling '74\Max 8\Max.exe"      # will be run if build succeeds
 error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 run_working_dir:        %PROJECT_CONFIG_DIR%      # working dir for the run command
-key_binding:            F5
+key_binding:            Ctrl-F5
+
 
 # [Run]                   # <- You could have commands that don't build anything and just run something
 # run_command:            test.exe
@@ -48,6 +56,3 @@ key_binding:            F5
 [Release]
 build_command:          cmake --build build --config Release
 key_binding:            F9
-
-
-

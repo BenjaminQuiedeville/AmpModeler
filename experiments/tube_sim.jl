@@ -6,28 +6,6 @@ using ProgressMeter
 
 include("clipping_curves.jl")
 
-mutable struct Integrator
-    state :: Vector{Float64}
-    state_index :: Int
-    sum :: Float64
-end 
-
-mutable struct DCBlocker
-    b0 :: Float64
-    a1 :: Float64
-    y1 :: Float64
-
-    function DCBlocker(freq :: Float64)
-        b0 = sin(pi * freq)
-        a1 = b0 - 1.0
-        y1 = 0.0
-
-        return new(b0, a1, y1)
-    end
-end
-
-
-
 function main() :: Figure
     samplerate :: Float64 = 48000.0
 
@@ -62,18 +40,17 @@ function main() :: Figure
 
     lines!(signal, label = "grid_conduction")
 
-    gain = 100
+    gain = 10^(35/20)
 
     for index in 1:length(signal)
-        sample = -signal[index] * gain
-        sample /= 10
+        sample = -signal[index]
         sample = asym_tanh(sample, -2.0, 0.0)
-        sample *= 10
+        sample *= gain
 
         signal[index] = sample
     end 
 
-    lines!(-signal, label = "tube_output")
+    lines!(-signal, label = "tube_output", color=:red)
 
     axislegend(; position = :lb)
 

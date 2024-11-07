@@ -15,7 +15,7 @@ const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Mak
 const int knobSize = 100;
 const int horizontalMargin = 25;
 const int verticalMargin = 50;
-const int nRows = 3;
+const int nRows = 2;
 const int nCols = 6;
 
 using Apvts = juce::AudioProcessorValueTreeState;
@@ -24,7 +24,6 @@ using ComboBoxAttachment = Apvts::ComboBoxAttachment;
 using ButtonAttachment = Apvts::ButtonAttachment;
 
 struct Knob : public juce::Slider {
-
     Knob(juce::String labelID, juce::String name, juce::Component* comp);
     
     void init(juce::String paramID, Apvts &apvts);
@@ -45,7 +44,6 @@ struct Slider : public juce::Slider {
 
 
 struct ComboBox : public juce::ComboBox {
-    
     ComboBox(juce::String labelID, juce::String name, juce::Component* comp); 
 
     void init(juce::String paramID, Apvts &apvts);
@@ -67,7 +65,6 @@ struct GateBoostPage : public juce::Component {
     Knob boostAttackKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
-
 };
 
 
@@ -116,7 +113,6 @@ struct IRLoaderPage : public juce::Component {
     
     juce::ToggleButton bypassToggle {"Bypass IRloader"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
-
 };
 
 
@@ -144,9 +140,7 @@ struct MasterVolPanel : public juce::Component {
                                     20);
     } 
 
-
     Slider volumeSlider;
-
 };
 
 
