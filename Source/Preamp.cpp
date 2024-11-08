@@ -37,19 +37,19 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     brightCapFilter.setCoefficients(750.0, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     
     couplingFilter1.setCoefficients(500.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter2.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter3.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter4.setCoefficients(10.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter2.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter3.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    couplingFilter4.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    stageOutputFilter0.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(10000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter0.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter2.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter3.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    stageOutputFilter4.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
-    cathodeBypassFilter0.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter0.setCoefficients(250.0, -5.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter2.setCoefficients(200.0, -2.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
     cathodeBypassFilter3.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(200.0, -3.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter4.setCoefficients(200.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
     overSampler.upSampleFilter1.prepareToPlay();
     overSampler.upSampleFilter2.prepareToPlay();
@@ -191,8 +191,6 @@ static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
 
 void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
 
-    static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-32.0);
-
     u32 upNumSamples = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
     
     // upsampling
@@ -213,11 +211,12 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample STAGE_0_GAIN = (Sample)dbtoa(35.0) * 0.2f;
-        static const Sample STAGE_1_GAIN = (Sample)dbtoa(35.0) * 0.9f;
-        static const Sample STAGE_2_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-        static const Sample STAGE_3_GAIN = (Sample)dbtoa(35.0) * 0.5f;
-        static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
+        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0);// * 0.2f;
+        static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0);// * 0.9f;
+        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0);// * 0.5f;
+        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0);// * 0.5f;
+        // static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
+        static const Sample STAGE_4_GAIN = 1.0f;
         
         static const Sample STAGE_0_BIAS = 0.0;
         static const Sample STAGE_1_BIAS = 0.0;
@@ -225,8 +224,9 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         static const Sample STAGE_3_BIAS = 0.0;
         static const Sample STAGE_4_BIAS = 0.0;
 
-        static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(21.0);
-        static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(3.0);
+        static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(15.0);
+        static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(-20.0);
+        static const Sample STAGE_THREE_COMPENSATION = (Sample)dbtoa(-35.0);
      
         u32 index = 0;
         
@@ -300,7 +300,15 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 3) {
-            goto gain_stages_end_of_scope;        
+            for (index = 0; index < upNumSamples; index++) {
+                upBufferL[index] *= -STAGE_THREE_COMPENSATION;
+            }
+            if (upBufferR) {
+                for (index = 0; index < upNumSamples; index++) {
+                    upBufferR[index] *= -STAGE_THREE_COMPENSATION;
+                }
+            }
+            goto gain_stages_end_of_scope;
         }
     
         stageOutputFilter3.processLowpass(upBufferL, upBufferR, upNumSamples);
@@ -323,7 +331,8 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         
         gain_stages_end_of_scope:;
     }
-    
+
+    static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-40.0);    
     
     if (bufferR) {
         for (u32 index = 0; index < upNumSamples; index++) {
