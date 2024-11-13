@@ -7,7 +7,6 @@
 #ifndef ONEPOLE_H
 #define ONEPOLE_H
 
-#include "juce_core/juce_core.h"
 #include "common.h"
 
 
@@ -21,7 +20,7 @@ struct OnepoleFilter {
     }
 
     void setCoefficients(double frequency, double samplerate) {
-        b0 = sin(juce::MathConstants<double>::pi / samplerate * frequency);
+        b0 = sin(M_PI / samplerate * frequency);
         a1 = b0 - 1.0;
     }
 

@@ -71,7 +71,7 @@ struct SmoothParamIIR {
     }
     
     void newTarget(double newTarget, double tauMs, double samplerate) {
-        b0 = std::sin(juce::MathConstants<double>::pi / (samplerate * tauMs * 0.001));
+        b0 = std::sin(M_PI / (samplerate * tauMs * 0.001));
         a1 = b0 - 1.0;
         target = newTarget;
     }

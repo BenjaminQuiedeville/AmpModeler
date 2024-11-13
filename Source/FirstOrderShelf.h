@@ -25,13 +25,11 @@ struct FirstOrderShelfFilter {
             assert(false && "wrong type of filter");
         } 
 
-        double freqRadian = freq / samplerate * juce::MathConstants<double>::pi;
+        double freqRadian = freq / samplerate * M_PI;
 
         double eta = (gainLinear + 1.0)/(gainLinear - 1.0);
-        double rho = sin(juce::MathConstants<double>::pi * freqRadian * 0.5 
-                        - juce::MathConstants<double>::pi/4) 
-                    / sin(juce::MathConstants<double>::pi * freqRadian * 0.5 
-                        + juce::MathConstants<double>::pi/4);
+        double rho = sin(M_PI * freqRadian * 0.5 - M_PI_4) 
+                    / sin(M_PI * freqRadian * 0.5 + M_PI_4);
 
         double etaSign = eta > 0.0 ? 1.0 : -1.0;
         double alpha1 = gainLinear == 1.0 ? 0.0 : eta - etaSign*sqrt(eta*eta - 1.0);

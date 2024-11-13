@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.22)
 
 project(AmpModeler VERSION 0.2.0)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
-# set(ASIO_DIR C:/Users/benjamin/Dev/libs/asiosdk)
 
 add_subdirectory(${JUCE_SOURCE_DIR})
 
@@ -27,7 +26,6 @@ juce_add_plugin(${PROJECT_NAME}
     PRODUCT_NAME                "AmpModeler"
     
     COPY_PLUGIN_AFTER_BUILD     TRUE
-
 )
 
 target_sources(${PROJECT_NAME}
@@ -43,7 +41,6 @@ target_sources(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${JUCE_SOURCE_DIR}/modules
-        # ${ASIO_DIR}/common
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -53,7 +50,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_MODAL_LOOPS_PERMITTED=1
         JUCE_ASIO=0
-
+        _USE_MATH_DEFINES=1
 )
 
 target_link_libraries(${PROJECT_NAME}

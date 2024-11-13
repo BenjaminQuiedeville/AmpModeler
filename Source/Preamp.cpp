@@ -95,8 +95,8 @@ static inline void waveShaping(Sample *buffer, u32 nSamples) {
         
         Sample sample = buffer[i];
         if (sample > 0.0f) { 
-            sample = 1/juce::MathConstants<Sample>::pi * 2.0f 
-                   * std::atan(sample * juce::MathConstants<Sample>::pi * 0.5f); 
+            sample = M_1_PI * 2.0f 
+                   * std::atan(sample * M_PI * 0.5f); 
         }
     
         if (sample < -2.0f) { sample = -2.0f; }

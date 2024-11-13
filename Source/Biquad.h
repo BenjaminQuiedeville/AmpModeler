@@ -42,7 +42,7 @@ struct Biquad {
 
     void setCoefficients(double frequency, double Q, double gaindB, double samplerate) {
     
-        double w0 = juce::MathConstants<double>::twoPi / samplerate * frequency;
+        double w0 = 2 * M_PI / samplerate * frequency;
         double cosw0 = cos(w0);
         double sinw0 = sin(w0);
     
