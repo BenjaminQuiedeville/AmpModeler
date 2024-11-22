@@ -72,14 +72,20 @@ void Preamp::setBias(float bias, int tube_index) {
         default: { assert(false && "wrong tube_index in setBias"); }
     }
     
+    static const float pos_clip_point = 0.3f;
+    static const float neg_clip_point = -5.0f;
+    static const float bias_multiplier = 1.0f;
+    
+    bias *= bias_multiplier;
+    
     selected_stage_bias[0] = bias;
     
-    float result;
+    float result = 0.0f;
     
-    if (bias > 0.0f) {
-        result = tanh(bias - 0.5f) + 0.5f;
-    } else if (bias < -3.0) {
-        result = -3.0;
+    if (bias > pos_clip_point) {
+        result = tanh(bias - pos_clip_point) + pos_clip_point;
+    } else if (bias < neg_clip_point) {
+        result = neg_clip_point;
     } else {
         result = bias;
     }

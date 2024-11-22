@@ -60,8 +60,8 @@ enum Params {
     GATE_RELEASE,
     GATE_RETURN,
     
-    BITE,
-    BITE_FREQ,
+    SCREAMER_AMOUNT,
+    SCEAMER_FREQ,
     TIGHT,
     
     PREAMP_GAIN,
@@ -116,8 +116,8 @@ static std::vector<juce::Identifier> ParamIDs = {
     "GATE_RELEASE",
     "GATE_RETURN",
     
-    "BITE",
-    "BITE_FREQ",
+    "SCREAMER_AMOUNT",
+    "SCEAMER_FREQ",
     "TIGHT",
     
     "PREAMP_GAIN",

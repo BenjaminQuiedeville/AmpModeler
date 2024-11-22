@@ -355,10 +355,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
     
 
-    if (id == ParamIDs[BITE] || id == ParamIDs[BITE_FREQ]) {
+    if (id == ParamIDs[SCREAMER_AMOUNT] || id == ParamIDs[SCREAMER_FREQ]) {
 
-        float amount = *apvts.getRawParameterValue(ParamIDs[BITE]);        
-        float freq = *apvts.getRawParameterValue(ParamIDs[BITE_FREQ]);
+        float amount = *apvts.getRawParameterValue(ParamIDs[SCREAMER_AMOUNT]);        
+        float freq = *apvts.getRawParameterValue(ParamIDs[SCREAMER_FREQ]);
     
         biteFilter.setCoefficients(freq, BOOST_BITE_Q, amount, samplerate);
 
@@ -589,11 +589,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     // Input Boost params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[BITE].toString(), "Bite", 
+        ParamIDs[SCREAMER_AMOUNT].toString(), "Screamer", 
         juce::NormalisableRange<float>(0.0f, 30.0f, 0.1f, 1.0f), 0.0f, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[BITE_FREQ].toString(), "Bite Freq", 
+        ParamIDs[SCREAMER_FREQ].toString(), "Screamer Freq", 
         juce::NormalisableRange<float>(500.0f, 2500.0f, 1.0f, 0.7f), 1200.0f, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -743,7 +743,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         juce::NormalisableRange<float>(-36.0f, 36.0f, 0.1f, 1.0f), 0.0f, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        ParamIDs[RESONANCE].toString(), "Reson",
+        ParamIDs[RESONANCE].toString(), "Resonance",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), 5.0f, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -752,7 +752,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[BYPASS_IR].toString(), "Bypass IR Loader", 
+        ParamIDs[BYPASS_IR].toString(), "Activate IR Loader", 
         false
     ));
 
