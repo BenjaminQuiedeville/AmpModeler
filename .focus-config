@@ -48,10 +48,10 @@ run_working_dir:        %PROJECT_CONFIG_DIR%      # working dir for the run comm
 key_binding:            Ctrl-F5
 
 
-# [Run]                   # <- You could have commands that don't build anything and just run something
-# run_command:            test.exe
-# run_working_dir:        /home/user/test
-# key_binding:            Ctrl-F5
+[Run]                   # <- You could have commands that don't build anything and just run something
+run_command:            W:/VSTHost/vsthost.exe build\AmpModeler_artefacts\Debug\VST3\AmpModeler.vst3\Contents\x86_64-win\AmpModeler.vst3
+run_working_dir:        %PROJECT_CONFIG_DIR%
+key_binding:            Ctrl-F4
 
 [Release]
 build_command:          cmake --build build --config Release
