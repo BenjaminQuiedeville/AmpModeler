@@ -126,9 +126,9 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     noiseGate.prepareToPlay(sampleRate);
 
     preamp.prepareToPlay(sampleRate, samplesPerBlock);
-
+    
+    inputGain.init(0.0);
     masterVolume.init(0.0);
-
     
     toneStack.prepareToPlay(sampleRate);
     toneStack.setModel(EnglSavage); // change to current selected model
@@ -202,6 +202,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         }
     }
 
+
+    inputGain.applySmoothGain(audioPtrL, audioPtrR, numSamples);
+
     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
 
     if (channelConfig == Stereo) {
@@ -232,17 +235,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         
     irLoader.process(audioPtrL, audioPtrR, numSamples);
 
-    if (audioPtrR) {
-        for (size_t i = 0; i < numSamples; i++) {
-            Sample masterVolumeValue = (Sample)dbtoa(masterVolume.nextValue()); 
-            audioPtrL[i] *= masterVolumeValue;
-            audioPtrR[i] *= masterVolumeValue;
-        }
-    } else {
-        for (size_t i = 0; i < numSamples; i++) {
-            audioPtrL[i] *= (Sample)dbtoa(masterVolume.nextValue());
-        }
-    }
+    masterVolume.applySmoothGain(audioPtrL, audioPtrR, numSamples);
         
     if (gateActive) {
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
@@ -344,6 +337,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             
         return;
     }
+
+    if (id == ParamIDs[INPUT_GAIN]) {
+        inputGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
+        return;
+    }
+
     
     if (id == ParamIDs[GATE_ATTACK]) {
         noiseGate.attackTimeMs = newValue;
@@ -392,15 +391,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[CHANNEL]) {
-        
         preamp.channel = (u8)newValue;
         return;
     }
 
     if (id == ParamIDs[PREAMP_VOLUME]) {
-
-        preamp.postGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
-
+        preamp.postGain.newTarget(newValue + preamp.outputAttenuationdB, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
         return;
     }
     
@@ -565,6 +561,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     //                     .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });
     
     
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        ParamIDs[INPUT_GAIN].toString(), "Input Gain", 
+        juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), 0.0f, attributes
+    ));
+
     // Noise gate params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[GATE_THRESH].toString(), "Gate Thresh", 
@@ -757,7 +758,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MASTER_VOLUME].toString(), "Master Vol",
-        juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), -6.0f, attributes
+        juce::NormalisableRange<float>(-18.0f, 12.0f, 0.1f, 1.0f), -3.0f, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterChoice>(

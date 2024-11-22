@@ -199,19 +199,22 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0) * 0.2f;
+        static const Sample INPUT_GAIN   = (Sample)dbtoa(6.0);
+        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0) * 0.3f;
         static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0) * 0.9f;
         static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.5f;
         static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.5f;
         // static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
         static const Sample STAGE_4_GAIN = 1.0f;
         
-        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(15.0);
+        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(6.0);
         static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-20.0);
-        static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-35.0);
+        static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
         static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
-     
-        u32 index = 0;
+             
+        
+        // Input Gain
+        applyGain(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
         
         // Stage 0
         tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN, stage0_bias);
@@ -223,18 +226,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         
         
         // Stage 1
-        if (upBufferR) {
-            for (index = 0; index < upNumSamples; index++) {
-                Sample preGainValue = (Sample)preGain.nextValue(); 
-                upBufferL[index] *= preGainValue;
-                upBufferR[index] *= preGainValue;
-            }
-        } else {
-            for (index = 0; index < upNumSamples; index++) {
-                Sample preGainValue = (Sample)preGain.nextValue(); 
-                upBufferL[index] *= preGainValue;
-            }
-        }
+        preGain.applySmoothGain(upBufferL, upBufferR, upNumSamples);
     
         brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
     
@@ -243,14 +235,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 1) {
-            for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= STAGE1_COMPENSATION;
-            }
-            if (upBufferR) {
-                for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= STAGE1_COMPENSATION;
-                }
-            }
+            applyGain(STAGE1_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
         
@@ -262,14 +247,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter2.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 2) {
-            for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= -STAGE2_COMPENSATION;
-            }
-            if (upBufferR) {
-                for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= -STAGE2_COMPENSATION;
-                }
-            }
+            applyGain(-STAGE2_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
     
@@ -283,14 +261,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 3) {
-            for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= -STAGE3_COMPENSATION;
-            }
-            if (upBufferR) {
-                for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= -STAGE3_COMPENSATION;
-                }
-            }
+            applyGain(-STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
     
@@ -302,35 +273,14 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN, stage4_bias);
         cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
-    
-        for (index = 0; index < upNumSamples; index++) {
-            upBufferL[index] *= -STAGE4_COMPENSATION;
-        }
-        if (upBufferR) {
-            for (index = 0; index < upNumSamples; index++) {
-                upBufferR[index] *= -STAGE4_COMPENSATION;
-            }
-        }
-        
+
+        applyGain(-STAGE4_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+            
         gain_stages_end_of_scope:;
     }
-
-    static const Sample OUTPUT_ATTENUATION = (Sample)dbtoa(-40.0);    
     
-    if (bufferR) {
-        for (u32 index = 0; index < upNumSamples; index++) {
-            Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
-            
-            upBufferL[index] *= postGainValue;
-            upBufferR[index] *= postGainValue;
-        }
-    } else {
-        for (u32 index = 0; index < upNumSamples; index++) {
-            Sample postGainValue = OUTPUT_ATTENUATION * (Sample)dbtoa(postGain.nextValue());
-                        
-            upBufferL[index] *= postGainValue;
-        }
-    }
+    
+    postGain.applySmoothGain(upBufferL, upBufferR, upNumSamples);
             
     // downsampling
     assert(upNumSamples == nSamples*PREAMP_UP_SAMPLE_FACTOR);

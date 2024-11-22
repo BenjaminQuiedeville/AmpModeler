@@ -66,13 +66,15 @@ struct GateBoostPage : public juce::Component {
     void resized();
     
     Knob gateKnob;
-    Knob gateAttackKnob;
-    Knob gateReleaseKnob; 
-    Knob gateReturnKnob;
+    // Knob gateAttackKnob;
+    // Knob gateReleaseKnob; 
+    // Knob gateReturnKnob;
 
     Knob boostAttackKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
+    
+    Knob inputGainKnob;
     
     juce::ToggleButton gateToggle {"Activate Gate/Boost"};
     juce::ToggleButton preampToggle {"Activate Preamp"};
@@ -150,8 +152,7 @@ struct IRLoaderPage : public juce::Component {
 struct MasterVolPanel : public juce::Component {
 
     MasterVolPanel(Processor &p) :     
-        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this),
-        inputGainSlider("INPUT_GAIN_SLIDER_LABEL", "Input Gain", this)
+        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this)
     {
         volumeSlider.init(ParamIDs[MASTER_VOLUME].toString(), p.apvts);
         volumeSlider.setTextValueSuffix(" dB");
@@ -173,7 +174,6 @@ struct MasterVolPanel : public juce::Component {
     } 
 
     VSlider volumeSlider;
-    VSlider inputGainSlider;
 };
 
 

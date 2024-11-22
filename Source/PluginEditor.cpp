@@ -20,26 +20,30 @@ static int computeYcoord(float row, int height) {
 
 GateBoostPage::GateBoostPage(Processor &p) :
     gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
-    gateAttackKnob("GATE_Attack_LABEL", "Gate Attack", this),
-    gateReleaseKnob("GATE_RELEASE_LABEL", "Gate Release", this), 
-    gateReturnKnob("GATE_RETURN_LABEL", "Gate Hysteresis", this),
+    // gateAttackKnob("GATE_Attack_LABEL", "Gate Attack", this),
+    // gateReleaseKnob("GATE_RELEASE_LABEL", "Gate Release", this), 
+    // gateReturnKnob("GATE_RETURN_LABEL", "Gate Hysteresis", this),
 
     boostAttackKnob("BOOST_ATTACK_KNOB_LABEL" , "Boost Top", this),
     boostFreqKnob("BOOST_FREQ_KNOB_LABEL", "Boost Freq", this),
-    boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this)
+    boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this),
+    inputGainKnob("INPUT_GAIN_KNOB_LABEL", "Input Gain", this)
+
 {
     gateKnob.init(ParamIDs[GATE_THRESH].toString(), p.apvts);
     gateKnob.setTextValueSuffix(" dB");
 
-    gateAttackKnob.init(ParamIDs[GATE_ATTACK].toString(), p.apvts);
-    gateAttackKnob.setTextValueSuffix(" ms");
+    // gateAttackKnob.init(ParamIDs[GATE_ATTACK].toString(), p.apvts);
+    // gateAttackKnob.setTextValueSuffix(" ms");
     
-    gateReleaseKnob.init(ParamIDs[GATE_RELEASE].toString(), p.apvts);
-    gateReleaseKnob.setTextValueSuffix(" ms");
+    // gateReleaseKnob.init(ParamIDs[GATE_RELEASE].toString(), p.apvts);
+    // gateReleaseKnob.setTextValueSuffix(" ms");
     
-    gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), p.apvts);
-    gateReturnKnob.setTextValueSuffix(" dB");
+    // gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), p.apvts);
+    // gateReturnKnob.setTextValueSuffix(" dB");
 
+    inputGainKnob.init(ParamIDs[INPUT_GAIN].toString(), p.apvts);
+    inputGainKnob.setTextValueSuffix(" dB");
 
     boostAttackKnob.init(ParamIDs[BITE].toString(), p.apvts);
     boostAttackKnob.setTextValueSuffix(" dB");
@@ -75,29 +79,36 @@ void GateBoostPage::resized() {
     int height = getHeight();
     
 
-    gateKnob.setBounds(computeXcoord(0, width), computeYcoord(0, height), knobSize, knobSize);
+    inputGainKnob.setBounds(computeXcoord(0, width), computeYcoord(0, height), knobSize, knobSize);
+    inputGainKnob.label.setBounds(inputGainKnob.getX(), 
+                              inputGainKnob.getY() - 15, 
+                              inputGainKnob.getWidth(), 
+                              20);
+
+    gateKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
     gateKnob.label.setBounds(gateKnob.getX(), 
                               gateKnob.getY() - 15, 
                               gateKnob.getWidth(), 
                               20);
 
-    gateAttackKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
-    gateAttackKnob.label.setBounds(gateAttackKnob.getX(),
-                                   gateAttackKnob.getY() - 15, 
-                                   gateAttackKnob.getWidth(), 
-                                   20);
+
+    // gateAttackKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
+    // gateAttackKnob.label.setBounds(gateAttackKnob.getX(),
+    //                                gateAttackKnob.getY() - 15, 
+    //                                gateAttackKnob.getWidth(), 
+    //                                20);
                                     
-    gateReleaseKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
-    gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(),
-                                    gateReleaseKnob.getY() - 15, 
-                                    gateReleaseKnob.getWidth(), 
-                                    20);
+    // gateReleaseKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
+    // gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(),
+    //                                 gateReleaseKnob.getY() - 15, 
+    //                                 gateReleaseKnob.getWidth(), 
+    //                                 20);
                                     
-    gateReturnKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
-    gateReturnKnob.label.setBounds(gateReturnKnob.getX(),
-                                   gateReturnKnob.getY() - 15, 
-                                   gateReturnKnob.getWidth(), 
-                                   20);
+    // gateReturnKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
+    // gateReturnKnob.label.setBounds(gateReturnKnob.getX(),
+    //                                gateReturnKnob.getY() - 15, 
+    //                                gateReturnKnob.getWidth(), 
+    //                                20);
                                     
 
 
@@ -609,10 +620,10 @@ Editor::Editor (Processor& p)
 {
 
     juce::Colour colour = findColour (juce::ResizableWindow::backgroundColourId);
-    tabs.addTab("Gate Boost", colour, &gateBoostPage,  true);
-    tabs.addTab("Amp",        colour, &ampPage,        true);
-    tabs.addTab("GainStages", colour, &gainStagesPage, true);
-    tabs.addTab("IRLoader",   colour, &irLoaderPage,   true);
+    tabs.addTab("Input", colour, &gateBoostPage, true);
+    tabs.addTab("Amplifier", colour, &ampPage, true);
+    tabs.addTab("Gain Stages", colour, &gainStagesPage, true);
+    tabs.addTab("IR Loader", colour, &irLoaderPage, true);
     
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);

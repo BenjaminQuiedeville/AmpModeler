@@ -52,6 +52,9 @@ irloader
 */
 
 enum Params {
+    
+    INPUT_GAIN,
+    
     GATE_THRESH,
     GATE_ATTACK,
     GATE_RELEASE,
@@ -106,6 +109,8 @@ enum Params {
 
 
 static std::vector<juce::Identifier> ParamIDs = {
+    "INPUT_GAIN",
+
     "GATE_THRESH",
     "GATE_ATTACK",
     "GATE_RELEASE",
@@ -227,6 +232,7 @@ struct Processor  : public juce::AudioProcessor,
     FirstOrderShelfFilter resonanceFilter {lowshelf};
     FirstOrderShelfFilter presenceFilter {highshelf};
 
+    SmoothParamLinear inputGain;
     SmoothParamLinear masterVolume;
 
     double samplerate = 44100.0;

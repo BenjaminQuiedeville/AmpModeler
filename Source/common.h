@@ -20,8 +20,6 @@ typedef uint32_t u32;
 typedef int32_t  s32;
 typedef uint64_t u64;
 typedef int64_t  s64;
-typedef float    f32;
-typedef double   f64;
 
 typedef float Sample;
 
@@ -55,5 +53,15 @@ static inline u64 nextPowTwo(u64 n) {
     return n;
 }
 
+static inline void applyGain(Sample gain, Sample *bufferL, Sample *bufferR, u32 nSamples) {
+    for (u32 index = 0; index < nSamples; index++) {
+        bufferL[index] *= gain;
+    }
+    if (bufferR) {
+        for (u32 index = 0; index < nSamples; index++) {
+            bufferR[index] *= gain;
+        }
+    }
+}
 
 #endif  // AMP_MODELER_COMMON
