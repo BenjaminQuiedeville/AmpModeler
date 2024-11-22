@@ -5,7 +5,7 @@
 */
 
 #include "Preamp.h"
-#include "data/waveshape_table.inc"
+// #include "data/waveshape_table.inc"
 
 Preamp::Preamp() {
 }
@@ -27,29 +27,16 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     couplingFilter4.prepareToPlay();
     
     stageOutputFilter0.prepareToPlay();
+    stageOutputFilter1.prepareToPlay();
     stageOutputFilter2.prepareToPlay();
     stageOutputFilter3.prepareToPlay();
     stageOutputFilter4.prepareToPlay();
-    
 
-    inputFilter.setCoefficients(300.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
-    brightCapFilter.setCoefficients(750.0, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    
-    couplingFilter1.setCoefficients(500.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter2.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter3.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    couplingFilter4.setCoefficients(15.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
-    stageOutputFilter0.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter2.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter3.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    stageOutputFilter4.setCoefficients(16000.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
-    cathodeBypassFilter0.setCoefficients(250.0, -5.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter2.setCoefficients(200.0, -2.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter3.setCoefficients(250.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    cathodeBypassFilter4.setCoefficients(200.0, -6.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+    cathodeBypassFilter0.prepareToPlay();
+    cathodeBypassFilter1.prepareToPlay();
+    cathodeBypassFilter2.prepareToPlay();
+    cathodeBypassFilter3.prepareToPlay();
+    cathodeBypassFilter4.prepareToPlay();    
 
     overSampler.upSampleFilter1.prepareToPlay();
     overSampler.upSampleFilter2.prepareToPlay();
@@ -72,40 +59,37 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     }
 }
 
-static inline void waveShaping2(Sample *buffer, u32 nSamples) {
-
-    if (!buffer) { return; }
+void Preamp::setBias(float bias, int tube_index) {
+    assert(tube_index >= 0 && tube_index <= 4 && "Wrong tube_index in setBias");
     
-    auto cubicClip = [](Sample x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
-    
-    for (u32 i = 0; i < nSamples; i++) {
-    
-        Sample sample = buffer[i];
-        sample = sample > 0.0f ? std::tanh(sample) : 3.0f * cubicClip(1.0f/3.0f * sample);
-    
-        buffer[i] = -sample;
+    float *selected_stage_bias = nullptr;
+    switch (tube_index) {
+        case 0: { selected_stage_bias = stage0_bias; break; }
+        case 1: { selected_stage_bias = stage1_bias; break; }
+        case 2: { selected_stage_bias = stage2_bias; break; }
+        case 3: { selected_stage_bias = stage3_bias; break; }
+        case 4: { selected_stage_bias = stage4_bias; break; }
+        default: { assert(false && "wrong tube_index in setBias"); }
     }
+    
+    selected_stage_bias[0] = bias;
+    
+    float result;
+    
+    if (bias > 0.0f) {
+        result = tanh(bias - 0.5f) + 0.5f;
+    } else if (bias < -3.0) {
+        result = -3.0;
+    } else {
+        result = bias;
+    }
+    
+    selected_stage_bias[1] = result;
 }
 
-static inline void waveShaping(Sample *buffer, u32 nSamples) {
+// auto cubicClip = [](Sample x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
 
-    if (!buffer) { return; }
-
-    for (u32 i = 0; i < nSamples; i++) {
-        
-        Sample sample = buffer[i];
-        if (sample > 0.0f) { 
-            sample = M_1_PI * 2.0f 
-                   * std::atan(sample * M_PI * 0.5f); 
-        }
-    
-        if (sample < -2.0f) { sample = -2.0f; }
-        buffer[i] = -sample;
-    }
-}
-
-
-static void tube_sim(Sample *buffer, u32 nSamples, Sample gain) {
+static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         
     if (!buffer) { return; }
         
@@ -124,70 +108,74 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain) {
         }
 
         sample *= -1.0f;  
-        if (sample > 0.0f) {
-            sample = tanh(sample);
-        } else if (sample < -3.0f) {
-            // sample = (tanh(sample + 2.0f) - 2.0f) * gain;
-            sample = -3.0f;
+        sample += bias[0];
+        
+        static const float pos_clip_point = 0.3f;
+        static const float neg_clip_point = -5.0f;
+        
+        if (sample > pos_clip_point) {
+            sample = tanh(sample - pos_clip_point) + pos_clip_point;
+        } else if (sample < neg_clip_point) {
+            sample = neg_clip_point;
         }
 
-        buffer[index] = sample * gain;    
+        buffer[index] = (sample - bias[1]) * gain;    
     }
 }
 
-static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
+// static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
 
-    if (!buffer) { return; }
+//     if (!buffer) { return; }
 
-    for (u32 i = 0; i < nSamples; i++) {
+//     for (u32 i = 0; i < nSamples; i++) {
     
-        Sample sample = buffer[i];
-        Sample normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
+//         Sample sample = buffer[i];
+//         Sample normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
         
-        int tableIndex = (int)(normalizedPosition * WAVESHAPE_TABLE_SIZE);
-        float interpCoeff = normalizedPosition * WAVESHAPE_TABLE_SIZE - (float)tableIndex;
+//         int tableIndex = (int)(normalizedPosition * WAVESHAPE_TABLE_SIZE);
+//         float interpCoeff = normalizedPosition * WAVESHAPE_TABLE_SIZE - (float)tableIndex;
         
-        if (tableIndex >= WAVESHAPE_TABLE_SIZE) {
-            buffer[i] = waveshaping_table[WAVESHAPE_TABLE_SIZE-1];
-            continue;
-        }
+//         if (tableIndex >= WAVESHAPE_TABLE_SIZE) {
+//             buffer[i] = waveshaping_table[WAVESHAPE_TABLE_SIZE-1];
+//             continue;
+//         }
         
-        if (tableIndex < 0) {
-            buffer[i] = waveshaping_table[0];
-            continue;
-        }
+//         if (tableIndex < 0) {
+//             buffer[i] = waveshaping_table[0];
+//             continue;
+//         }
         
-        // interpolation Lagrange 3rd order
+//         // interpolation Lagrange 3rd order
         
-        u32 index2 = tableIndex + 1;
-        u32 index3 = tableIndex + 2;
-        u32 index4 = tableIndex + 4;
+//         u32 index2 = tableIndex + 1;
+//         u32 index3 = tableIndex + 2;
+//         u32 index4 = tableIndex + 4;
         
-        if (index4 > WAVESHAPE_TABLE_SIZE) {
-            buffer[i] = waveshaping_table[tableIndex];
-            continue;
-        }
+//         if (index4 > WAVESHAPE_TABLE_SIZE) {
+//             buffer[i] = waveshaping_table[tableIndex];
+//             continue;
+//         }
         
-        float value1 = waveshaping_table[tableIndex];
-        float value2 = waveshaping_table[index2];
-        float value3 = waveshaping_table[index3];
-        float value4 = waveshaping_table[index4];
+//         float value1 = waveshaping_table[tableIndex];
+//         float value2 = waveshaping_table[index2];
+//         float value3 = waveshaping_table[index3];
+//         float value4 = waveshaping_table[index4];
         
-        float d1 = interpCoeff - 1.0f;
-        float d2 = interpCoeff - 2.0f;
-        float d3 = interpCoeff - 3.0f;
+//         float d1 = interpCoeff - 1.0f;
+//         float d2 = interpCoeff - 2.0f;
+//         float d3 = interpCoeff - 3.0f;
         
-        float oneSixth = 1.0f/6.0f;
+//         float oneSixth = 1.0f/6.0f;
         
-        float c1 = -d1 * d2 * d3 * oneSixth;
-        float c2 = d2 * d3 * 0.5f;
-        float c3 = -d1 * d3 * 0.5f;
-        float c4 = d1 * d2 * oneSixth;
+//         float c1 = -d1 * d2 * d3 * oneSixth;
+//         float c2 = d2 * d3 * 0.5f;
+//         float c3 = -d1 * d3 * 0.5f;
+//         float c4 = d1 * d2 * oneSixth;
 
-        buffer[i] = value1 * c1 + interpCoeff * (value2 * c2 + value3 * c3 + value4 * c4);
+//         buffer[i] = value1 * c1 + interpCoeff * (value2 * c2 + value3 * c3 + value4 * c4);
         
-    }
-}
+//     }
+// }
 
 void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
 
@@ -211,28 +199,23 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0);// * 0.2f;
-        static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0);// * 0.9f;
-        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0);// * 0.5f;
-        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0);// * 0.5f;
+        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0) * 0.2f;
+        static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0) * 0.9f;
+        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.5f;
+        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.5f;
         // static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
         static const Sample STAGE_4_GAIN = 1.0f;
         
-        static const Sample STAGE_0_BIAS = 0.0;
-        static const Sample STAGE_1_BIAS = 0.0;
-        static const Sample STAGE_2_BIAS = 0.0;
-        static const Sample STAGE_3_BIAS = 0.0;
-        static const Sample STAGE_4_BIAS = 0.0;
-
-        static const Sample STAGE_ONE_COMPENSATION = (Sample)dbtoa(15.0);
-        static const Sample STAGE_TWO_COMPENSATION = (Sample)dbtoa(-20.0);
-        static const Sample STAGE_THREE_COMPENSATION = (Sample)dbtoa(-35.0);
+        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(15.0);
+        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-20.0);
+        static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-35.0);
+        static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
      
         u32 index = 0;
         
         // Stage 0
-        tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN);
-        tube_sim(upBufferR, upNumSamples, STAGE_0_GAIN);
+        tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN, stage0_bias);
+        tube_sim(upBufferR, upNumSamples, STAGE_0_GAIN, stage0_bias);
         cathodeBypassFilter0.process(upBufferL, upBufferR, upNumSamples);
         
         inputFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
@@ -255,17 +238,17 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
         brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
     
-        tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN);
-        tube_sim(upBufferR, upNumSamples, STAGE_1_GAIN);
+        tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN, stage1_bias);
+        tube_sim(upBufferR, upNumSamples, STAGE_1_GAIN, stage1_bias);
         couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 1) {
             for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= STAGE_ONE_COMPENSATION;
+                upBufferL[index] *= STAGE1_COMPENSATION;
             }
             if (upBufferR) {
                 for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= STAGE_ONE_COMPENSATION;
+                    upBufferR[index] *= STAGE1_COMPENSATION;
                 }
             }
             goto gain_stages_end_of_scope;
@@ -273,18 +256,18 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         
         
         // Stage 2
-        tube_sim(upBufferL, upNumSamples, STAGE_2_GAIN);
-        tube_sim(upBufferR, upNumSamples, STAGE_2_GAIN);
+        tube_sim(upBufferL, upNumSamples, STAGE_2_GAIN, stage2_bias);
+        tube_sim(upBufferR, upNumSamples, STAGE_2_GAIN, stage2_bias);
         cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter2.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 2) {
             for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= -STAGE_TWO_COMPENSATION;
+                upBufferL[index] *= -STAGE2_COMPENSATION;
             }
             if (upBufferR) {
                 for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= -STAGE_TWO_COMPENSATION;
+                    upBufferR[index] *= -STAGE2_COMPENSATION;
                 }
             }
             goto gain_stages_end_of_scope;
@@ -294,18 +277,18 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
         
         // Stage 3
-        tube_sim(upBufferL, upNumSamples, STAGE_3_GAIN);
-        tube_sim(upBufferR, upNumSamples, STAGE_3_GAIN);
+        tube_sim(upBufferL, upNumSamples, STAGE_3_GAIN, stage3_bias);
+        tube_sim(upBufferR, upNumSamples, STAGE_3_GAIN, stage3_bias);
         cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 3) {
             for (index = 0; index < upNumSamples; index++) {
-                upBufferL[index] *= -STAGE_THREE_COMPENSATION;
+                upBufferL[index] *= -STAGE3_COMPENSATION;
             }
             if (upBufferR) {
                 for (index = 0; index < upNumSamples; index++) {
-                    upBufferR[index] *= -STAGE_THREE_COMPENSATION;
+                    upBufferR[index] *= -STAGE3_COMPENSATION;
                 }
             }
             goto gain_stages_end_of_scope;
@@ -315,17 +298,17 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         
         
         // Stage 4
-        tube_sim(upBufferL, upNumSamples, STAGE_4_GAIN);
-        tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN);
+        tube_sim(upBufferL, upNumSamples, STAGE_4_GAIN, stage4_bias);
+        tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN, stage4_bias);
         cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         for (index = 0; index < upNumSamples; index++) {
-            upBufferL[index] *= -1.0f;
+            upBufferL[index] *= -STAGE4_COMPENSATION;
         }
         if (upBufferR) {
             for (index = 0; index < upNumSamples; index++) {
-                upBufferR[index] *= -1.0f;
+                upBufferR[index] *= -STAGE4_COMPENSATION;
             }
         }
         

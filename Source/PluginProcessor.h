@@ -30,9 +30,8 @@ const float BOOST_BITE_Q        = 0.25f;
 const float RESONANCE_FREQUENCY = 150.0f;
 const float PRESENCE_FREQUENCY  = 500.0f;
 
-
 /*
-RESTANT : 
+TODO : 
 
 général 
     presets
@@ -41,14 +40,10 @@ tonestack
     composants custom
     
 preamp 
-    modèle de lampe
 
     filtres custom ?
 
 irloader 
-
-    wavread
-        ignorer les chunks inutils
 
     double IR mixable
     alignement de phase
@@ -61,19 +56,48 @@ enum Params {
     GATE_ATTACK,
     GATE_RELEASE,
     GATE_RETURN,
+    
     BITE,
     BITE_FREQ,
     TIGHT,
+    
     PREAMP_GAIN,
     CHANNEL,
     INPUT_FILTER,
+    PREAMP_VOLUME,
+    
+    STAGE0_LP,
+    STAGE0_BYPASS,
+    STAGE0_BIAS,
+    
+    STAGE1_HP,
+    STAGE1_LP,
+    STAGE1_BYPASS,
+    STAGE1_BIAS,
+    
+    STAGE2_HP,
+    STAGE2_LP,
+    STAGE2_BYPASS,
+    STAGE2_BIAS,
+    
+    STAGE3_HP,
+    STAGE3_LP,
+    STAGE3_BYPASS,
+    STAGE3_BIAS,
+    
+    STAGE4_HP,
+    STAGE4_LP,
+    STAGE4_BYPASS,
+    STAGE4_BIAS,
+    
     TONESTACK_MODEL,
     TONESTACK_BASS,
     TONESTACK_MIDDLE,
     TONESTACK_TREBBLE,
-    PREAMP_VOLUME,
+    
     RESONANCE,
     PRESENCE,
+    
     BYPASS_IR,
     MASTER_VOLUME,
     CHANNEL_CONFIG,
@@ -86,19 +110,48 @@ static std::vector<juce::Identifier> ParamIDs = {
     "GATE_ATTACK",
     "GATE_RELEASE",
     "GATE_RETURN",
+    
     "BITE",
     "BITE_FREQ",
     "TIGHT",
+    
     "PREAMP_GAIN",
-    "INPUT_FILTER",
     "CHANNEL",
+    "INPUT_FILTER",
+    "PREAMP_VOLUME",
+    
+    "STAGE0_LP",
+    "STAGE0_BYPASS",
+    "STAGE0_BIAS",
+    
+    "STAGE1_HP",
+    "STAGE1_LP",
+    "STAGE1_BYPASS",
+    "STAGE1_BIAS",
+    
+    "STAGE2_HP",
+    "STAGE2_LP",
+    "STAGE2_BYPASS",
+    "STAGE2_BIAS",
+    
+    "STAGE3_HP",
+    "STAGE3_LP",
+    "STAGE3_BYPASS",
+    "STAGE3_BIAS",
+    
+    "STAGE4_HP",
+    "STAGE4_LP",
+    "STAGE4_BYPASS",
+    "STAGE4_BIAS",
+    
     "TONE_MODEL",
     "TONE_BASS",
     "TONE_MID",
     "TONE_TREB",
-    "PREAMP_VOLUME",
+    
     "RESONANCE",
     "PRESENCE",
+    
     "BYPASS_IR",
     "MASTER_VOLUME",
     "CHANNEL_CONFIG"
@@ -181,6 +234,9 @@ struct Processor  : public juce::AudioProcessor,
     Sample *sideChainBuffer = nullptr;
     
     u8 channelConfig = Mono;    
+    bool gateActive = true;
+    bool preampActive = true;
+    bool tonestackActive = true;
 
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

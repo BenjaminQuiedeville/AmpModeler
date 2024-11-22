@@ -9,6 +9,16 @@ struct FirstOrderShelfFilter {
 
     FirstOrderShelfFilter(ShelfType type_) { filterType = type_; }
 
+    void prepareToPlay() {
+        b0 = 1.0f;
+        b1 = 0.0f;
+        a1 = 0.0f;
+        x1L = 0.0f;
+        y1L = 0.0f;
+        x1R = 0.0f;
+        y1R = 0.0f;
+    }
+    
     void setCoefficients(float freq, float gain_db, double samplerate) {
 
         float gainLinear = 1.0f;

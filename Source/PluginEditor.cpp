@@ -18,7 +18,7 @@ static int computeYcoord(float row, int height) {
 }
 
 
-GateBoostPage::GateBoostPage(Apvts &apvts) :
+GateBoostPage::GateBoostPage(Processor &p) :
     gateKnob("GATE_KNOB_LABEL", "Gate Thresh", this),
     gateAttackKnob("GATE_Attack_LABEL", "Gate Attack", this),
     gateReleaseKnob("GATE_RELEASE_LABEL", "Gate Release", this), 
@@ -28,28 +28,45 @@ GateBoostPage::GateBoostPage(Apvts &apvts) :
     boostFreqKnob("BOOST_FREQ_KNOB_LABEL", "Boost Freq", this),
     boostTightKnob("BOOST_TIGHT_KNOB_LABEL", "Boost Tight", this)
 {
-    gateKnob.init(ParamIDs[GATE_THRESH].toString(), apvts);
+    gateKnob.init(ParamIDs[GATE_THRESH].toString(), p.apvts);
     gateKnob.setTextValueSuffix(" dB");
 
-    gateAttackKnob.init(ParamIDs[GATE_ATTACK].toString(), apvts);
+    gateAttackKnob.init(ParamIDs[GATE_ATTACK].toString(), p.apvts);
     gateAttackKnob.setTextValueSuffix(" ms");
     
-    gateReleaseKnob.init(ParamIDs[GATE_RELEASE].toString(), apvts);
+    gateReleaseKnob.init(ParamIDs[GATE_RELEASE].toString(), p.apvts);
     gateReleaseKnob.setTextValueSuffix(" ms");
     
-    gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), apvts);
+    gateReturnKnob.init(ParamIDs[GATE_RETURN].toString(), p.apvts);
     gateReturnKnob.setTextValueSuffix(" dB");
 
 
-    boostAttackKnob.init(ParamIDs[BITE].toString(), apvts);
+    boostAttackKnob.init(ParamIDs[BITE].toString(), p.apvts);
     boostAttackKnob.setTextValueSuffix(" dB");
     
-    boostFreqKnob.init(ParamIDs[BITE_FREQ].toString(), apvts);
+    boostFreqKnob.init(ParamIDs[BITE_FREQ].toString(), p.apvts);
     boostFreqKnob.setTextValueSuffix(" Hz");
     
-    boostTightKnob.init(ParamIDs[TIGHT].toString(), apvts);
+    boostTightKnob.init(ParamIDs[TIGHT].toString(), p.apvts);
     boostTightKnob.setTextValueSuffix(" Hz");
+    
+    gateToggle.setToggleState(p.gateActive, 
+                              juce::NotificationType::dontSendNotification);
+                              
+    preampToggle.setToggleState(p.preampActive, 
+                              juce::NotificationType::dontSendNotification);
+                              
+    tonestackToggle.setToggleState(p.tonestackActive, 
+                              juce::NotificationType::dontSendNotification);
+                              
 
+    gateToggle.onClick = [&p, this]() { p.gateActive = gateToggle.getToggleState(); };
+    preampToggle.onClick = [&p, this]() { p.preampActive = preampToggle.getToggleState(); };
+    tonestackToggle.onClick = [&p, this]() { p.tonestackActive = tonestackToggle.getToggleState(); };
+
+    addAndMakeVisible(gateToggle);
+    addAndMakeVisible(preampToggle);
+    addAndMakeVisible(tonestackToggle);
 }
 
 void GateBoostPage::resized() {
@@ -101,10 +118,14 @@ void GateBoostPage::resized() {
                                     boostTightKnob.getY() - 15,
                                     boostTightKnob.getWidth(),
                                     20);
+
+    gateToggle.setBounds(computeXcoord(4, width), computeYcoord(0, height), 200, 30);
+    preampToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 20));
+    tonestackToggle.setBounds(preampToggle.getBounds() + juce::Point(0, preampToggle.getHeight() + 20));
 }
 
 
-AmplifierPage::AmplifierPage(Apvts &apvts) :
+AmplifierPage::AmplifierPage(Processor &p) :
     gainKnob("GAIN_KNOB_LABEL", "Pre Gain", this),
 
     inputFilterKnob("INPUT_KNOB_FILTER_LABEL", "Input Filter", this),
@@ -122,37 +143,37 @@ AmplifierPage::AmplifierPage(Apvts &apvts) :
     toneStackModelBox("TONE_MODEL_BOX_LABEL", "Tonestack Model", this),
     channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config", this)
 {
-    gainKnob.init(ParamIDs[PREAMP_GAIN].toString(), apvts);
+    gainKnob.init(ParamIDs[PREAMP_GAIN].toString(), p.apvts);
     gainKnob.setNumDecimalPlacesToDisplay(2);
-    inputFilterKnob.init(ParamIDs[INPUT_FILTER].toString(), apvts);
+    inputFilterKnob.init(ParamIDs[INPUT_FILTER].toString(), p.apvts);
     inputFilterKnob.setTextValueSuffix(" Hz");
     
-    bassEQKnob.init(ParamIDs[TONESTACK_BASS].toString(), apvts);
+    bassEQKnob.init(ParamIDs[TONESTACK_BASS].toString(), p.apvts);
     
-    midEQKnob.init(ParamIDs[TONESTACK_MIDDLE].toString(), apvts);
+    midEQKnob.init(ParamIDs[TONESTACK_MIDDLE].toString(), p.apvts);
     
-    trebbleEQKnob.init(ParamIDs[TONESTACK_TREBBLE].toString(), apvts);
+    trebbleEQKnob.init(ParamIDs[TONESTACK_TREBBLE].toString(), p.apvts);
     
-    preampVolumeKnob.init(ParamIDs[PREAMP_VOLUME].toString(), apvts);
+    preampVolumeKnob.init(ParamIDs[PREAMP_VOLUME].toString(), p.apvts);
     preampVolumeKnob.setTextValueSuffix(" dB");
  
-    resonanceKnob.init(ParamIDs[RESONANCE].toString(), apvts);
-    presenceKnob.init(ParamIDs[PRESENCE].toString(), apvts);
+    resonanceKnob.init(ParamIDs[RESONANCE].toString(), p.apvts);
+    presenceKnob.init(ParamIDs[PRESENCE].toString(), p.apvts);
  
-    ampChannelBox.init(ParamIDs[CHANNEL].toString(), apvts);
-    toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), apvts);
-    channelConfigBox.init(ParamIDs[CHANNEL_CONFIG].toString(), apvts);
+    ampChannelBox.init(ParamIDs[CHANNEL].toString(), p.apvts);
+    toneStackModelBox.init(ParamIDs[TONESTACK_MODEL].toString(), p.apvts);
+    channelConfigBox.init(ParamIDs[CHANNEL_CONFIG].toString(), p.apvts);
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
-    ampChannelBox.setSelectedId((int)*apvts.getRawParameterValue(ParamIDs[CHANNEL]), 
+    ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL]), 
                                  juce::NotificationType::dontSendNotification);
 
     toneStackModelBox.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
-    toneStackModelBox.setSelectedId((int)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1, 
+    toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1, 
                                      juce::NotificationType::dontSendNotification);
 
     channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
-    channelConfigBox.setSelectedId((int)*apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
+    channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
                                     juce::NotificationType::dontSendNotification);
 
 }
@@ -234,6 +255,195 @@ void AmplifierPage::resized() {
 
 }
 
+GainStagesPage::GainStagesPage(Processor &p) : 
+    stage0LPSlider("STAGE0_LP_SLIDER_LABEL", "Stage 0 output filter", this),
+    stage0BypassSlider("STAGE0_BYPASS_SLIDER_LABEL", "Stage 0 cathode bypass", this),
+    stage0BiasSlider("STAGE0_BIAS_SLIDER_LABEL", "Stage 0 tube bias", this),
+
+    stage1HPSlider("STAGE1_HP_SLIDER_LABEL", "Stage 1 coupling filter", this),
+    stage1LPSlider("STAGE1_LP_SLIDER_LABEL", "Stage 1 output filter", this),
+    stage1BypassSlider("STAGE1_BYPASS_SLIDER_LABEL", "Stage 1 cathode bypass", this),
+    stage1BiasSlider("STAGE1_BIAS_SLIDER_LABEL", "Stage 1 tube bias", this),
+
+    stage2HPSlider("STAGE2_HP_SLIDER_LABEL", "Stage 2 coupling filter", this),
+    stage2LPSlider("STAGE2_LP_SLIDER_LABEL", "Stage 2 output filter", this),
+    stage2BypassSlider("STAGE2_BYPASS_SLIDER_LABEL", "Stage 2 cathode bypass", this),
+    stage2BiasSlider("STAGE2_BIAS_SLIDER_LABEL", "Stage 2 tube bias", this),
+    
+    stage3HPSlider("STAGE3_HP_SLIDER_LABEL", "Stage 3 coupling filter", this),
+    stage3LPSlider("STAGE3_LP_SLIDER_LABEL", "Stage 3 output filter", this),
+    stage3BypassSlider("STAGE3_BYPASS_SLIDER_LABEL", "Stage 3 cathode bypass", this),
+    stage3BiasSlider("STAGE3_BIAS_SLIDER_LABEL", "Stage 3 tube bias", this),
+
+    stage4HPSlider("STAGE4_HP_SLIDER_LABEL", "Stage 4 coupling filter", this),
+    stage4LPSlider("STAGE4_LP_SLIDER_LABEL", "Stage 4 output filter", this),
+    stage4BypassSlider("STAGE4_BYPASS_SLIDER_LABEL", "Stage 4 cathode bypass", this),
+    stage4BiasSlider("STAGE4_BIAS_SLIDER_LABEL", "Stage 4 tube bias", this)
+{
+    stage0LPSlider.init(ParamIDs[STAGE0_LP].toString(), p.apvts);
+    stage0LPSlider.setTextValueSuffix(" Hz");
+    stage0BypassSlider.init(ParamIDs[STAGE0_BYPASS].toString(), p.apvts);
+    stage0BypassSlider.setTextValueSuffix(" dB");
+    stage0BiasSlider.init(ParamIDs[STAGE0_BIAS].toString(), p.apvts);
+
+    stage1HPSlider.init(ParamIDs[STAGE1_HP].toString(), p.apvts);
+    stage1HPSlider.setTextValueSuffix(" Hz");
+    stage1LPSlider.init(ParamIDs[STAGE1_LP].toString(), p.apvts);
+    stage1LPSlider.setTextValueSuffix(" Hz");
+    stage1BypassSlider.init(ParamIDs[STAGE1_BYPASS].toString(), p.apvts);
+    stage1BypassSlider.setTextValueSuffix(" dB");
+    stage1BiasSlider.init(ParamIDs[STAGE1_BIAS].toString(), p.apvts);
+
+    stage2HPSlider.init(ParamIDs[STAGE2_HP].toString(), p.apvts);
+    stage2HPSlider.setTextValueSuffix(" Hz");
+    stage2LPSlider.init(ParamIDs[STAGE2_LP].toString(), p.apvts);
+    stage2LPSlider.setTextValueSuffix(" Hz");
+    stage2BypassSlider.init(ParamIDs[STAGE2_BYPASS].toString(), p.apvts);
+    stage2BypassSlider.setTextValueSuffix(" dB");
+    stage2BiasSlider.init(ParamIDs[STAGE2_BIAS].toString(), p.apvts);
+    
+    stage3HPSlider.init(ParamIDs[STAGE3_HP].toString(), p.apvts);
+    stage3HPSlider.setTextValueSuffix(" Hz");
+    stage3LPSlider.init(ParamIDs[STAGE3_LP].toString(), p.apvts);
+    stage3LPSlider.setTextValueSuffix(" Hz");
+    stage3BypassSlider.init(ParamIDs[STAGE3_BYPASS].toString(), p.apvts);
+    stage3BypassSlider.setTextValueSuffix(" dB");
+    stage3BiasSlider.init(ParamIDs[STAGE3_BIAS].toString(), p.apvts);
+
+    stage4HPSlider.init(ParamIDs[STAGE4_HP].toString(), p.apvts);
+    stage4HPSlider.setTextValueSuffix(" Hz");
+    stage4LPSlider.init(ParamIDs[STAGE4_LP].toString(), p.apvts);
+    stage4LPSlider.setTextValueSuffix(" Hz");
+    stage4BypassSlider.init(ParamIDs[STAGE4_BYPASS].toString(), p.apvts);
+    stage4BypassSlider.setTextValueSuffix(" dB");
+    stage4BiasSlider.init(ParamIDs[STAGE4_BIAS].toString(), p.apvts);
+
+}
+
+void GainStagesPage::resized() {
+
+    static const int verticalSpacing = 30;
+    static const int horizontalSpacing = 20;
+
+    stage0LPSlider.setBounds(horizontalMargin, verticalMargin + 50 + verticalSpacing, 150, 50);
+    stage0LPSlider.label.setBounds(stage0LPSlider.getX(),
+                                    stage0LPSlider.getY() - 15,
+                                    stage0LPSlider.getWidth(),
+                                    20);
+
+    stage0BypassSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(0, stage0LPSlider.getHeight() + verticalSpacing));
+    stage0BypassSlider.label.setBounds(stage0BypassSlider.getX(),
+                                    stage0BypassSlider.getY() - 15,
+                                    stage0BypassSlider.getWidth(),
+                                    20);
+                                    
+    stage0BiasSlider.setBounds(stage0BypassSlider.getBounds() + juce::Point(0, stage0BypassSlider.getHeight() + verticalSpacing));
+    stage0BiasSlider.label.setBounds(stage0BiasSlider.getX(),
+                                    stage0BiasSlider.getY() - 15,
+                                    stage0BiasSlider.getWidth(),
+                                    20);
+                                    
+
+    stage1HPSlider.setBounds(stage0LPSlider.getRight() + horizontalSpacing, verticalMargin, stage0LPSlider.getWidth(), stage0LPSlider.getHeight());
+    stage1HPSlider.label.setBounds(stage1HPSlider.getX(),
+                                    stage1HPSlider.getY() - 15,
+                                    stage1HPSlider.getWidth(),
+                                    20);
+                                    
+    stage1LPSlider.setBounds(stage1HPSlider.getBounds() + juce::Point(0, stage1HPSlider.getHeight() + verticalSpacing));
+    stage1LPSlider.label.setBounds(stage1LPSlider.getX(),
+                                    stage1LPSlider.getY() - 15,
+                                    stage1LPSlider.getWidth(),
+                                    20);
+                                    
+    stage1BypassSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(0, stage1LPSlider.getHeight() + verticalSpacing));
+    stage1BypassSlider.label.setBounds(stage1BypassSlider.getX(),
+                                    stage1BypassSlider.getY() - 15,
+                                    stage1BypassSlider.getWidth(),
+                                    20);
+                                    
+    stage1BiasSlider.setBounds(stage1BypassSlider.getBounds() + juce::Point(0, stage1BypassSlider.getHeight() + verticalSpacing));
+    stage1BiasSlider.label.setBounds(stage1BiasSlider.getX(),
+                                    stage1BiasSlider.getY() - 15,
+                                    stage1BiasSlider.getWidth(),
+                                    20);
+                                    
+
+    stage2HPSlider.setBounds(stage1LPSlider.getRight() + horizontalSpacing, verticalMargin, stage1LPSlider.getWidth(), stage1LPSlider.getHeight());
+    stage2HPSlider.label.setBounds(stage2HPSlider.getX(),
+                                    stage2HPSlider.getY() - 15,
+                                    stage2HPSlider.getWidth(),
+                                    20);
+                                    
+    stage2LPSlider.setBounds(stage2HPSlider.getBounds() + juce::Point(0, stage2HPSlider.getHeight() + verticalSpacing));
+    stage2LPSlider.label.setBounds(stage2LPSlider.getX(),
+                                    stage2LPSlider.getY() - 15,
+                                    stage2LPSlider.getWidth(),
+                                    20);
+                                    
+    stage2BypassSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(0, stage2LPSlider.getHeight() + verticalSpacing));
+    stage2BypassSlider.label.setBounds(stage2BypassSlider.getX(),
+                                    stage2BypassSlider.getY() - 15,
+                                    stage2BypassSlider.getWidth(),
+                                    20);
+                                    
+    stage2BiasSlider.setBounds(stage2BypassSlider.getBounds() + juce::Point(0, stage2BypassSlider.getHeight() + verticalSpacing));
+    stage2BiasSlider.label.setBounds(stage2BiasSlider.getX(),
+                                    stage2BiasSlider.getY() - 15,
+                                    stage2BiasSlider.getWidth(),
+                                    20);
+                                    
+    
+
+    stage3HPSlider.setBounds(stage2LPSlider.getRight() + horizontalSpacing, verticalMargin, stage2LPSlider.getWidth(), stage2LPSlider.getHeight());
+    stage3HPSlider.label.setBounds(stage3HPSlider.getX(),
+                                    stage3HPSlider.getY() - 15,
+                                    stage3HPSlider.getWidth(),
+                                    20);
+
+    stage3LPSlider.setBounds(stage3HPSlider.getBounds() + juce::Point(0, stage3HPSlider.getHeight() + verticalSpacing));
+    stage3LPSlider.label.setBounds(stage3LPSlider.getX(),
+                                    stage3LPSlider.getY() - 15,
+                                    stage3LPSlider.getWidth(),
+                                    20);
+                                    
+    stage3BypassSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(0, stage3LPSlider.getHeight() + verticalSpacing));
+    stage3BypassSlider.label.setBounds(stage3BypassSlider.getX(),
+                                    stage3BypassSlider.getY() - 15,
+                                    stage3BypassSlider.getWidth(),
+                                    20);
+                                    
+    stage3BiasSlider.setBounds(stage3BypassSlider.getBounds() + juce::Point(0, stage3BypassSlider.getHeight() + verticalSpacing));
+    stage3BiasSlider.label.setBounds(stage3BiasSlider.getX(),
+                                    stage3BiasSlider.getY() - 15,
+                                    stage3BiasSlider.getWidth(),
+                                    20);
+                                    
+
+    stage4HPSlider.setBounds(stage3LPSlider.getRight() + horizontalSpacing, verticalMargin, stage3LPSlider.getWidth(), stage3LPSlider.getHeight());
+    stage4HPSlider.label.setBounds(stage4HPSlider.getX(),
+                                    stage4HPSlider.getY() - 15,
+                                    stage4HPSlider.getWidth(),
+                                    20);
+
+    stage4LPSlider.setBounds(stage4HPSlider.getBounds() + juce::Point(0, stage4HPSlider.getHeight() + verticalSpacing));
+    stage4LPSlider.label.setBounds(stage4LPSlider.getX(),
+                                    stage4LPSlider.getY() - 15,
+                                    stage4LPSlider.getWidth(),
+                                    20);
+                                    
+    stage4BypassSlider.setBounds(stage4LPSlider.getBounds() + juce::Point(0, stage4LPSlider.getHeight() + verticalSpacing));
+    stage4BypassSlider.label.setBounds(stage4BypassSlider.getX(),
+                                    stage4BypassSlider.getY() - 15,
+                                    stage4BypassSlider.getWidth(),
+                                    20);
+                                    
+    stage4BiasSlider.setBounds(stage4BypassSlider.getBounds() + juce::Point(0, stage4BypassSlider.getHeight() + verticalSpacing));
+    stage4BiasSlider.label.setBounds(stage4BiasSlider.getX(),
+                                    stage4BiasSlider.getY() - 15,
+                                    stage4BiasSlider.getWidth(),
+                                    20);
+}
 
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
@@ -357,10 +567,10 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     addAndMakeVisible(defaultIRButton);
 
 
-    bypassToggle.setToggleState(audioProcessor.irLoader.bypass, 
+    bypassToggle.setToggleState(audioProcessor.irLoader.active, 
                                         juce::NotificationType::dontSendNotification);
     bypassToggle.onClick = [&audioProcessor, this]() {
-        audioProcessor.irLoader.bypass = bypassToggle.getToggleState();
+        audioProcessor.irLoader.active = bypassToggle.getToggleState();
     };
 
     addAndMakeVisible(bypassToggle);
@@ -391,8 +601,9 @@ void IRLoaderPage::resized() {
 Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
 
-    gateBoostPage(p.apvts),
-    ampPage(p.apvts),
+    gateBoostPage(p),
+    ampPage(p),
+    gainStagesPage(p),
     irLoaderPage(p), 
     volumePanel(p)
 {
@@ -407,7 +618,7 @@ Editor::Editor (Processor& p)
     addAndMakeVisible(volumePanel);
 
     setSize(1000, 400);
-    setResizable(true, true);
+    setResizable(false, false);
 }
 
 //==============================================================================
@@ -432,6 +643,7 @@ void Editor::resized() {
 
     gateBoostPage.resized();
     ampPage.resized();
+    gainStagesPage.resized();
     irLoaderPage.resized();
 }
 
@@ -456,7 +668,7 @@ void Knob::init(juce::String paramID, Apvts &apvts) {
 }
 
 
-Slider::Slider(juce::String labelID, juce::String name, juce::Component *comp) 
+VSlider::VSlider(juce::String labelID, juce::String name, juce::Component *comp) 
 : label{labelID, name} 
 {    
     setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
@@ -469,13 +681,30 @@ Slider::Slider(juce::String labelID, juce::String name, juce::Component *comp)
     comp->addAndMakeVisible(label);
 }
 
-void Slider::init(juce::String paramID, Apvts &apvts) {
+void VSlider::init(juce::String paramID, Apvts &apvts) {
     sliderAttachment = std::make_unique<SliderAttachment>(
         apvts, paramID, *this
     );
 }
 
+HSlider::HSlider(juce::String labelID, juce::String name, juce::Component *comp) 
+: label{labelID, name} 
+{    
+    setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+    setTextBoxStyle(juce::Slider::TextBoxBelow, false, 75, 25);
+    comp->addAndMakeVisible(*this);
 
+    label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    label.setJustificationType(juce::Justification::centred);
+    label.setFont(15.0f);
+    comp->addAndMakeVisible(label);
+}
+
+void HSlider::init(juce::String paramID, Apvts &apvts) {
+    sliderAttachment = std::make_unique<SliderAttachment>(
+        apvts, paramID, *this
+    );
+}
 
 ComboBox::ComboBox(juce::String labelID, juce::String name, juce::Component *comp) 
          : label {labelID, name}

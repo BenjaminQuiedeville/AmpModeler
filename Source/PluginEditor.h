@@ -33,8 +33,8 @@ struct Knob : public juce::Slider {
 };
 
 
-struct Slider : public juce::Slider {
-    Slider(juce::String labelID, juce::String name, juce::Component* comp);
+struct VSlider : public juce::Slider {
+    VSlider(juce::String labelID, juce::String name, juce::Component* comp);
     
     void init(juce::String paramID, Apvts &apvts);
     
@@ -42,6 +42,14 @@ struct Slider : public juce::Slider {
     std::unique_ptr<SliderAttachment> sliderAttachment;
 };
 
+struct HSlider : public juce::Slider {
+    HSlider(juce::String labelID, juce::String name, juce::Component* comp);
+    
+    void init(juce::String paramID, Apvts &apvts);
+    
+    juce::Label label;
+    std::unique_ptr<SliderAttachment> sliderAttachment;
+};
 
 struct ComboBox : public juce::ComboBox {
     ComboBox(juce::String labelID, juce::String name, juce::Component* comp); 
@@ -54,7 +62,7 @@ struct ComboBox : public juce::ComboBox {
 
 
 struct GateBoostPage : public juce::Component {
-    GateBoostPage(Apvts &apvts);
+    GateBoostPage(Processor &p);
     void resized();
     
     Knob gateKnob;
@@ -65,11 +73,15 @@ struct GateBoostPage : public juce::Component {
     Knob boostAttackKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
+    
+    juce::ToggleButton gateToggle {"Activate Gate/Boost"};
+    juce::ToggleButton preampToggle {"Activate Preamp"};
+    juce::ToggleButton tonestackToggle {"Activate Tonestack"};
 };
 
 
 struct AmplifierPage : public juce::Component {
-    AmplifierPage(Apvts &apvts);
+    AmplifierPage(Processor &p);
     void resized();
     
     Knob gainKnob;
@@ -89,13 +101,32 @@ struct AmplifierPage : public juce::Component {
 
 
 struct GainStagesPage : public juce::Component {
-    GainStagesPage() {
+    GainStagesPage(Processor &p);
+    void resized();
     
-    }
+    HSlider stage0LPSlider;
+    HSlider stage0BypassSlider;
+    HSlider stage0BiasSlider;
+
+    HSlider stage1HPSlider;
+    HSlider stage1LPSlider;
+    HSlider stage1BypassSlider;
+    HSlider stage1BiasSlider;
+
+    HSlider stage2HPSlider;
+    HSlider stage2LPSlider;
+    HSlider stage2BypassSlider;
+    HSlider stage2BiasSlider;
     
-    void resized() {
-    
-    }
+    HSlider stage3HPSlider;
+    HSlider stage3LPSlider;
+    HSlider stage3BypassSlider;
+    HSlider stage3BiasSlider;
+
+    HSlider stage4HPSlider;
+    HSlider stage4LPSlider;
+    HSlider stage4BypassSlider;
+    HSlider stage4BiasSlider;
 };
 
 
@@ -111,7 +142,7 @@ struct IRLoaderPage : public juce::Component {
 
     juce::TextButton defaultIRButton {"Load default IR"};
     
-    juce::ToggleButton bypassToggle {"Bypass IRloader"};
+    juce::ToggleButton bypassToggle {"Activate IRloader"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 };
 
@@ -119,7 +150,8 @@ struct IRLoaderPage : public juce::Component {
 struct MasterVolPanel : public juce::Component {
 
     MasterVolPanel(Processor &p) :     
-        volumeSlider("MASTER_VOLUME_KNOB_LABEL", "Master Vol", this)
+        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this),
+        inputGainSlider("INPUT_GAIN_SLIDER_LABEL", "Input Gain", this)
     {
         volumeSlider.init(ParamIDs[MASTER_VOLUME].toString(), p.apvts);
         volumeSlider.setTextValueSuffix(" dB");
@@ -140,7 +172,8 @@ struct MasterVolPanel : public juce::Component {
                                     20);
     } 
 
-    Slider volumeSlider;
+    VSlider volumeSlider;
+    VSlider inputGainSlider;
 };
 
 

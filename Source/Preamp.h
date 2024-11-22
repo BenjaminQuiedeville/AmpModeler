@@ -22,7 +22,7 @@ struct Preamp {
     ~Preamp();
     
     void prepareToPlay(double samplerate, u32 blockSize);
-    // void processGainStages(Sample *bufferL, Sample *bufferR, u32 nSamples);
+    void setBias(float value, int tube_index);  
     void process(Sample *bufferL, Sample *bufferR, u32 nSamples);
 
     SmoothParamLinear preGain;
@@ -38,11 +38,13 @@ struct Preamp {
     OnepoleFilter couplingFilter4;
 
     OnepoleFilter stageOutputFilter0;
+    OnepoleFilter stageOutputFilter1;
     OnepoleFilter stageOutputFilter2;
     OnepoleFilter stageOutputFilter3;
     OnepoleFilter stageOutputFilter4;
 
     FirstOrderShelfFilter cathodeBypassFilter0 {lowshelf};
+    FirstOrderShelfFilter cathodeBypassFilter1 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter2 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter3 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter4 {lowshelf};
@@ -57,6 +59,12 @@ struct Preamp {
     
     Sample *upBufferL = nullptr;
     Sample *upBufferR = nullptr;
+
+    float stage0_bias[2] = {0};
+    float stage1_bias[2] = {0};
+    float stage2_bias[2] = {0};
+    float stage3_bias[2] = {0};
+    float stage4_bias[2] = {0};
 
     u8 channel = 0;
 };
