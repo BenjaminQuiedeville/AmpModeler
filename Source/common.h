@@ -7,11 +7,6 @@
 #ifndef AMP_MODELER_COMMON
 #define AMP_MODELER_COMMON
 
-#ifndef AMPMODELER_NO_JUCE_
-#include "juce_core/juce_core.h"
-#include "juce_audio_processors/juce_audio_processors.h"
-#endif // AMPMODELER_NO_JUCE_
-
 #include "cassert"
 
 // #define _USE_MATH_DEFINES

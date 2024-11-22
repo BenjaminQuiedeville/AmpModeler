@@ -7,6 +7,8 @@
 #ifndef IR_LOADER_H
 #define IR_LOADER_H
 
+#include <juce_core/juce_core.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 
 #include "common.h"
 #include "pffft/pffft.h"
@@ -19,7 +21,6 @@ libérer le buffer temporaire
 au chargement manuel : ouvrir avec un juce::File dans un juce::MemoryBlock
 charger dans un buffer temporaire et calculer la dft
 libérer le buffer temporaire
-
 
 */
 
@@ -46,7 +47,7 @@ struct IRLoader {
     size_t blockSize = 0;
     size_t convolutionResultSize = 0;
 
-    bool bypass = false;
+    bool active = true;
     bool updateIR = false;
     bool defaultIR = true;
     float *irBuffer = nullptr;
