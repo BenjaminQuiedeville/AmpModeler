@@ -27,11 +27,15 @@
 
 const float BOOST_BITE_Q        = 0.25f;
 
-const float RESONANCE_FREQUENCY = 150.0f;
+const float RESONANCE_FREQUENCY = 120.0f;
 const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
+
+parametric EQ panel
+
+tube parameters : reset button
 
 général 
     presets
@@ -39,10 +43,6 @@ général
 tonestack
     composants custom
     
-preamp 
-
-    filtres custom ?
-
 irloader 
 
     double IR mixable

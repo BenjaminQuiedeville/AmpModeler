@@ -220,7 +220,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
              
         
         // Input Gain
-        applyGain(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
+        applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
         
         // Stage 0
         tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN, stage0_bias);
@@ -232,7 +232,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         
         
         // Stage 1
-        preGain.applySmoothGain(upBufferL, upBufferR, upNumSamples);
+        preGain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
     
         brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
     
@@ -241,7 +241,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 1) {
-            applyGain(STAGE1_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+            applyGainLinear(STAGE1_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
         
@@ -253,7 +253,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter2.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 2) {
-            applyGain(-STAGE2_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+            applyGainLinear(-STAGE2_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
     
@@ -267,7 +267,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 3) {
-            applyGain(-STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+            applyGainLinear(-STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
     
@@ -280,13 +280,13 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
 
-        applyGain(-STAGE4_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+        applyGainLinear(-STAGE4_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             
         gain_stages_end_of_scope:;
     }
     
     
-    postGain.applySmoothGain(upBufferL, upBufferR, upNumSamples);
+    postGain.applySmoothGainDeciBels(upBufferL, upBufferR, upNumSamples);
             
     // downsampling
     assert(upNumSamples == nSamples*PREAMP_UP_SAMPLE_FACTOR);

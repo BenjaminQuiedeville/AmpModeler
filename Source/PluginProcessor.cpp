@@ -203,7 +203,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
 
 
-    inputGain.applySmoothGain(audioPtrL, audioPtrR, numSamples);
+    inputGain.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
 
     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
 
@@ -235,7 +235,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         
     irLoader.process(audioPtrL, audioPtrR, numSamples);
 
-    masterVolume.applySmoothGain(audioPtrL, audioPtrR, numSamples);
+    masterVolume.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
         
     if (gateActive) {
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);

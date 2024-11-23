@@ -53,7 +53,7 @@ static inline u64 nextPowTwo(u64 n) {
     return n;
 }
 
-static inline void applyGain(Sample gain, Sample *bufferL, Sample *bufferR, u32 nSamples) {
+static inline void applyGainLinear(Sample gain, Sample *bufferL, Sample *bufferR, u32 nSamples) {
     for (u32 index = 0; index < nSamples; index++) {
         bufferL[index] *= gain;
     }

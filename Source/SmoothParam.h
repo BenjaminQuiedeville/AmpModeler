@@ -49,7 +49,7 @@ struct SmoothParamLinear {
         return currentValue;
     }
 
-    inline void applySmoothGain(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+    inline void applySmoothGainDeciBels(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
                 Sample gainValue = (Sample)dbtoa(nextValue()); 
@@ -63,6 +63,22 @@ struct SmoothParamLinear {
             bufferL[i] *= (Sample)dbtoa(nextValue());
         }
     }
+
+    inline void applySmoothGainLinear(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+        if (bufferR) {
+            for (size_t i = 0; i < nSamples; i++) {
+                Sample gainValue = (Sample)nextValue(); 
+                bufferL[i] *= gainValue;
+                bufferR[i] *= gainValue;
+            }
+            return;
+        }
+        
+        for (size_t i = 0; i < nSamples; i++) {
+            bufferL[i] *= (Sample)nextValue();
+        }
+    }
+
 
     double target;
     double prevTarget;
