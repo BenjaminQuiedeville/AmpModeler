@@ -61,7 +61,7 @@ enum Params {
     GATE_RETURN,
     
     SCREAMER_AMOUNT,
-    SCEAMER_FREQ,
+    SCREAMER_FREQ,
     TIGHT,
     
     PREAMP_GAIN,

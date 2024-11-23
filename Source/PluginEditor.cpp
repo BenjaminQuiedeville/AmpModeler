@@ -45,10 +45,10 @@ GateBoostPage::GateBoostPage(Processor &p) :
     inputGainKnob.init(ParamIDs[INPUT_GAIN].toString(), p.apvts);
     inputGainKnob.setTextValueSuffix(" dB");
 
-    boostAttackKnob.init(ParamIDs[BITE].toString(), p.apvts);
+    boostAttackKnob.init(ParamIDs[SCREAMER_AMOUNT].toString(), p.apvts);
     boostAttackKnob.setTextValueSuffix(" dB");
     
-    boostFreqKnob.init(ParamIDs[BITE_FREQ].toString(), p.apvts);
+    boostFreqKnob.init(ParamIDs[SCREAMER_FREQ].toString(), p.apvts);
     boostFreqKnob.setTextValueSuffix(" Hz");
     
     boostTightKnob.init(ParamIDs[TIGHT].toString(), p.apvts);
