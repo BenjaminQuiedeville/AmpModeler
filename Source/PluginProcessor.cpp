@@ -130,8 +130,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     inputGain.init(0.0);
     masterVolume.init(0.0);
     
-    toneStack.prepareToPlay(sampleRate);
     toneStack.setModel(EnglSavage); // change to current selected model
+    toneStack.prepareToPlay(sampleRate);
     
     irLoader.init(sampleRate, samplesPerBlock);
 
@@ -218,9 +218,10 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
     
     /******PROCESS********/
-        
-    tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
-    biteFilter.process(audioPtrL, audioPtrR, numSamples);
+    if (gateActive) {
+        tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
+        biteFilter.process(audioPtrL, audioPtrR, numSamples);
+    }
     
     if (preampActive) {
         preamp.process(audioPtrL, audioPtrR, numSamples);
@@ -619,7 +620,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     // Tubes params    
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE0_LP].toString(), "STAGE0_LP", 
-        juce::NormalisableRange<float>(5000.0f, 20000.0f, 1.0, 0.7f), 10000.0f, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), 10000.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -640,7 +641,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE1_LP].toString(), "STAGE1_LP", 
-        juce::NormalisableRange<float>(5000.0f, 20000.0f, 1.0, 0.7f), 18000.0f, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), 18000.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -661,7 +662,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE2_LP].toString(), "STAGE2_LP", 
-        juce::NormalisableRange<float>(5000.0f, 20000.0f, 1.0, 0.7f), 16000.0f, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), 16000.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -682,7 +683,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE3_LP].toString(), "STAGE3_LP", 
-        juce::NormalisableRange<float>(5000.0f, 20000.0f, 1.0f, 0.7f), 16000.0f, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0f, 0.7f), 16000.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -703,7 +704,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE4_LP].toString(), "STAGE4_LP", 
-        juce::NormalisableRange<float>(5000.0f, 20000.0f, 1.0, 0.7f), 16000.0f, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), 16000.0f, attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -753,7 +754,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         ParamIDs[BYPASS_IR].toString(), "Activate IR Loader", 
-        false
+        true
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

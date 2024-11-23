@@ -43,7 +43,7 @@ key_binding:            F5
 build_command:          cmake --build build --config Debug  # should be an executable or a script
 build_working_dir:      %PROJECT_CONFIG_DIR%
 # timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
-run_command:            "C:\Program Files\Cycling '74\Max 8\Max.exe"      # will be run if build succeeds
+run_command:            raddbg.exe --auto_run "C:\Program Files\Cycling '74\Max 8\Max.exe"     # will be run if build succeeds
 error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 run_working_dir:        %PROJECT_CONFIG_DIR%      # working dir for the run command
 key_binding:            Ctrl-F5
@@ -54,6 +54,10 @@ run_command:            W:/VSTHost/vsthost.exe build\AmpModeler_artefacts\Debug\
 run_working_dir:        %PROJECT_CONFIG_DIR%
 key_binding:            Ctrl-F4
 
+[Release Debug]
+build_command:          cmake --build build --config RelWithDebInfo
+key_binding:            F9
+
 [Release]
 build_command:          cmake --build build --config Release
-key_binding:            F9
+key_binding:            Ctrl-F9

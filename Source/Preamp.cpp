@@ -74,7 +74,7 @@ void Preamp::setBias(float bias, int tube_index) {
     
     static const float pos_clip_point = 0.3f;
     static const float neg_clip_point = -5.0f;
-    static const float bias_multiplier = 1.0f;
+    static const float bias_multiplier = 1.5f;
     
     bias *= bias_multiplier;
     
@@ -99,16 +99,16 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         
     if (!buffer) { return; }
         
-    const float gridCondThresh = 1.0f;
-    const float gridCondRatio  = 4.0f;
-    const float gridCondKnee   = 0.01f;
+    static const float gridCondThresh = 1.0f;
+    static const float gridCondRatio  = 4.0f;
+    static const float gridCondKnee   = 0.05f;
     
     for (u32 index = 0; index < nSamples; index++) {
         Sample sample = buffer[index];
         
         if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
             sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
-        } else if (2.0 * abs(sample - gridCondThresh) <= gridCondKnee) {
+        } else if (2.0f * abs(sample - gridCondThresh) <= gridCondKnee) {
             sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
                         /(2.0f * gridCondKnee);
         }

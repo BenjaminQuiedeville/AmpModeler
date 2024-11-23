@@ -7,78 +7,75 @@
 #include "Tonestack.h"
 
 void Tonestack::setModel(TonestackModel newModel) {
-    
-    if (newModel == model) { return; }
-    
+        
     switch (newModel) {
-    case EnglSavage: {
-
-        comps.R1 = 250e3;
-        comps.R2 = 1e6;
-        comps.R3 = 20e3;
-        comps.R4 = 47e3;
-        comps.C1 = 0.47e-9;
-        comps.C2 = 47e-9;
-        comps.C3 = 22e-9;    
-        break;
+        case EnglSavage: {
+            comps.R1 = 250e3;
+            comps.R2 = 1e6;
+            comps.R3 = 20e3;
+            comps.R4 = 47e3;
+            comps.C1 = 0.47e-9;
+            comps.C2 = 47e-9;
+            comps.C3 = 22e-9;    
+            break;
+        }
+        
+        case JCM800: {
+            comps.R1 = 220e3;
+            comps.R2 = 1e6;
+            comps.R3 = 22e3;
+            comps.R4 = 33e3;
+            comps.C1 = 0.47e-9;
+            comps.C2 = 22e-9;
+            comps.C3 = 22e-9;    
+            break; 
+        }
+    
+        case Soldano: {
+            comps.R1 = 250e3;
+            comps.R2 = 1e6;
+            comps.R3 = 25e3;
+            comps.R4 = 47e3;
+            comps.C1 = 0.47e-9;
+            comps.C2 = 20e-9;
+            comps.C3 = 20e-9;    
+            break; 
+        }
+    
+        case Rectifier: {
+            comps.R1 = 250e3;
+            comps.R2 = 1e6;
+            comps.R3 = 25e3;
+            comps.R4 = 47e3;
+            comps.C1 = 0.50e-9;
+            comps.C2 = 20e-9;
+            comps.C3 = 20e-9;    
+            break; 
+        }
+    
+        case Orange: {
+            comps.R1 = 250e3;
+            comps.R2 = 300e3;
+            comps.R3 = 25e3;
+            comps.R4 = 39e3;
+            comps.C1 = 0.56e-9;
+            comps.C2 = 22e-9;
+            comps.C3 = 22e-9;    
+            break; 
+        }
+    
+        // case Custom: {
+        //     comps.R1 = 250e3;
+        //     comps.R2 = 1e6;
+        //     comps.R3 = 20e3;
+        //     comps.R4 = 47e3;
+        //     comps.C1 = 0.47e-9;
+        //     comps.C2 = 47e-9;
+        //     comps.C3 = 22e-9;    
+        //     break;
+        // }
     }
     
-    case JCM800: {
-        comps.R1 = 220e3;
-        comps.R2 = 1e6;
-        comps.R3 = 22e3;
-        comps.R4 = 33e3;
-        comps.C1 = 0.47e-9;
-        comps.C2 = 22e-9;
-        comps.C3 = 22e-9;    
-        break; 
-    }
-
-    case Soldano: {
-        comps.R1 = 250e3;
-        comps.R2 = 1e6;
-        comps.R3 = 25e3;
-        comps.R4 = 47e3;
-        comps.C1 = 0.47e-9;
-        comps.C2 = 20e-9;
-        comps.C3 = 20e-9;    
-        break; 
-    }
-
-    case Rectifier: {
-        comps.R1 = 250e3;
-        comps.R2 = 1e6;
-        comps.R3 = 25e3;
-        comps.R4 = 47e3;
-        comps.C1 = 0.50e-9;
-        comps.C2 = 20e-9;
-        comps.C3 = 20e-9;    
-        break; 
-    }
-
-    case Orange: {
-        comps.R1 = 250e3;
-        comps.R2 = 300e3;
-        comps.R3 = 25e3;
-        comps.R4 = 39e3;
-        comps.C1 = 0.56e-9;
-        comps.C2 = 22e-9;
-        comps.C3 = 22e-9;    
-        break; 
-    }
-
-    case Custom: {
-
-        comps.R1 = 250e3;
-        comps.R2 = 1e6;
-        comps.R3 = 20e3;
-        comps.R4 = 47e3;
-        comps.C1 = 0.47e-9;
-        comps.C2 = 47e-9;
-        comps.C3 = 22e-9;    
-        break;
-    }
-    }
     model = newModel;
     updateConstants();
 }

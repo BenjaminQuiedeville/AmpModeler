@@ -15,7 +15,7 @@ enum TonestackModel {
     Soldano,
     Rectifier,
     Orange,
-    Custom,
+    // Custom,
     N_MODELS
 };
 
