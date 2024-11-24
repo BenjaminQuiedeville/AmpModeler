@@ -153,7 +153,7 @@ function main() :: Nothing
     toneStackRectifier   = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
     toneStackCustom      = Components{Float64}(250e3, 1e6, 25e3, 47e3, 0.50e-9, 20e-9, 20e-9)
 
-    samplerate::Float64 = 48000.0
+    samplerate::Float64 = 48000.0 * 4.0
 
     nFreq = 2^14
     signal = [1; zeros(nFreq - 1)]'
@@ -234,14 +234,14 @@ function main() :: Nothing
         [ySpectre...] 
     end
 
-    # lines!(ax1, yFreqs, customCurve, label = "custom curve")
-    # lines!(ax1, yFreqs, otherCurves, label = "model curve")
-    lines!(ax1, yFreqs, yRockerverbSpectre, label = "Rockerverb Curve")
-    lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
-    lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
+    lines!(ax1, yFreqs, customCurve, label = "custom curve")
+    lines!(ax1, yFreqs, otherCurves, label = "model curve")
+    # lines!(ax1, yFreqs, yRockerverbSpectre, label = "Rockerverb Curve")
+    # lines!(ax1, yFreqs, yJCMSpectre, label = "JCMSpectre")
+    # lines!(ax1, yFreqs, ySoldanoSpectre, label = "SoldanoSpectre")
     # lines!(ax1, yFreqs, yEnglSpectre, label = "EnglSpectre")
     # lines!(ax1, yFreqs, yInvaderSpectre, label = "Engl Invader")
-    lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
+    # lines!(ax1, yFreqs, yRectifierSpectre, label = "RectifierSpectre")
     
     
     limits!(ax1, 20, 20000, -20, 0)
