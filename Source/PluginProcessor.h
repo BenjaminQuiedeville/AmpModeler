@@ -197,44 +197,45 @@ static std::vector<juce::Identifier> ParamIDs = {
 
 static const float defaultParamValues[N_PARAMS] = {
     0.0f,               // INPUT_GAIN
+    
     -75.0f,             // GATE_THRESH
     1.0f,               // GATE_ATTACK
     15.0f,              // GATE_RELEASE
     0.0f,               // GATE_RETURN
     
     0.0f,               // SCREAMER_AMOUNT
-    1200.0f,            // SCEAMER_FREQ
+    1300.0f,            // SCEAMER_FREQ
     10.0f,              // TIGHT
     
     5.0f,               // PREAMP_GAIN
-    100.0f,             // CHANNEL
-    3.0f,               // INPUT_FILTER
-    10000.0f,           // PREAMP_VOLUME
+    3.0f,               // CHANNEL 
+    100.0f,             // INPUT_FILTER
+    0.0f,               // PREAMP_VOLUME
     
-    -5.0f,              // STAGE0_LP
-    0.0f,               // STAGE0_BYPASS
-    15.0f,              // STAGE0_BIAS
-    18000.0f,           // STAGE1_HP
-    0.0f,               // STAGE1_LP
+    10000.0f,           // STAGE0_LP
+    -5.0f,              // STAGE0_BYPASS
+    0.0f,               // STAGE0_BIAS
+    15.0f,              // STAGE1_HP
+    18000.0f,           // STAGE1_LP
     0.0f,               // STAGE1_BYPASS
-    15.0f,              // STAGE1_BIAS
-    16000.0f,           // STAGE2_HP
-    -2.0f,              // STAGE2_LP
-    0.0f,               // STAGE2_BYPASS
-    15.0f,              // STAGE2_BIAS
-    16000.0f,           // STAGE3_HP
-    -6.0f,              // STAGE3_LP
-    0.0f,               // STAGE3_BYPASS
-    15.0f,              // STAGE3_BIAS
-    16000.0f,           // STAGE4_HP
-    -6.0f,              // STAGE4_LP
-    0.0f,               // STAGE4_BYPASS
-    5.0f,               // STAGE4_BIAS
-
-    5.0f,               // TONE_MODEL
+    0.0f,               // STAGE1_BIAS
+    15.0f,              // STAGE2_HP
+    16000.0f,           // STAGE2_LP
+    -2.0f,              // STAGE2_BYPASS
+    0.0f,               // STAGE2_BIAS
+    15.0f,              // STAGE3_HP
+    16000.0f,           // STAGE3_LP
+    -6.0f,              // STAGE3_BYPASS
+    0.0f,               // STAGE3_BIAS
+    15.0f,              // STAGE4_HP
+    16000.0f,           // STAGE4_LP
+    -6.0f,              // STAGE4_BYPASS
+    0.0f,               // STAGE4_BIAS
+    
+    0.0f,               // TONE_MODEL
     5.0f,               // TONE_BASS
-    0.0f,               // TONE_MID
-    0.0f,               // TONE_TREB
+    5.0f,               // TONE_MID
+    5.0f,               // TONE_TREB
 
     5.0f,               // RESONANCE
     5.0f,               // PRESENCE

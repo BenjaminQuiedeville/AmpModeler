@@ -210,9 +210,19 @@ GainStagesPage::GainStagesPage(Processor &p) :
 {
 
     resetButton.onClick = [&p, this]() {
+    
+        HSlider* slider_refs[19] = { &stage0LPSlider, &stage0BypassSlider, &stage0BiasSlider, 
+                    &stage1HPSlider, &stage1LPSlider, &stage1BypassSlider, &stage1BiasSlider, 
+                    &stage2HPSlider, &stage2LPSlider, &stage2BypassSlider, &stage2BiasSlider, 
+                    &stage3HPSlider, &stage3LPSlider, &stage3BypassSlider, &stage3BiasSlider, 
+                    &stage4HPSlider, &stage4LPSlider, &stage4BypassSlider, &stage4BiasSlider
+        };
+    
         for (int paramIndex = STAGE0_LP; paramIndex <= STAGE4_BIAS; paramIndex++) {
-            p.apvts.getParameter(ParamIDs[paramIndex])->setValue(defaultParamValues[paramIndex]);
-        }    
+            p.parameterChanged(ParamIDs[paramIndex].toString(), defaultParamValues[paramIndex]);
+        
+            slider_refs[paramIndex - STAGE0_LP]->setValue(defaultParamValues[paramIndex], juce::NotificationType::dontSendNotification);
+        }
     };
     
     addAndMakeVisible(resetButton);
