@@ -15,7 +15,7 @@
 #include <memory>
 #include "FirstOrderShelf.h"
 
-constexpr u8 PREAMP_UP_SAMPLE_FACTOR = 4;
+constexpr u8 PREAMP_UP_SAMPLE_FACTOR = 8;
 
 struct Preamp {
     Preamp();

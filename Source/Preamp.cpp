@@ -100,8 +100,8 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
     if (!buffer) { return; }
         
     static const float gridCondThresh = 1.0f;
-    static const float gridCondRatio  = 4.0f;
-    static const float gridCondKnee   = 0.05f;
+    static const float gridCondRatio  = 3.0f;
+    static const float gridCondKnee   = 0.1f;
     
     for (u32 index = 0; index < nSamples; index++) {
         Sample sample = buffer[index];
@@ -113,11 +113,11 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
                         /(2.0f * gridCondKnee);
         }
 
-        sample *= -1.0f;  
+        sample *= -1.0f;
         sample += bias[0];
         
-        static const float pos_clip_point = 0.3f;
-        static const float neg_clip_point = -5.0f;
+        static const float pos_clip_point = 0.2f;
+        static const float neg_clip_point = -3.5f;
         
         if (sample > pos_clip_point) {
             sample = tanh(sample - pos_clip_point) + pos_clip_point;
@@ -205,16 +205,16 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample INPUT_GAIN   = (Sample)dbtoa(6.0);
+        static const Sample INPUT_GAIN   = (Sample)dbtoa(9.0);
         static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0) * 0.3f;
         static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0) * 0.9f;
-        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.5f;
-        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.5f;
+        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.6f;
+        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.6f;
         // static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
         static const Sample STAGE_4_GAIN = 1.0f;
         
-        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(6.0);
-        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-20.0);
+        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(3.0);
+        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-18.0);
         static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
         static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
              

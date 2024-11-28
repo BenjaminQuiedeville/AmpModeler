@@ -14,8 +14,8 @@ const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Mak
 
 const int knobSize = 100;
 const int horizontalMargin = 25;
-const int verticalMargin = 50;
-const int nRows = 2;
+const int verticalMargin = 30;
+const int nRows = 3;
 const int nCols = 6;
 
 using Apvts = juce::AudioProcessorValueTreeState;
@@ -24,37 +24,30 @@ using ComboBoxAttachment = Apvts::ComboBoxAttachment;
 using ButtonAttachment = Apvts::ButtonAttachment;
 
 struct Knob : public juce::Slider {
-    Knob(juce::String labelID, juce::String name, juce::Component* comp);
-    
-    void init(juce::String paramID, Apvts &apvts);
-    
+    Knob(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts, juce::String suffix);
+
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
 };
 
 
 struct VSlider : public juce::Slider {
-    VSlider(juce::String labelID, juce::String name, juce::Component* comp);
-    
-    void init(juce::String paramID, Apvts &apvts);
-    
+    VSlider(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts, juce::String suffix);
+
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
 };
 
 struct HSlider : public juce::Slider {
-    HSlider(juce::String labelID, juce::String name, juce::Component* comp);
-    
-    void init(juce::String paramID, Apvts &apvts);
-    
+    HSlider(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts, juce::String suffix);
+
     juce::Label label;
     std::unique_ptr<SliderAttachment> sliderAttachment;
+    juce::Identifier paramID;
 };
 
 struct ComboBox : public juce::ComboBox {
-    ComboBox(juce::String labelID, juce::String name, juce::Component* comp); 
-
-    void init(juce::String paramID, Apvts &apvts);
+    ComboBox(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts);
 
     juce::Label label;
     std::unique_ptr<ComboBoxAttachment> boxAttachment;
@@ -64,18 +57,18 @@ struct ComboBox : public juce::ComboBox {
 struct GateBoostPage : public juce::Component {
     GateBoostPage(Processor &p);
     void resized();
-    
+
     Knob gateKnob;
     // Knob gateAttackKnob;
-    // Knob gateReleaseKnob; 
+    // Knob gateReleaseKnob;
     // Knob gateReturnKnob;
 
     Knob boostAttackKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
-    
+
     Knob inputGainKnob;
-    
+
     juce::ToggleButton gateToggle {"Activate Gate/Boost"};
     juce::ToggleButton preampToggle {"Activate Preamp"};
     juce::ToggleButton tonestackToggle {"Activate Tonestack"};
@@ -85,7 +78,7 @@ struct GateBoostPage : public juce::Component {
 struct AmplifierPage : public juce::Component {
     AmplifierPage(Processor &p);
     void resized();
-    
+
     Knob gainKnob;
     Knob inputFilterKnob;
     Knob bassEQKnob;
@@ -98,14 +91,16 @@ struct AmplifierPage : public juce::Component {
 
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
-    ComboBox channelConfigBox;    
+    ComboBox channelConfigBox;
 };
 
 
 struct GainStagesPage : public juce::Component {
     GainStagesPage(Processor &p);
     void resized();
-    
+
+    juce::TextButton resetButton {"Reset"};
+
     HSlider stage0LPSlider;
     HSlider stage0BypassSlider;
     HSlider stage0BiasSlider;
@@ -119,7 +114,7 @@ struct GainStagesPage : public juce::Component {
     HSlider stage2LPSlider;
     HSlider stage2BypassSlider;
     HSlider stage2BiasSlider;
-    
+
     HSlider stage3HPSlider;
     HSlider stage3LPSlider;
     HSlider stage3BypassSlider;
@@ -135,7 +130,7 @@ struct GainStagesPage : public juce::Component {
 struct IRLoaderPage : public juce::Component {
     IRLoaderPage(Processor &audioProcessor);
     void resized();
-        
+
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
 
@@ -143,35 +138,60 @@ struct IRLoaderPage : public juce::Component {
     juce::TextButton prevIRButton {"Previous"};
 
     juce::TextButton defaultIRButton {"Load default IR"};
-    
+
     juce::ToggleButton bypassToggle {"Activate IRloader"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 };
 
 
+struct EQPage : public juce::Component {
+    EQPage(Processor &audioProcessor);
+    void resized();
+
+    juce::TextButton resetButton {"Reset Gains"};
+
+    Knob lowcutFreqKnob;
+
+    Knob lowShelfFreqKnob;
+    Knob lowShelfGainKnob;
+
+    Knob lowMidFreqKnob;
+    Knob lowMidGainKnob;
+    Knob lowMidQKnob;
+
+    Knob midFreqKnob;
+    Knob midGainKnob;
+    Knob midQKnob;
+
+    Knob highFreqKnob;
+    Knob highGainKnob;
+    Knob highQKnob;
+
+    Knob highShelfFreqKnob;
+    Knob highShelfGainKnob;
+
+    Knob highcutFreqKnob;
+};
+
+
 struct MasterVolPanel : public juce::Component {
 
-    MasterVolPanel(Processor &p) :     
-        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this)
+    MasterVolPanel(Processor &p) :
+        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this, ParamIDs[MASTER_VOLUME].toString(), p.apvts, " dB")
     {
-        volumeSlider.init(ParamIDs[MASTER_VOLUME].toString(), p.apvts);
-        volumeSlider.setTextValueSuffix(" dB");
-        
     }
-    
+
     void paint(juce::Graphics& g) override {
         g.fillAll(juce::Colours::darkgrey);
     }
 
 
     void resized() {
-    
+
         volumeSlider.setBounds(0, 50, getWidth(), 300);
-        volumeSlider.label.setBounds(volumeSlider.getX(), 
-                                    volumeSlider.getY() - 15, 
-                                    volumeSlider.getWidth(), 
-                                    20);
-    } 
+        volumeSlider.label.setBounds(volumeSlider.getX(),volumeSlider.getY() - 15,
+                                    volumeSlider.getWidth(), 20);
+    }
 
     VSlider volumeSlider;
 };
@@ -191,8 +211,9 @@ struct Editor : public juce::AudioProcessorEditor
     GateBoostPage gateBoostPage;
     AmplifierPage ampPage;
     GainStagesPage gainStagesPage;
+    EQPage eqPage;
     IRLoaderPage irLoaderPage;
-    
+
     MasterVolPanel volumePanel;
 
     Processor& audioProcessor;

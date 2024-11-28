@@ -100,6 +100,23 @@ enum Params {
     
     RESONANCE,
     PRESENCE,
+
+
+    LOW_CUT_FREQ,
+    LOW_SHELF_FREQ,
+    LOW_SHELF_GAIN,
+    LOWMID_FREQ,
+    LOWMID_GAIN,
+    LOWMID_Q,
+    MID_FREQ,
+    MID_GAIN,
+    MID_Q,
+    HIGH_FREQ,
+    HIGH_GAIN,
+    HIGH_Q,
+    HIGH_SHELF_FREQ,
+    HIGH_SHELF_GAIN,
+    HIGH_CUT_FREQ,
     
     BYPASS_IR,
     MASTER_VOLUME,
@@ -157,9 +174,90 @@ static std::vector<juce::Identifier> ParamIDs = {
     "RESONANCE",
     "PRESENCE",
     
+    "LOW_CUT_FREQ",
+    "LOW_SHELF_FREQ",
+    "LOW_SHELF_GAIN",
+    "LOWMID_FREQ",
+    "LOWMID_GAIN",
+    "LOWMID_Q",
+    "MID_FREQ",
+    "MID_GAIN",
+    "MID_Q",
+    "HIGH_FREQ",
+    "HIGH_GAIN",
+    "HIGH_Q",
+    "HIGH_SHELF_FREQ",
+    "HIGH_SHELF_GAIN",
+    "HIGH_CUT_FREQ",
+    
     "BYPASS_IR",
     "MASTER_VOLUME",
     "CHANNEL_CONFIG"
+};
+
+static const float defaultParamValues[N_PARAMS] = {
+    0.0f,               // INPUT_GAIN
+    -75.0f,             // GATE_THRESH
+    1.0f,               // GATE_ATTACK
+    15.0f,              // GATE_RELEASE
+    0.0f,               // GATE_RETURN
+    
+    0.0f,               // SCREAMER_AMOUNT
+    1200.0f,            // SCEAMER_FREQ
+    10.0f,              // TIGHT
+    
+    5.0f,               // PREAMP_GAIN
+    100.0f,             // CHANNEL
+    3.0f,               // INPUT_FILTER
+    10000.0f,           // PREAMP_VOLUME
+    
+    -5.0f,              // STAGE0_LP
+    0.0f,               // STAGE0_BYPASS
+    15.0f,              // STAGE0_BIAS
+    18000.0f,           // STAGE1_HP
+    0.0f,               // STAGE1_LP
+    0.0f,               // STAGE1_BYPASS
+    15.0f,              // STAGE1_BIAS
+    16000.0f,           // STAGE2_HP
+    -2.0f,              // STAGE2_LP
+    0.0f,               // STAGE2_BYPASS
+    15.0f,              // STAGE2_BIAS
+    16000.0f,           // STAGE3_HP
+    -6.0f,              // STAGE3_LP
+    0.0f,               // STAGE3_BYPASS
+    15.0f,              // STAGE3_BIAS
+    16000.0f,           // STAGE4_HP
+    -6.0f,              // STAGE4_LP
+    0.0f,               // STAGE4_BYPASS
+    5.0f,               // STAGE4_BIAS
+
+    5.0f,               // TONE_MODEL
+    5.0f,               // TONE_BASS
+    0.0f,               // TONE_MID
+    0.0f,               // TONE_TREB
+
+    5.0f,               // RESONANCE
+    5.0f,               // PRESENCE
+
+    0.0f,               // LOW_CUT_FREQ
+    0.0f,               // LOW_SHELF_FREQ
+    0.0f,               // LOW_SHELF_GAIN
+    200.0f,             // LOWMID_FREQ
+    0.0f,               // LOWMID_GAIN
+    0.5f,               // LOWMID_Q
+    700.0f,             // MID_FREQ
+    0.0f,               // MID_GAIN
+    0.5f,               // MID_Q
+    2000.0f,            // HIGH_FREQ
+    0.0f,               // HIGH_GAIN
+    0.5f,               // HIGH_Q
+    20000.0f,           // HIGH_SHELF_FREQ
+    0.0f,               // HIGH_SHELF_GAIN
+    20000.0f,           // HIGH_CUT_FREQ
+
+    1.0f,               // BYPASS_IR
+    -3.0f,              // MASTER_VOLUME
+    0.0f                // CHANNEL_CONFIG
 };
 
 
