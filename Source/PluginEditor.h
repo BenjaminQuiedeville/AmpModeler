@@ -18,6 +18,9 @@ const int verticalMargin = 30;
 const int nRows = 3;
 const int nCols = 6;
 
+const int windoWidth = 1000;
+const int windowHeight = 450;
+
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;

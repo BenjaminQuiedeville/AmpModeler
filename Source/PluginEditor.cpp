@@ -486,8 +486,22 @@ EQPage::EQPage(Processor &p) :
     highcutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, ParamIDs[HIGH_CUT_FREQ].toString(),   p.apvts, " Hz")
 {
 
-    // resetButton.onClick = [&p, this]() { // reset all gians};
-    // addAndMakeVisible(resetButton);
+    resetButton.onClick = [&p, this]() {
+    
+        p.apvts.getParameter(ParamIDs[LOW_SHELF_GAIN].toString())->setValueNotifyingHost(defaultParamValues[LOW_SHELF_GAIN]);
+        p.apvts.getParameter(ParamIDs[LOWMID_GAIN].toString())->setValueNotifyingHost(defaultParamValues[LOWMID_GAIN]);
+        p.apvts.getParameter(ParamIDs[MID_GAIN].toString())->setValueNotifyingHost(defaultParamValues[MID_GAIN]);
+        p.apvts.getParameter(ParamIDs[HIGH_GAIN].toString())->setValueNotifyingHost(defaultParamValues[HIGH_GAIN]);
+        p.apvts.getParameter(ParamIDs[HIGH_SHELF_GAIN].toString())->setValueNotifyingHost(defaultParamValues[HIGH_SHELF_GAIN]);
+    
+        lowShelfGainKnob.setValue(defaultParamValues[LOW_SHELF_GAIN]);
+        lowMidGainKnob.setValue(defaultParamValues[LOWMID_GAIN]);
+        midGainKnob.setValue(defaultParamValues[MID_GAIN]);
+        highGainKnob.setValue(defaultParamValues[HIGH_GAIN]);
+        highShelfGainKnob.setValue(defaultParamValues[HIGH_SHELF_GAIN]);
+    };
+
+    addAndMakeVisible(resetButton);
 }
 
 void EQPage::resized() {
@@ -497,57 +511,61 @@ void EQPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    lowcutFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
-    lowcutFreqKnob.label.setBounds(lowcutFreqKnob.getX(), lowcutFreqKnob.getY() - 15,
-                             lowcutFreqKnob.getWidth(), 20);
+    static const int eqKnobSize = 90;
 
-    lowShelfFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
+    resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 20);
+    
+    lowShelfFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
     lowShelfFreqKnob.label.setBounds(lowShelfFreqKnob.getX(), lowShelfFreqKnob.getY() - 15,
                              lowShelfFreqKnob.getWidth(), 20);
-    lowShelfGainKnob.setBounds(computeXcoord(1, width), computeYcoord(2, height), knobSize, knobSize);
+    lowShelfGainKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
     lowShelfGainKnob.label.setBounds(lowShelfGainKnob.getX(), lowShelfGainKnob.getY() - 15,
                              lowShelfGainKnob.getWidth(), 20);
 
-    lowMidFreqKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), knobSize, knobSize);
+    lowcutFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
+    lowcutFreqKnob.label.setBounds(lowcutFreqKnob.getX(), lowcutFreqKnob.getY() - 15,
+                             lowcutFreqKnob.getWidth(), 20);
+
+    lowMidFreqKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
     lowMidFreqKnob.label.setBounds(lowMidFreqKnob.getX(), lowMidFreqKnob.getY() - 15,
                              lowMidFreqKnob.getWidth(), 20);
-    lowMidGainKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), knobSize, knobSize);
+    lowMidGainKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
     lowMidGainKnob.label.setBounds(lowMidGainKnob.getX(), lowMidGainKnob.getY() - 15,
                              lowMidGainKnob.getWidth(), 20);
-    lowMidQKnob.setBounds(computeXcoord(2, width), computeYcoord(2, height), knobSize, knobSize);
+    lowMidQKnob.setBounds(computeXcoord(2, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
     lowMidQKnob.label.setBounds(lowMidQKnob.getX(), lowMidQKnob.getY() - 15,
                              lowMidQKnob.getWidth(), 20);
 
-    // midFreqKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // midFreqKnob.label.setBounds(midFreqKnob.getX(), midFreqKnob.getY() - 15,
-    //                          midFreqKnob.getWidth(), 20);
-    // midGainKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // midGainKnob.label.setBounds(midGainKnob.getX(), midGainKnob.getY() - 15,
-    //                          midGainKnob.getWidth(), 20);
-    // midQKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // midQKnob.label.setBounds(midQKnob.getX(), midQKnob.getY() - 15,
-    //                          midQKnob.getWidth(), 20);
+    midFreqKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
+    midFreqKnob.label.setBounds(midFreqKnob.getX(), midFreqKnob.getY() - 15,
+                             midFreqKnob.getWidth(), 20);
+    midGainKnob.setBounds(computeXcoord(3, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
+    midGainKnob.label.setBounds(midGainKnob.getX(), midGainKnob.getY() - 15,
+                             midGainKnob.getWidth(), 20);
+    midQKnob.setBounds(computeXcoord(3, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
+    midQKnob.label.setBounds(midQKnob.getX(), midQKnob.getY() - 15,
+                             midQKnob.getWidth(), 20);
 
-    // highFreqKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highFreqKnob.label.setBounds(highFreqKnob.getX(), highFreqKnob.getY() - 15,
-    //                          highFreqKnob.getWidth(), 20);
-    // highGainKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highGainKnob.label.setBounds(highGainKnob.getX(), highGainKnob.getY() - 15,
-    //                          highGainKnob.getWidth(), 20);
-    // highQKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highQKnob.label.setBounds(highQKnob.getX(), highQKnob.getY() - 15,
-    //                          highQKnob.getWidth(), 20);
+    highFreqKnob.setBounds(computeXcoord(4, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
+    highFreqKnob.label.setBounds(highFreqKnob.getX(), highFreqKnob.getY() - 15,
+                             highFreqKnob.getWidth(), 20);
+    highGainKnob.setBounds(computeXcoord(4, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
+    highGainKnob.label.setBounds(highGainKnob.getX(), highGainKnob.getY() - 15,
+                             highGainKnob.getWidth(), 20);
+    highQKnob.setBounds(computeXcoord(4, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
+    highQKnob.label.setBounds(highQKnob.getX(), highQKnob.getY() - 15,
+                             highQKnob.getWidth(), 20);
 
-    // highShelfFreqKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highShelfFreqKnob.label.setBounds(highShelfFreqKnob.getX(), highShelfFreqKnob.getY() - 15,
-    //                          highShelfFreqKnob.getWidth(), 20);
-    // highShelfGainKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highShelfGainKnob.label.setBounds(highShelfGainKnob.getX(), highShelfGainKnob.getY() - 15,
-    //                          highShelfGainKnob.getWidth(), 20);
+    highShelfFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
+    highShelfFreqKnob.label.setBounds(highShelfFreqKnob.getX(), highShelfFreqKnob.getY() - 15,
+                             highShelfFreqKnob.getWidth(), 20);
+    highShelfGainKnob.setBounds(computeXcoord(5, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
+    highShelfGainKnob.label.setBounds(highShelfGainKnob.getX(), highShelfGainKnob.getY() - 15,
+                             highShelfGainKnob.getWidth(), 20);
 
-    // highcutFreqKnob.setBounds(computeXcoord(, width), computeYcoord(, height), knobSize, knobSize);
-    // highcutFreqKnob.label.setBounds(highcutFreqKnob.getX(), highcutFreqKnob.getY() - 15,
-    //                          highcutFreqKnob.getWidth(), 20);
+    highcutFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
+    highcutFreqKnob.label.setBounds(highcutFreqKnob.getX(), highcutFreqKnob.getY() - 15,
+                             highcutFreqKnob.getWidth(), 20);
 
 }
 
@@ -576,7 +594,7 @@ Editor::Editor (Processor& p)
 
     getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkred);
 
-    setSize(1000, 500);
+    setSize(windoWidth, windowHeight);
     setResizable(false, false);
 }
 

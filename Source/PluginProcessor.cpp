@@ -236,6 +236,14 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         
     irLoader.process(audioPtrL, audioPtrR, numSamples);
 
+    EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
+    EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
+    EQ.lowMid.process(audioPtrL, audioPtrR, numSamples);
+    EQ.mid.process(audioPtrL, audioPtrR, numSamples);
+    EQ.high.process(audioPtrL, audioPtrR, numSamples);
+    EQ.highShelf.process(audioPtrL, audioPtrR, numSamples);
+    EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
+
     masterVolume.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
         
     if (gateActive) {
@@ -530,6 +538,65 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
     
+    if (id == ParamIDs[LOW_CUT_FREQ]) {
+        
+        EQ.lowCut.setCoefficients(newValue, 0.7, 0.0, samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[LOW_SHELF_FREQ]
+        || id == ParamIDs[LOW_SHELF_GAIN])
+    {
+        
+        EQ.lowShelf.setCoefficients(*apvts.getRawParameterValue(ParamIDs[LOW_SHELF_FREQ]), 0.7,
+                                    *apvts.getRawParameterValue(ParamIDs[LOW_SHELF_GAIN]), samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[LOWMID_FREQ]
+        || id == ParamIDs[LOWMID_GAIN]
+        || id == ParamIDs[LOWMID_Q])
+    {
+    
+        EQ.lowMid.setCoefficients(*apvts.getRawParameterValue(ParamIDs[LOWMID_FREQ]),
+                                  *apvts.getRawParameterValue(ParamIDs[LOWMID_Q]),
+                                  *apvts.getRawParameterValue(ParamIDs[LOWMID_GAIN]), samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[MID_FREQ]
+        || id == ParamIDs[MID_GAIN]
+        || id == ParamIDs[MID_Q])
+    {
+        EQ.mid.setCoefficients(*apvts.getRawParameterValue(ParamIDs[MID_FREQ]),
+                               *apvts.getRawParameterValue(ParamIDs[MID_Q]),
+                               *apvts.getRawParameterValue(ParamIDs[MID_GAIN]), samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[HIGH_FREQ]
+        || id == ParamIDs[HIGH_GAIN]
+        || id == ParamIDs[HIGH_Q])
+    {
+        EQ.high.setCoefficients(*apvts.getRawParameterValue(ParamIDs[HIGH_FREQ]),
+                                *apvts.getRawParameterValue(ParamIDs[HIGH_Q]),
+                                *apvts.getRawParameterValue(ParamIDs[HIGH_GAIN]), samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[HIGH_SHELF_FREQ]
+        || id == ParamIDs[HIGH_SHELF_GAIN])
+    {
+        EQ.highShelf.setCoefficients(*apvts.getRawParameterValue(ParamIDs[HIGH_SHELF_FREQ]), 0.7,
+                                     *apvts.getRawParameterValue(ParamIDs[HIGH_SHELF_GAIN]), samplerate);
+        return;
+    }
+    
+    if (id == ParamIDs[HIGH_CUT_FREQ]) {        
+        EQ.highCut.setCoefficients(*apvts.getRawParameterValue(ParamIDs[HIGH_CUT_FREQ]), 0.7, 0.0, samplerate);
+        return;
+    }
+    
     if (id == ParamIDs[BYPASS_IR]) {
         irLoader.active = (bool)newValue;
     }
@@ -754,17 +821,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     // EQ params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOW_CUT_FREQ].toString(), "",
-        juce::NormalisableRange<float>(0.0f, 200.0f, 0.1f, 0.7f), defaultParamValues[LOW_CUT_FREQ], attributes
+        juce::NormalisableRange<float>(10.0f, 200.0f, 0.1f, 0.7f), defaultParamValues[LOW_CUT_FREQ], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOW_SHELF_FREQ].toString(), "",
-        juce::NormalisableRange<float>(0.0f, 250.0f, 0.1f, 0.7f), defaultParamValues[LOW_SHELF_FREQ], attributes
+        juce::NormalisableRange<float>(10.0f, 250.0f, 0.1f, 0.7f), defaultParamValues[LOW_SHELF_FREQ], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOW_SHELF_GAIN].toString(), "",
-        juce::NormalisableRange<float>(-18.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[LOW_SHELF_GAIN], attributes
+        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), defaultParamValues[LOW_SHELF_GAIN], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -774,12 +841,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOWMID_GAIN].toString(), "",
-        juce::NormalisableRange<float>(-18.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[LOWMID_GAIN], attributes
+        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), defaultParamValues[LOWMID_GAIN], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOWMID_Q].toString(), "",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), defaultParamValues[LOWMID_Q], attributes
+        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[LOWMID_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -789,12 +856,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MID_GAIN].toString(), "",
-        juce::NormalisableRange<float>(-18.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[MID_GAIN], attributes
+        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), defaultParamValues[MID_GAIN], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MID_Q].toString(), "",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), defaultParamValues[MID_Q], attributes
+        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[MID_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -804,12 +871,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[HIGH_GAIN].toString(), "",
-        juce::NormalisableRange<float>(-18.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[HIGH_GAIN], attributes
+        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), defaultParamValues[HIGH_GAIN], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[HIGH_Q].toString(), "",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), defaultParamValues[HIGH_Q], attributes
+        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[HIGH_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -819,7 +886,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[HIGH_SHELF_GAIN].toString(), "",
-        juce::NormalisableRange<float>(-18.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[HIGH_SHELF_GAIN], attributes
+        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), defaultParamValues[HIGH_SHELF_GAIN], attributes
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

@@ -331,6 +331,16 @@ struct Processor  : public juce::AudioProcessor,
     FirstOrderShelfFilter resonanceFilter {lowshelf};
     FirstOrderShelfFilter presenceFilter {highshelf};
 
+    struct {
+        Biquad lowCut    {BIQUAD_HIGHPASS};
+        Biquad lowShelf  {BIQUAD_LOWSHELF};
+        Biquad lowMid    {BIQUAD_PEAK};
+        Biquad mid       {BIQUAD_PEAK};
+        Biquad high      {BIQUAD_PEAK};
+        Biquad highShelf {BIQUAD_HIGHSHELF};
+        Biquad highCut   {BIQUAD_LOWPASS};
+    } EQ;
+
     SmoothParamLinear inputGain;
     SmoothParamLinear masterVolume;
 
