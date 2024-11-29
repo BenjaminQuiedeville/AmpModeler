@@ -219,9 +219,8 @@ GainStagesPage::GainStagesPage(Processor &p) :
         };
     
         for (int paramIndex = STAGE0_LP; paramIndex <= STAGE4_BIAS; paramIndex++) {
-            p.parameterChanged(ParamIDs[paramIndex].toString(), defaultParamValues[paramIndex]);
-        
-            slider_refs[paramIndex - STAGE0_LP]->setValue(defaultParamValues[paramIndex], juce::NotificationType::dontSendNotification);
+            p.apvts.getParameter(ParamIDs[paramIndex].toString())->setValueNotifyingHost(defaultParamValues[paramIndex]);        
+            slider_refs[paramIndex - STAGE0_LP]->setValue(defaultParamValues[paramIndex]);
         }
     };
     
