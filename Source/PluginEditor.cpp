@@ -232,7 +232,7 @@ void GainStagesPage::resized() {
     static const int verticalSpacing = 30;
     static const int horizontalSpacing = 20;
 
-    resetButton.setBounds(horizontalMargin, verticalMargin, 150, 50);
+    resetButton.setBounds(horizontalMargin, verticalMargin, 100, 30);
 
     stage0LPSlider.setBounds(horizontalMargin, verticalMargin + 50 + verticalSpacing, 150, 50);
     stage0LPSlider.label.setBounds(stage0LPSlider.getX(), stage0LPSlider.getY() - 15,
@@ -512,7 +512,7 @@ void EQPage::resized() {
 
     static const int eqKnobSize = 90;
 
-    resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 20);
+    resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 30);
     
     lowShelfFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
     lowShelfFreqKnob.label.setBounds(lowShelfFreqKnob.getX(), lowShelfFreqKnob.getY() - 15,

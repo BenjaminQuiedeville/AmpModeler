@@ -846,7 +846,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[LOWMID_Q].toString(), "",
-        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[LOWMID_Q]
+        juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), defaultParamValues[LOWMID_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -861,7 +861,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MID_Q].toString(), "",
-        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[MID_Q]
+        juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), defaultParamValues[MID_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -876,7 +876,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[HIGH_Q].toString(), "",
-        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), defaultParamValues[HIGH_Q]
+        juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), defaultParamValues[HIGH_Q]
     ));
         
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

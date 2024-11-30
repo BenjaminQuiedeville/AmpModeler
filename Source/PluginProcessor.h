@@ -33,10 +33,6 @@ const float PRESENCE_FREQUENCY  = 500.0f;
 /*
 TODO : 
 
-parametric EQ panel
-
-tube parameters : reset button
-
 général 
     presets
 
