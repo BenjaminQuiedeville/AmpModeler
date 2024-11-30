@@ -241,14 +241,15 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     if (irLoader.active) {
         irLoader.process(audioPtrL, audioPtrR, numSamples);
     }
-
-    EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
-    EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
-    EQ.lowMid.process(audioPtrL, audioPtrR, numSamples);
-    EQ.mid.process(audioPtrL, audioPtrR, numSamples);
-    EQ.high.process(audioPtrL, audioPtrR, numSamples);
-    EQ.highShelf.process(audioPtrL, audioPtrR, numSamples);
-    EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
+    if (EQActive) {
+        EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
+        EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
+        EQ.lowMid.process(audioPtrL, audioPtrR, numSamples);
+        EQ.mid.process(audioPtrL, audioPtrR, numSamples);
+        EQ.high.process(audioPtrL, audioPtrR, numSamples);
+        EQ.highShelf.process(audioPtrL, audioPtrR, numSamples);
+        EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
+    }
 
     masterVolume.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
         
