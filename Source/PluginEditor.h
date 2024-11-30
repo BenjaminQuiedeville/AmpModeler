@@ -75,6 +75,7 @@ struct GateBoostPage : public juce::Component {
     juce::ToggleButton gateToggle {"Activate Gate/Boost"};
     juce::ToggleButton preampToggle {"Activate Preamp"};
     juce::ToggleButton tonestackToggle {"Activate Tonestack"};
+    juce::ToggleButton EQToggle {"Activate EQ"};
 };
 
 

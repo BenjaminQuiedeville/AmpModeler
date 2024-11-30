@@ -393,8 +393,6 @@ IRLoaderError IRLoader::loadIR() {
 
 
 void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
-
-    if (!active) { return; }
     
     for (size_t i = 0; i < nSamples; i++) {
         inputBufferPadded[i] = bufferL[i];

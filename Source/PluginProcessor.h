@@ -348,7 +348,8 @@ struct Processor  : public juce::AudioProcessor,
     bool gateActive = true;
     bool preampActive = true;
     bool tonestackActive = true;
-
+    bool EQActive = true;
+    
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 

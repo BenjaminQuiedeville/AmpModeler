@@ -30,23 +30,20 @@ GateBoostPage::GateBoostPage(Processor &p) :
     inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, ParamIDs[INPUT_GAIN].toString(),      p.apvts, " dB")
 
 {
-    gateToggle.setToggleState(p.gateActive,
-                              juce::NotificationType::dontSendNotification);
-
-    preampToggle.setToggleState(p.preampActive,
-                              juce::NotificationType::dontSendNotification);
-
-    tonestackToggle.setToggleState(p.tonestackActive,
-                              juce::NotificationType::dontSendNotification);
-
+    gateToggle.setToggleState(p.gateActive, juce::NotificationType::dontSendNotification);
+    preampToggle.setToggleState(p.preampActive, juce::NotificationType::dontSendNotification);
+    tonestackToggle.setToggleState(p.tonestackActive, juce::NotificationType::dontSendNotification);
+    EQToggle.setToggleState(p.EQActive, juce::NotificationType::dontSendNotification);
 
     gateToggle.onClick = [&p, this]() { p.gateActive = gateToggle.getToggleState(); };
     preampToggle.onClick = [&p, this]() { p.preampActive = preampToggle.getToggleState(); };
     tonestackToggle.onClick = [&p, this]() { p.tonestackActive = tonestackToggle.getToggleState(); };
+    EQToggle.onClick = [&p, this]() { p.EQActive = EQToggle.getToggleState(); };
 
     addAndMakeVisible(gateToggle);
     addAndMakeVisible(preampToggle);
     addAndMakeVisible(tonestackToggle);
+    addAndMakeVisible(EQToggle);
 }
 
 void GateBoostPage::resized() {
@@ -92,6 +89,7 @@ void GateBoostPage::resized() {
     gateToggle.setBounds(computeXcoord(4, width), computeYcoord(0, height), 200, 30);
     preampToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 20));
     tonestackToggle.setBounds(preampToggle.getBounds() + juce::Point(0, preampToggle.getHeight() + 20));
+    EQToggle.setBounds(tonestackToggle.getBounds() + juce::Point(0, tonestackToggle.getHeight() + 20));
 }
 
 
