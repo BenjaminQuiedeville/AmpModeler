@@ -3,6 +3,10 @@
 *.pdb
 *.ilk
 *.exe
+*.vst3
+*.exp
+*.lib
+*.manifest
 *.json
 *.vsidx
 *.db

@@ -1,6 +1,36 @@
-import os 
+import os
 
-flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Ox /Ob2 /GL  /Zc:wchar_t /Zc:forScope /Zc:inline"
+import os
+import sys
+
+argc = len(sys.argv)
+
+release_mode = False
+config: str = ""
+
+if argc > 1 and sys.argv[1] == "release":
+    release_mode = True
+    config = sys.argv[1]
+
+elif argc > 1 and sys.argv[1] == "relwithdebug":
+    release_mode = False
+    config = sys.argv[1]
+
+elif argc > 1 and sys.argv[1] == "debug":
+    release_mode = False
+    config = sys.argv[1]
+
+else:
+    release_mode = False
+    config = "debug"
+
+
+compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zi /Zc:wchar_t /Zc:forScope /Zc:inline"
+link_flags = "/OPT:REF"
+
+if release_mode:
+    compile_flags += " /Ox /Ob2 /GL /Gy"
+    link_flags += " /LTCG"
 
 defines = " ".join([
     "/D _USE_MATH_DEFINES",
@@ -24,8 +54,8 @@ defines = " ".join([
     "/D JucePlugin_WantsMidiInput=0",
     "/D JucePlugin_EditorRequiresKeyboardFocus=0",
     "/D JucePlugin_Version=0.2.0",
-    "/D \"JucePlugin_Name=\\\"AmpModeler\\\"\"",
-    "/D \"JucePlugin_Desc=\\\"AmpModeler\\\"\"",
+    "/D \"JucePlugin_Name=\\\"AmpModeler_{config}\\\"\"",
+    "/D \"JucePlugin_Desc=\\\"AmpModeler_{config}\\\"\"",
     "/D \"JucePlugin_VersionString=\\\"0.2.0\\\"\"",
     "/D \"JucePlugin_Vst3Category=\\\"Fx\\\"\"",
     "/D \"JucePlugin_ManufacturerWebsite=\\\"\\\"\"",
@@ -40,7 +70,7 @@ defines = " ".join([
 
 includes = " ".join([
     "/Ilibs/juce/modules",
-    "/IC:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/format_types/VST3_SDK"
+    "/Ilibs/juce/modules/juce_audio_processors/format_types/VST3_SDK"
 ])
 
 plugin_sources = " ".join([
@@ -53,6 +83,7 @@ plugin_sources = " ".join([
 ])
 
 juce_sources = " ".join([
+    "libs/juce/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp",  
     "libs/juce/modules/juce_audio_basics/juce_audio_basics.cpp",
     "libs/juce/modules/juce_audio_devices/juce_audio_devices.cpp",
     "libs/juce/modules/juce_audio_formats/juce_audio_formats.cpp",
@@ -64,7 +95,6 @@ juce_sources = " ".join([
     "libs/juce/modules/juce_gui_basics/juce_gui_basics.cpp",
     "libs/juce/modules/juce_gui_extra/juce_gui_extra.cpp",
     "libs/juce/modules/juce_events/juce_events.cpp",
-    "libs/juce/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp",  
 ])
 
 libs = " ".join([
@@ -81,10 +111,17 @@ libs = " ".join([
 
 ])
 
-command = f"cl {flags} /Fe:AmpSimp_release.vst3 {defines} {includes} {plugin_sources} {juce_sources} /link {libs}"
+command = f"cl {compile_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} {juce_sources} /link {link_flags} {libs}"
 
 #/Fd:AmpSimp.pdb
 print(command)
 
 return_code = os.system(command)
 
+if return_code != 0:
+    println("Problems during compilation, exiting")
+    exit(-1)
+
+print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
+os.system(f"cp AmpSimp_{config}.vst3 \"C:/Program Files/Common Files/VST3/AmpSimp_{config}.vst3\"")
+os.system("rm *.obj")

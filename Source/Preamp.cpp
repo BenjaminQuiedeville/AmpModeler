@@ -99,9 +99,9 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         
     if (!buffer) { return; }
         
-    static const float gridCondThresh = 1.0f;
-    static const float gridCondRatio  = 3.0f;
-    static const float gridCondKnee   = 0.1f;
+    static const float gridCondThresh = 0.8f;
+    static const float gridCondRatio  = 4.0f;
+    static const float gridCondKnee   = 0.5f;
     
     for (u32 index = 0; index < nSamples; index++) {
         Sample sample = buffer[index];
@@ -117,11 +117,12 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         sample += bias[0];
         
         static const float pos_clip_point = 0.2f;
-        static const float neg_clip_point = -3.5f;
+        static const float neg_clip_point = -3.0f;
         
         if (sample > pos_clip_point) {
             sample = tanh(sample - pos_clip_point) + pos_clip_point;
-        } else if (sample < neg_clip_point) {
+        } 
+        else if (sample < neg_clip_point) {
             sample = neg_clip_point;
         }
 
