@@ -21,34 +21,6 @@ static float baseIR[BASE_IR_SIZE] = {
 #include "data/baseIR.inc"
 };
 
-struct ChunkData {
-
-    char riffString[4];
-    int32_t fileSize; 
-    char format[4];
-
-    char subChunk1ID[4];
-    int32_t subChunk1Size;
-    int16_t audioFormat;
-    int16_t numChannels;
-    int32_t samplerate;
-    int32_t byteRate;
-    int16_t blockAlign;
-    int16_t bitsPerSample;
-    
-    char subChunk2ID[4];
-    int32_t signalSizeBytes;
-};
-
-struct WavSignal {
-    float *data = nullptr;
-    u64 size = 0;
-    
-    ~WavSignal() {
-        if (data) { free(data); }
-    }
-};
-
 static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
 
     FILE *wavFile = nullptr;
@@ -58,8 +30,24 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
         fclose(wavFile);
         return 0;
     }
+
+    struct {
+        char riffString[4];
+        int32_t fileSize; 
+        char format[4];
     
-    ChunkData chunk_data;
+        char subChunk1ID[4];
+        int32_t subChunk1Size;
+        int16_t audioFormat;
+        int16_t numChannels;
+        int32_t samplerate;
+        int32_t byteRate;
+        int16_t blockAlign;
+        int16_t bitsPerSample;
+        
+        char subChunk2ID[4];
+        int32_t signalSizeBytes;
+    } chunk_data;
     
     fread(chunk_data.riffString, 1, 4, wavFile);
 
@@ -92,6 +80,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
             "Ok");
         
         fclose(wavFile);
+        free(file_data);
         return 0;
     }
     
@@ -143,6 +132,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
             "Ok");
         
         fclose(wavFile);
+        free(file_data);
         return 0;        
     }
     
@@ -173,6 +163,7 @@ static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
             "Ok");
         
         fclose(wavFile);
+        free(file_data);
         return 0;        
     }
     
