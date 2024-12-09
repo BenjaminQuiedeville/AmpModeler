@@ -1,0 +1,315 @@
+### commande de compilation debug
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\CL.exe /c 
+/IC:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\JuceLibraryCode 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\juce\modules 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\VST3_SDK 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lv2 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\serd 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sord 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sord\src 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sratom 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lilv 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lilv\src 
+/Zi /nologo /W4 /WX- /diagnostics:column /MP /Od /Ob0
+/D _MBCS
+/D WIN32
+/D _WINDOWS
+/D JucePlugin_Build_AU=0
+/D JucePlugin_Build_AUv3=0
+/D JucePlugin_Build_AAX=0
+/D JucePlugin_Build_LV2=0
+/D JucePlugin_Build_Standalone=1
+/D JucePlugin_Build_Unity=0
+/D JucePlugin_Build_VST=0
+/D JucePlugin_Build_VST3=1
+/D JUCE_SHARED_CODE=1
+/D JUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone
+/D JucePlugin_IsSynth=0
+/D JucePlugin_ManufacturerCode=0x48524d53
+/D "JucePlugin_Manufacturer=\"Hermes140\""
+/D "JucePlugin_ManufacturerWebsite=\"\""
+/D "JucePlugin_ManufacturerEmail=\"\""
+/DJucePlugin_PluginCode=0x414d504d
+/D JucePlugin_ProducesMidiOutput=0
+/D JucePlugin_IsMidiEffect=0
+/D JucePlugin_WantsMidiInput=0
+/D JucePlugin_EditorRequiresKeyboardFocus=0
+/D "JucePlugin_Name=\"AmpModeler\""
+/D "JucePlugin_Desc=\"AmpModeler\""
+/D JucePlugin_Version=0.2.0
+/D "JucePlugin_VersionString=\"0.2.0\""
+/D JucePlugin_VersionCode=0x200
+/D JucePlugin_VSTUniqueID=JucePlugin_PluginCode
+/D JucePlugin_VSTCategory=kPlugCategEffect
+/D "JucePlugin_Vst3Category=\"Fx\""
+/D "JucePlugin_AUMainType='aufx'"
+/D JucePlugin_AUSubType=JucePlugin_PluginCode
+/D JucePlugin_AUExportPrefix=AmpModelerAU
+/D "JucePlugin_AUExportPrefixQuoted=\"AmpModelerAU\""
+/D JucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode
+/D JucePlugin_CFBundleIdentifier=com.Hermes140.AmpModeler
+/D JucePlugin_AAXIdentifier=com.Hermes140.AmpModeler
+/D JucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode
+/D JucePlugin_AAXProductId=JucePlugin_PluginCode
+/D JucePlugin_AAXCategory=0
+/D JucePlugin_AAXDisableBypass=0
+/D JucePlugin_AAXDisableMultiMono=0
+/D JucePlugin_VSTNumMidiInputs=16
+/D JucePlugin_VSTNumMidiOutputs=16
+/D JucePlugin_Enable_ARA=0
+/D "JucePlugin_ARAFactoryID=\"com.Hermes140.AmpModeler.arafactory.0.2.0\""
+/D "JucePlugin_ARADocumentArchiveID=\"com.Hermes140.AmpModeler.aradocumentarchive.1\""
+/D "JucePlugin_ARACompatibleArchiveIDs=\"\""
+/D JucePlugin_ARAContentTypes=0
+/D JucePlugin_ARATransformationFlags=0
+/D JUCE_WEB_BROWSER=0
+/D JUCE_USE_CURL=0
+/D JUCE_VST3_CAN_REPLACE_VST2=0
+/D JUCE_MODAL_LOOPS_PERMITTED=1
+/D JUCE_ASIO=0
+/D _USE_MATH_DEFINES=1
+/D DEBUG=1
+/D _DEBUG=1
+/D JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+/D JUCE_MODULE_AVAILABLE_juce_core=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_processors=1
+/D JUCE_MODULE_AVAILABLE_juce_gui_extra=1
+/D JUCE_MODULE_AVAILABLE_juce_gui_basics=1
+/D JUCE_MODULE_AVAILABLE_juce_graphics=1
+/D JUCE_MODULE_AVAILABLE_juce_events=1
+/D JUCE_MODULE_AVAILABLE_juce_data_structures=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_basics=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_utils=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_formats=1
+/D JUCE_MODULE_AVAILABLE_juce_audio_devices=1
+/D "CMAKE_INTDIR=\"Debug\"" 
+
+/EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 
+/Fo"AmpModeler.dir\Debug\\" 
+/Fd"C:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\Debug\AmpModeler_SharedCode.pdb" 
+/external:W4 /Gd /TP /errorReport:queue  
+/bigobj C:\Users\benjamin\Dev\AmpModeler\Source\IRLoader.cpp C:\Users\benjamin\Dev\AmpModeler\Source\PluginEditor.cpp C:\Users\benjamin\Dev\AmpModeler\Source\PluginProcessor.cpp
+
+
+## commande de link debug standalone
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\link.exe 
+/ERRORREPORT:QUEUE /OUT:"C:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\Debug\Standalone\AmpModeler.exe" 
+/INCREMENTAL /ILK:"AmpModeler_Standalone.dir\Debug\AmpModeler.ilk" 
+/NOLOGO 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd/Debug 
+AmpModeler_artefacts\Debug\AmpModeler_SharedCode.lib 
+kernel32.lib 
+user32.lib 
+gdi32.lib 
+winspool.lib 
+shell32.lib 
+ole32.lib 
+oleaut32.lib 
+uuid.lib 
+comdlg32.lib 
+advapi32.lib 
+/MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Debug/Standalone/AmpModeler.pdb" 
+/SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Debug/Standalone/AmpModeler.lib"
+/MACHINE:X64  /machine:x64 AmpModeler_Standalone.dir\Debug\juce_audio_plugin_client_AAX.obj
+
+
+## commande de link debug vst3
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\Debug\VST3\AmpModeler.vst3\Contents\x86_64-win\AmpModeler.vst3" /INCREMENTAL /ILK:"AmpModeler_VST3.dir\Debug\AmpModeler.ilk" /NOLOGO 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd/Debug 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd/Debug AmpModeler_artefacts\Debug\AmpModeler_SharedCode.lib 
+kernel32.lib 
+user32.lib 
+gdi32.lib 
+winspool.lib 
+shell32.lib 
+ole32.lib 
+oleaut32.lib 
+uuid.lib 
+comdlg32.lib 
+advapi32.lib 
+/MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Debug/VST3/AmpModeler.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Debug/VST3/AmpModeler.lib"
+ /MACHINE:X64  /machine:x64 /DLL AmpModeler_VST3.dir\Debug\juce_audio_plugin_client_AAX.obj
+
+
+## commande de compilation release
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\CL.exe /c 
+/IC:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\JuceLibraryCode 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\juce\modules 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\VST3_SDK 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lv2 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\serd 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sord 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sord\src 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\sratom 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lilv 
+/IC:\Users\benjamin\Dev\AmpModeler\libs\JUCE\modules\juce_audio_processors\format_types\LV2_SDK\lilv\src 
+
+/nologo /W4 /WX- /diagnostics:column /MP /Ox /Ob2 /GL 
+/D _MBCS 
+/D WIN32 
+/D _WINDOWS 
+/D NDEBUG 
+/D JucePlugin_Build_AU=0 
+/D JucePlugin_Build_AUv3=0 
+/D JucePlugin_Build_AAX=0 
+/D JucePlugin_Build_LV2=0 
+/D JucePlugin_Build_Standalone=1 
+/D JucePlugin_Build_Unity=0 
+/D JucePlugin_Build_VST=0 
+/D JucePlugin_Build_VST3=1 
+/D JUCE_SHARED_CODE=1 
+/D JUCE_STANDALONE_APPLICATION=JucePlugin_Build_Standalone 
+/D JucePlugin_IsSynth=0 
+/D JucePlugin_ManufacturerCode=0x48524d53 
+/D "JucePlugin_Manufacturer=\"Hermes140\"" 
+/D "JucePlugin_ManufacturerWebsite=\"\"" 
+/D "JucePlugin_ManufacturerEmail=\"\"" 
+/D JucePlugin_PluginCode=0x414d504d 
+/D JucePlugin_ProducesMidiOutput=0 
+/D JucePlugin_IsMidiEffect=0 
+/D JucePlugin_WantsMidiInput=0 
+/D JucePlugin_EditorRequiresKeyboardFocus=0 
+/D "JucePlugin_Name=\"AmpModeler\"" 
+/D "JucePlugin_Desc=\"AmpModeler\"" 
+/D JucePlugin_Version=0.2.0 
+/D "JucePlugin_VersionString=\"0.2.0\"" 
+/D JucePlugin_VersionCode=0x200 
+/D JucePlugin_VSTUniqueID=JucePlugin_PluginCode 
+/D JucePlugin_VSTCategory=kPlugCategEffect 
+/D "JucePlugin_Vst3Category=\"Fx\"" 
+/D "JucePlugin_AUMainType='aufx'" 
+/D JucePlugin_AUSubType=JucePlugin_PluginCode 
+/D JucePlugin_AUExportPrefix=AmpModelerAU 
+/D "JucePlugin_AUExportPrefixQuoted=\"AmpModelerAU\"" 
+/D JucePlugin_AUManufacturerCode=JucePlugin_ManufacturerCode 
+/D JucePlugin_CFBundleIdentifier=com.Hermes140.AmpModeler 
+/D JucePlugin_AAXIdentifier=com.Hermes140.AmpModeler 
+/D JucePlugin_AAXManufacturerCode=JucePlugin_ManufacturerCode 
+/D JucePlugin_AAXProductId=JucePlugin_PluginCode 
+/D JucePlugin_AAXCategory=0 
+/D JucePlugin_AAXDisableBypass=0 
+/D JucePlugin_AAXDisableMultiMono=0 
+/D JucePlugin_VSTNumMidiInputs=16 
+/D JucePlugin_VSTNumMidiOutputs=16 
+/D JucePlugin_Enable_ARA=0 
+/D "JucePlugin_ARAFactoryID=\"com.Hermes140.AmpModeler.arafactory.0.2.0\"" 
+/D "JucePlugin_ARADocumentArchiveID=\"com.Hermes140.AmpModeler.aradocumentarchive.1\"" 
+/D "JucePlugin_ARACompatibleArchiveIDs=\"\"" 
+/D JucePlugin_ARAContentTypes=0 
+/D JucePlugin_ARATransformationFlags=0 
+/D JUCE_WEB_BROWSER=0 
+/D JUCE_USE_CURL=0 
+/D JUCE_VST3_CAN_REPLACE_VST2=0 
+/D JUCE_MODAL_LOOPS_PERMITTED=1 
+/D JUCE_ASIO=0 
+/D _USE_MATH_DEFINES=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_processors=1 
+/D JUCE_MODULE_AVAILABLE_juce_gui_extra=1 
+/D JUCE_MODULE_AVAILABLE_juce_gui_basics=1 
+/D JUCE_MODULE_AVAILABLE_juce_graphics=1 
+/D JUCE_MODULE_AVAILABLE_juce_events=1 
+/D JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1 
+/D NDEBUG=1 
+/D _NDEBUG=1 
+/D JUCE_MODULE_AVAILABLE_juce_core=1 
+/D JUCE_MODULE_AVAILABLE_juce_data_structures=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_basics=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_utils=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_formats=1 
+/D JUCE_MODULE_AVAILABLE_juce_audio_devices=1 
+/D "CMAKE_INTDIR=\"Release\"" 
+
+/EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++20 /Fo"AmpModeler.dir\Release\\" 
+/Fd"C:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\Release\AmpModeler_SharedCode.pdb" 
+/external:W4 /Gd /TP /errorReport:queue  
+/bigobj C:\Users\benjamin\Dev\AmpModeler\Source\IRLoader.cpp C:\Users\benjamin\Dev\AmpModeler\Source\PluginEditor.cpp C:\Users\benjamin\Dev\AmpModeler\Source\PluginProcessor.cpp
+
+## commande de link vst3 release
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64\link.exe /ERRORREPORT:QUEUE 
+/OUT:"C:\Users\benjamin\Dev\AmpModeler\build\AmpModeler_artefacts\Release\VST3\AmpModeler.vst3\Contents\x86_64-win\AmpModeler.vst3" 
+/INCREMENTAL:NO /NOLOGO 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_plugin_client/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_processors/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_extra/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_gui_basics/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_graphics/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_events/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_core/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_data_structures/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_basics/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_utils/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_formats/libs/VisualStudio2022/x64/MDd/Release 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd 
+/LIBPATH:C:/Users/benjamin/Dev/AmpModeler/libs/JUCE/modules/juce_audio_devices/libs/VisualStudio2022/x64/MDd/Release 
+
+AmpModeler_artefacts\Release\AmpModeler_SharedCode.lib "-LTCG" 
+kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib 
+
+/MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Release/VST3/AmpModeler.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/benjamin/Dev/AmpModeler/build/AmpModeler_artefacts/Release/VST3/AmpModeler.lib" /MACHINE:X64  /machine:x64 /DLL AmpModeler_VST3.dir\Release\juce_audio_plugin_client_AAX.obj

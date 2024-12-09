@@ -1,6 +1,4 @@
 import os
-
-import os
 import sys
 
 argc = len(sys.argv)
@@ -37,6 +35,19 @@ defines = " ".join([
 
     "/D JUCE_MODAL_LOOPS_PERMITTED=1",
     "/D JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_core=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_processors=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_gui_extra=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_gui_basics=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_graphics=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_events=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_data_structures=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_basics=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_utils=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_formats=1",
+    "/D JUCE_MODULE_AVAILABLE_juce_audio_devices=1",
+    
     "/D DEBUG=1",
     "/D _DEBUG=1",
     "/D _MT=1",
@@ -46,13 +57,14 @@ defines = " ".join([
     "/D JucePlugin_Build_VST3=1",
     "/D JucePlugin_IsSynth=0",
     
-    "/D JucePlugin_ManufacturerCode=0x48524d53",
-    "/D \"JucePlugin_Manufacturer=\\\"Hermes140\\\"\"",
-    "/D JucePlugin_PluginCode=0x414d504d",
     "/D JucePlugin_ProducesMidiOutput=0",
     "/D JucePlugin_IsMidiEffect=0",
     "/D JucePlugin_WantsMidiInput=0",
     "/D JucePlugin_EditorRequiresKeyboardFocus=0",
+    
+    "/D JucePlugin_ManufacturerCode=0x48524d53",
+    "/D \"JucePlugin_Manufacturer=\\\"Hermes140\\\"\"",
+    "/D JucePlugin_PluginCode=0x414d504d",
     "/D JucePlugin_Version=0.2.0",
     "/D \"JucePlugin_Name=\\\"AmpModeler_{config}\\\"\"",
     "/D \"JucePlugin_Desc=\\\"AmpModeler_{config}\\\"\"",
@@ -108,7 +120,6 @@ libs = " ".join([
     "uuid.lib", 
     "comdlg32.lib", 
     "advapi32.lib",
-
 ])
 
 command = f"cl {compile_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} {juce_sources} /link {link_flags} {libs}"

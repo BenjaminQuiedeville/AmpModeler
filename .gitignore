@@ -8,6 +8,11 @@
 *.lib
 *.manifest
 *.json
+*.exp
+*.vst3
+*.manifest
+*.etl
+*.lib
 *.vsidx
 *.db
 *.db-shm
