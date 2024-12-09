@@ -9,7 +9,7 @@ include("clipping_curves.jl")
 function main() :: Figure
     samplerate :: Float64 = 48000.0
 
-    signal = 1.0 .* sin.(LinRange(0.0, 15*pi, 8192))
+    signal = 40.0 .* sin.(LinRange(0.0, 4*pi, 1024))
     # signal = zeros(Float64, 1000)
 
     # signal = 2 .* sinpi.(2 * 0:1/samplerate:pi * 100)
@@ -23,11 +23,11 @@ function main() :: Figure
 
     figure = Figure()
     ax = Axis(figure[1, 1])
-    # lines!(signal * 100, label = "input signal")
+    # lines!(signal, label = "input signal")
 
-    threshold = 1.0
-    ratio = 4
-    knee_width = 0.01
+    threshold = 1.2
+    ratio = 10.0
+    knee_width = ratio/2
     for index in 1:length(signal)
         sample = signal[index]
 
@@ -42,25 +42,25 @@ function main() :: Figure
 
     # lines!(signal, label = "grid_conduction")
 
-    gain = 10^(35/20)
-    bias = 2.0
-    for index in 1:length(signal)
-        sample = -signal[index]
-        sample = asym_tanh(sample + bias, -2.0, 0.0)
-        sample *= gain
+    # gain = 10^(35/20)
+    # bias = 2.0
+    # for index in 1:length(signal)
+    #     sample = -signal[index]
+    #     sample = asym_tanh(sample + bias, -2.0, 0.0)
+    #     sample *= gain
 
-        signal[index] = sample
-    end 
+    #     signal[index] = sample
+    # end 
 
-    signal .-= mean(signal)
+    # signal .-= mean(signal)
 
     lines!(signal, label = "tube_output", color=:red)
 
     axislegend(; position = :lb)
 
-    freq_axis = Axis(figure[2, 1], xscale = log10)
-    lines!(freq_axis, 20.0 * log10.(abs.(rfft(signal[1:8192]))))
-    ylims!(freq_axis, [0.0, 100.0])
+    # freq_axis = Axis(figure[2, 1], xscale = log10)
+    # lines!(freq_axis, 20.0 * log10.(abs.(rfft(signal[1:8192]))))
+    # ylims!(freq_axis, [0.0, 100.0])
     return figure
 end 
 figure = main()
