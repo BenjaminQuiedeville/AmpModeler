@@ -294,7 +294,6 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
         
     deallocateFFTEngine();
     
-    
     fftEngine = pffft_new_setup((int)fftSize, PFFFT_REAL);
 
     inputBufferPadded           = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
@@ -310,11 +309,8 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
     } else {
         fftWorkBuffer = nullptr;
     }
-
-    for (u32 i = 0; i < fftSize; i++) {
-        inputBufferPadded[i] = 0.0f;
-        inputBufferPadded[i] = 0.0f;
-    }
+    
+    memset(inputBufferPadded, 0, fftSize * sizeof(float))
 }
 
 
@@ -341,13 +337,8 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     
     float *irTimeVec = (float *)pffft_aligned_malloc(fftSize * sizeof(float));
 
-    for (u32 i = 0; i < irSize; i++) {
-        irTimeVec[i] = irPtr[i];
-    }
-
-    for (u32 i = 0; i < (fftSize - irSize); i++) {
-        irTimeVec[irSize + i] = 0.0f;
-    }
+    memcpy(irTimeVec, irPtr, irSize * sizeof(float));
+    memset(irTimeVec+irSize, 0, (fftSize - irSize)*sizeof(float));
 
     pffft_transform(fftEngine, irTimeVec, irDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
 
@@ -385,15 +376,11 @@ IRLoaderError IRLoader::loadIR() {
 
 void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     
-    for (size_t i = 0; i < nSamples; i++) {
-        inputBufferPadded[i] = bufferL[i];
-    }
-
+    memcpy(inputBufferPadded, bufferL, nSamples * sizeof(float));
+ 
     pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
-
-    for (size_t i = 0; i < fftSize; i++) {
-        convolutionResultDftBuffer[i] = 0.0f;
-    }
+    
+    memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
 
     pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
 
@@ -418,21 +405,15 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
 
     if (bufferR) {
     
-        for (size_t i = 0; i < nSamples; i++) {
-            inputBufferPadded[i] = bufferR[i];
-        }
+        memcpy(inputBufferPadded, bufferR, nSamples * sizeof(float));
     
         pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
     
-        for (size_t i = 0; i < fftSize; i++) {
-            convolutionResultDftBuffer[i] = 0.0f;
-        }
+        memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
     
         pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
     
         pffft_transform(fftEngine, convolutionResultDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
-    
-        overlapAddBufferSize = 2 * fftSize;
     
         // mettre les samples dans l'overlap add
         for (size_t i = 0; i < convolutionResultSize; i++) {
@@ -455,7 +436,5 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     if (updateIR) { 
         prepareConvolution(irBuffer, irBufferSize); 
     }
-
-    return;
 }
 
