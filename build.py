@@ -113,13 +113,11 @@ libs = " ".join([
     "kernel32.lib", 
     "user32.lib", 
     "gdi32.lib", 
-    "winspool.lib", 
     "shell32.lib", 
     "ole32.lib", 
     "oleaut32.lib", 
     "uuid.lib", 
     "comdlg32.lib", 
-    "advapi32.lib",
 ])
 
 command = f"cl {compile_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} {juce_sources} /link {link_flags} {libs}"
@@ -130,7 +128,7 @@ print(command)
 return_code = os.system(command)
 
 if return_code != 0:
-    println("Problems during compilation, exiting")
+    print("Problems during compilation, exiting")
     exit(-1)
 
 print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
