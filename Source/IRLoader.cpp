@@ -310,7 +310,7 @@ void IRLoader::reallocFFTEngine(u64 newSize) {
         fftWorkBuffer = nullptr;
     }
     
-    memset(inputBufferPadded, 0, fftSize * sizeof(float))
+    memset(inputBufferPadded, 0, fftSize * sizeof(float));
 }
 
 
