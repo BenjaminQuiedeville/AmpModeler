@@ -393,7 +393,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == ParamIDs[PREAMP_GAIN]) {
         auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
-        preamp.preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 0.5f), // 3.0f
                                   SMOOTH_PARAM_TIME, 
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
         preamp.brightCapFilter.setCoefficients(
