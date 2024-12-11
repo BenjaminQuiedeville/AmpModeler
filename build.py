@@ -1,34 +1,85 @@
 import os
+import os.path as path
 import sys
 
 argc = len(sys.argv)
 
-release_mode = False
+def build_juce(compile_flags: str, juce_only: bool):
+    
+    juce_build_dir: str = "juce_build"
+        
+    juce_sources = " ".join([
+        "libs/juce/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp",
+        "libs/juce/modules/juce_audio_basics/juce_audio_basics.cpp",
+        "libs/juce/modules/juce_audio_devices/juce_audio_devices.cpp",
+        "libs/juce/modules/juce_audio_formats/juce_audio_formats.cpp",
+        "libs/juce/modules/juce_audio_processors/juce_audio_processors.cpp",
+        "libs/juce/modules/juce_audio_utils/juce_audio_utils.cpp",
+        "libs/juce/modules/juce_core/juce_core.cpp",
+        "libs/juce/modules/juce_data_structures/juce_data_structures.cpp",
+        "libs/juce/modules/juce_graphics/juce_graphics.cpp",
+        "libs/juce/modules/juce_gui_basics/juce_gui_basics.cpp",
+        "libs/juce/modules/juce_gui_extra/juce_gui_extra.cpp",
+        "libs/juce/modules/juce_events/juce_events.cpp"
+    ])
+    
+    if path.isdir(juce_build_dir) and not juce_only:
+        return 
+    else:
+        os.mkdir(juce_build_dir)
+
+    command = f"cl {compile_flags} /c /Fo:juce_build/ /Fd:juce_build/ {defines} {includes} {sources}"
+    print(command)
+    return_code = os.system(command)
+    
+    assert(not return_code)
+    
+    return
+
+
+release = False
+debug = False
+juce_only = False
 config: str = ""
 
-if argc > 1 and sys.argv[1] == "release":
-    release_mode = True
-    config = sys.argv[1]
-
-elif argc > 1 and sys.argv[1] == "relwithdebug":
-    release_mode = False
-    config = sys.argv[1]
-
-elif argc > 1 and sys.argv[1] == "debug":
-    release_mode = False
-    config = sys.argv[1]
-
-else:
-    release_mode = False
+if argc == 1:
+    release = False
+    debug = True
     config = "debug"
 
+elif sys.argv[1] == "release":
+    release = True
+    debug = False
+    config = sys.argv[1]
 
-compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zi /Zc:wchar_t /Zc:forScope /Zc:inline"
+elif sys.argv[1] == "relwithdebug":
+    release = True
+    debug = True
+    config = sys.argv[1]
+
+elif sys.argv[1] == "debug":
+    release = False
+    debug = True
+    config = sys.argv[1]
+    
+elif sys.argv[1] == "juce":
+    juce_only = True
+    debug = True
+        
+else: 
+    print("wrong config, use either 'release', 'relwithdebug', 'debug', 'juce'")
+    exit(-1)
+
+compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 link_flags = "/OPT:REF"
 
-if release_mode:
+if release:
     compile_flags += " /Ox /Ob2 /GL /Gy"
     link_flags += " /LTCG"
+
+if debug:
+    compile_flags += " /Zi"
+
 
 defines = " ".join([
     "/D _USE_MATH_DEFINES",
@@ -94,21 +145,6 @@ plugin_sources = " ".join([
     "Source/pffft/pffft.c"
 ])
 
-juce_sources = " ".join([
-    "libs/juce/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp",  
-    "libs/juce/modules/juce_audio_basics/juce_audio_basics.cpp",
-    "libs/juce/modules/juce_audio_devices/juce_audio_devices.cpp",
-    "libs/juce/modules/juce_audio_formats/juce_audio_formats.cpp",
-    "libs/juce/modules/juce_audio_processors/juce_audio_processors.cpp",
-    "libs/juce/modules/juce_audio_utils/juce_audio_utils.cpp",
-    "libs/juce/modules/juce_core/juce_core.cpp",
-    "libs/juce/modules/juce_data_structures/juce_data_structures.cpp",
-    "libs/juce/modules/juce_graphics/juce_graphics.cpp",
-    "libs/juce/modules/juce_gui_basics/juce_gui_basics.cpp",
-    "libs/juce/modules/juce_gui_extra/juce_gui_extra.cpp",
-    "libs/juce/modules/juce_events/juce_events.cpp",
-])
-
 libs = " ".join([
     "kernel32.lib", 
     "user32.lib", 
@@ -120,9 +156,15 @@ libs = " ".join([
     "comdlg32.lib", 
 ])
 
-command = f"cl {compile_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} {juce_sources} /link {link_flags} {libs}"
+build_juce(compile_flags, juce_only)
 
-#/Fd:AmpSimp.pdb
+if juce_only:
+    exit(0)
+
+juce_objects = " ".join(["juce_build/" + file for file in filter(lambda string : ".obj" in string, os.listdir("juce_build"))])
+
+command = f"cl {compile_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} /link {link_flags} {juce_objects} {libs}"
+
 print(command)
 
 return_code = os.system(command)
