@@ -99,9 +99,10 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         
     if (!buffer) { return; }
         
-    static const float gridCondThresh = 0.8f;
-    static const float gridCondRatio  = 4.0f;
-    static const float gridCondKnee   = 0.5f;
+    static const float gridCondThresh = 1.0f;
+    static const float gridCondRatio  = 2.0f;
+    // static const float gridCondKnee   = 0.05f;
+    static const float gridCondKnee   = gridCondRatio / 4.0f;
     
     for (u32 index = 0; index < nSamples; index++) {
         Sample sample = buffer[index];
@@ -117,16 +118,22 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
         sample += bias[0];
         
         static const float pos_clip_point = 0.2f;
-        static const float neg_clip_point = -3.0f;
+        static const float neg_clip_point = 3.0f;
         
         if (sample > pos_clip_point) {
             sample = tanh(sample - pos_clip_point) + pos_clip_point;
         } 
-        else if (sample < neg_clip_point) {
-            sample = neg_clip_point;
+        // else if (sample < neg_clip_point) {
+        //     sample = neg_clip_point;
+        // }
+        else if (sample < 0.0f) {
+            sample *= 2.0f/(3.0f*neg_clip_point);
+            sample = sample < -1.0f ? -2.0f/3.0f : sample - 1.0f/3.0f * sample*sample*sample;
+            sample *= neg_clip_point * 1.5f;                        
         }
 
-        buffer[index] = (sample - bias[1]) * gain;    
+
+        buffer[index] = (sample - bias[1]) * gain;
     }
 }
 
@@ -215,7 +222,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         static const Sample STAGE_4_GAIN = 1.0f;
         
         static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(3.0);
-        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-18.0);
+        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-21.0);
         static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
         static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
              

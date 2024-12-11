@@ -118,7 +118,9 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
 
-    inputNoiseFilter.setCoefficients(2500.0, 0.7, 0.0, sampleRate);
+    inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, sampleRate);
+    inputMudFilter.prepareToPlay();
+    inputMudFilter.setCoefficients(200.0, sampleRate);
 
     tightFilter.prepareToPlay();
     biteFilter.prepareToPlay();
@@ -207,6 +209,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     
     if (gateActive) {
         inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
+        inputMudFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
     }
     
     if (channelConfig == Stereo) {
@@ -397,7 +400,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
                                   SMOOTH_PARAM_TIME, 
                                   samplerate * PREAMP_UP_SAMPLE_FACTOR);
         preamp.brightCapFilter.setCoefficients(
-            450.0, 
+            550.0, 
             scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
             samplerate*PREAMP_UP_SAMPLE_FACTOR
         );
@@ -423,7 +426,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(ParamIDs[STAGE0_LP]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
         
-        preamp.cathodeBypassFilter0.setCoefficients(250.0, 
+        preamp.cathodeBypassFilter0.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE0_BYPASS]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
@@ -446,7 +449,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(ParamIDs[STAGE1_LP]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
         
-        preamp.cathodeBypassFilter1.setCoefficients(250.0, 
+        preamp.cathodeBypassFilter1.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE1_BYPASS]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
@@ -467,7 +470,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(ParamIDs[STAGE2_LP]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
         
-        preamp.cathodeBypassFilter2.setCoefficients(250.0, 
+        preamp.cathodeBypassFilter2.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE2_BYPASS]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
@@ -488,7 +491,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(ParamIDs[STAGE3_LP]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
         
-        preamp.cathodeBypassFilter3.setCoefficients(250.0, 
+        preamp.cathodeBypassFilter3.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE3_BYPASS]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
@@ -509,7 +512,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(ParamIDs[STAGE4_LP]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
         
-        preamp.cathodeBypassFilter4.setCoefficients(250.0, 
+        preamp.cathodeBypassFilter4.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE4_BYPASS]), 
             samplerate*PREAMP_UP_SAMPLE_FACTOR);
 
@@ -698,7 +701,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE0_BYPASS].toString(), "STAGE0_BYPASS", 
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE0_BYPASS], attributes
+        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE0_BYPASS], attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -719,7 +722,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE1_BYPASS].toString(), "STAGE1_BYPASS", 
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[STAGE1_BYPASS], attributes
+        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[STAGE1_BYPASS], attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -740,7 +743,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE2_BYPASS].toString(), "STAGE2_BYPASS", 
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE2_BYPASS], attributes
+        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE2_BYPASS], attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -761,7 +764,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE3_BYPASS].toString(), "STAGE3_BYPASS", 
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE3_BYPASS], attributes
+        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  defaultParamValues[STAGE3_BYPASS], attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -782,7 +785,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[STAGE4_BYPASS].toString(), "STAGE4_BYPASS", 
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[STAGE4_BYPASS], attributes
+        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), defaultParamValues[STAGE4_BYPASS], attributes
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

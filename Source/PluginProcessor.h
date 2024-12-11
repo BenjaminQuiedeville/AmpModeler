@@ -314,6 +314,7 @@ struct Processor  : public juce::AudioProcessor,
     juce::ValueTree valueTree;
     juce::AudioProcessorValueTreeState apvts;
 
+    OnepoleFilter inputMudFilter;
     Biquad inputNoiseFilter {BIQUAD_LOWPASS};
 
     OnepoleFilter tightFilter;
