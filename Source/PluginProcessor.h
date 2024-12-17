@@ -32,12 +32,9 @@ const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
-
+    
 général 
     presets
-
-tonestack
-    composants custom
     
 irloader 
 
@@ -314,7 +311,6 @@ struct Processor  : public juce::AudioProcessor,
     juce::ValueTree valueTree;
     juce::AudioProcessorValueTreeState apvts;
 
-    OnepoleFilter inputMudFilter;
     Biquad inputNoiseFilter {BIQUAD_LOWPASS};
 
     OnepoleFilter tightFilter;
@@ -342,6 +338,7 @@ struct Processor  : public juce::AudioProcessor,
     SmoothParamLinear masterVolume;
 
     double samplerate = 44100.0;
+    double preampSamplerate = 44100.0f;
 
     Sample *sideChainBuffer = nullptr;
     

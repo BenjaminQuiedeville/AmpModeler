@@ -117,10 +117,8 @@ void Processor::changeProgramName (int index, const juce::String& newName)
 void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
-
+    preampSamplerate = sampleRate * PREAMP_UP_SAMPLE_FACTOR;
     inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, sampleRate);
-    inputMudFilter.prepareToPlay();
-    inputMudFilter.setCoefficients(200.0, sampleRate);
 
     tightFilter.prepareToPlay();
     biteFilter.prepareToPlay();
@@ -209,7 +207,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     
     if (gateActive) {
         inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
-        inputMudFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
     }
     
     if (channelConfig == Stereo) {
@@ -389,7 +386,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[INPUT_FILTER]) {
-        preamp.inputFilter.setCoefficients(newValue, samplerate*PREAMP_UP_SAMPLE_FACTOR);
+        preamp.inputFilter.setCoefficients(newValue, preampSamplerate);
         return;
     }
 
@@ -398,11 +395,11 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
         preamp.preGain.newTarget(scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                   SMOOTH_PARAM_TIME, 
-                                  samplerate * PREAMP_UP_SAMPLE_FACTOR);
+                                  preampSamplerate);
         preamp.brightCapFilter.setCoefficients(
             550.0, 
             scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
-            samplerate*PREAMP_UP_SAMPLE_FACTOR
+            preampSamplerate
         );
         
         return;
@@ -414,7 +411,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == ParamIDs[PREAMP_VOLUME]) {
-        preamp.postGain.newTarget(newValue + preamp.outputAttenuationdB, SMOOTH_PARAM_TIME, samplerate * PREAMP_UP_SAMPLE_FACTOR);
+        preamp.postGain.newTarget(newValue + preamp.outputAttenuationdB, SMOOTH_PARAM_TIME, preampSamplerate);
         return;
     }
     
@@ -424,11 +421,11 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     {
         preamp.stageOutputFilter0.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE0_LP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
         
         preamp.cathodeBypassFilter0.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE0_BYPASS]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(ParamIDs[STAGE0_BIAS]), 0);
         
@@ -443,15 +440,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     
         preamp.couplingFilter1.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE1_HP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.stageOutputFilter1.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE1_LP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
         
         preamp.cathodeBypassFilter1.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE1_BYPASS]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(ParamIDs[STAGE1_BIAS]), 1);
         return;
@@ -464,15 +461,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     {
         preamp.couplingFilter2.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE2_HP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.stageOutputFilter2.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE2_LP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
         
         preamp.cathodeBypassFilter2.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE2_BYPASS]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(ParamIDs[STAGE2_BIAS]), 2);
         return;
@@ -485,15 +482,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     {
         preamp.couplingFilter3.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE3_HP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.stageOutputFilter3.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE3_LP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
         
         preamp.cathodeBypassFilter3.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE3_BYPASS]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(ParamIDs[STAGE3_BIAS]), 3);
         return;
@@ -506,15 +503,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     {
         preamp.couplingFilter4.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE4_HP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.stageOutputFilter4.setCoefficients(
             *apvts.getRawParameterValue(ParamIDs[STAGE4_LP]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
         
         preamp.cathodeBypassFilter4.setCoefficients(280.0, 
             *apvts.getRawParameterValue(ParamIDs[STAGE4_BYPASS]), 
-            samplerate*PREAMP_UP_SAMPLE_FACTOR);
+            preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(ParamIDs[STAGE4_BIAS]), 4);
         return;

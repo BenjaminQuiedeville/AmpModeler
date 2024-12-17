@@ -29,6 +29,8 @@ struct Preamp {
     SmoothParamLinear postGain;
 
     OnepoleFilter inputFilter;
+    OnepoleFilter inputMudFilter;
+    Biquad midBoost {BIQUAD_PEAK};
     
     FirstOrderShelfFilter brightCapFilter {lowshelf};
     

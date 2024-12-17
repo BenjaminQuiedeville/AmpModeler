@@ -17,9 +17,18 @@ Preamp::~Preamp() {
 
 void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
 
+    double upSamplerate = samplerate*PREAMP_UP_SAMPLE_FACTOR;
+    u32 upBlockSize = blockSize * PREAMP_UP_SAMPLE_FACTOR;
+
     preGain.init(0.0);
     postGain.init(dbtoa(-12.0));
     
+    inputMudFilter.prepareToPlay();
+    inputMudFilter.setCoefficients(400.0, upSamplerate);
+
+    midBoost.prepareToPlay();
+    midBoost.setCoefficients(1000.0, 0.2, 3.0, upSamplerate);
+
     inputFilter.prepareToPlay();
     couplingFilter1.prepareToPlay();
     couplingFilter2.prepareToPlay();
@@ -44,18 +53,17 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     overSampler.downSampleFilter2.prepareToPlay();
 
     // earlevel.com/main/2016/09/29/cascading-filters
-    overSampler.upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler.upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler.downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-    overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, samplerate*PREAMP_UP_SAMPLE_FACTOR);
-
+    overSampler.upSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
+    overSampler.upSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
+    overSampler.downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
+    overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
 
     if (upBufferL) {
-        upBufferL = (Sample *)realloc(upBufferL, blockSize * PREAMP_UP_SAMPLE_FACTOR * sizeof(Sample) * 2);
-        upBufferR = upBufferL + blockSize * PREAMP_UP_SAMPLE_FACTOR;
+        upBufferL = (Sample *)realloc(upBufferL, upBlockSize * sizeof(Sample) * 2);
+        upBufferR = upBufferL + upBlockSize;
     } else {
-        upBufferL = (Sample *)calloc(blockSize * PREAMP_UP_SAMPLE_FACTOR * 2,  sizeof(Sample));
-        upBufferR = upBufferL + blockSize * PREAMP_UP_SAMPLE_FACTOR;
+        upBufferL = (Sample *)calloc(upBlockSize * 2,  sizeof(Sample));
+        upBufferR = upBufferL + upBlockSize;
     }
 }
 
@@ -225,7 +233,6 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-21.0);
         static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
         static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
-             
         
         // Input Gain
         applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
@@ -242,6 +249,8 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         // Stage 1
         preGain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
     
+        inputMudFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
+        midBoost.process(upBufferL, upBufferR, upNumSamples);
         brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
     
         tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN, stage1_bias);
@@ -275,7 +284,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
     
         if (channel == 3) {
-            applyGainLinear(-STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
+            applyGainLinear(STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
     
@@ -287,6 +296,7 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN, stage4_bias);
         cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
         couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
+        stageOutputFilter4.processLowpass(upBufferL, upBufferR, upNumSamples);
 
         applyGainLinear(-STAGE4_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             
