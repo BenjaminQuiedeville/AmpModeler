@@ -116,7 +116,7 @@ AmplifierPage::AmplifierPage(Processor &p) :
     ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL]),
                                  juce::NotificationType::dontSendNotification);
 
-    toneStackModelBox.addItemList({"Savage", "JCM", "SLO", "Recto", "Orange"}, 1);
+    toneStackModelBox.addItemList({"Normal", "Scooped", "Mids!"}, 1);
     toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1,
                                      juce::NotificationType::dontSendNotification);
 

@@ -10,9 +10,9 @@
 #include "common.h"
 
 enum TonestackModel {
-    EnglSavage = 0,
+    Soldano = 0,
+    EnglSavage,
     JCM800,
-    Soldano,
     Rectifier,
     Orange,
     // Custom,

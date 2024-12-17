@@ -42,27 +42,27 @@ void Tonestack::setModel(TonestackModel newModel) {
             break; 
         }
     
-        case Rectifier: {
-            comps.R1 = 250e3;
-            comps.R2 = 1e6;
-            comps.R3 = 25e3;
-            comps.R4 = 47e3;
-            comps.C1 = 0.50e-9;
-            comps.C2 = 20e-9;
-            comps.C3 = 20e-9;    
-            break; 
-        }
+        // case Rectifier: {
+        //     comps.R1 = 250e3;
+        //     comps.R2 = 1e6;
+        //     comps.R3 = 25e3;
+        //     comps.R4 = 47e3;
+        //     comps.C1 = 0.50e-9;
+        //     comps.C2 = 20e-9;
+        //     comps.C3 = 20e-9;    
+        //     break; 
+        // }
     
-        case Orange: {
-            comps.R1 = 250e3;
-            comps.R2 = 300e3;
-            comps.R3 = 25e3;
-            comps.R4 = 39e3;
-            comps.C1 = 0.56e-9;
-            comps.C2 = 22e-9;
-            comps.C3 = 22e-9;    
-            break; 
-        }
+        // case Orange: {
+        //     comps.R1 = 250e3;
+        //     comps.R2 = 300e3;
+        //     comps.R3 = 25e3;
+        //     comps.R4 = 39e3;
+        //     comps.C1 = 0.56e-9;
+        //     comps.C2 = 22e-9;
+        //     comps.C3 = 22e-9;    
+        //     break; 
+        // }
     
         // case Custom: {
         //     comps.R1 = 250e3;

@@ -807,7 +807,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
         ParamIDs[TONESTACK_MODEL].toString(), "Tonestack model", 
-        juce::StringArray{"Savage", "JCM", "SLO", "Rect", "Orange"}, (int)defaultParamValues[TONESTACK_MODEL]
+        juce::StringArray{"SLO", "Savage", "JCM"}, (int)defaultParamValues[TONESTACK_MODEL]
     ));
 
 
