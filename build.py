@@ -100,7 +100,8 @@ defines = " ".join([
 
 includes = " ".join([
     "/Ilibs/juce/modules",
-    "/Ilibs/juce/modules/juce_audio_processors/format_types/VST3_SDK"
+    "/Ilibs/juce/modules/juce_audio_processors/format_types/VST3_SDK",
+    "/Ilibs"
 ])
 
 plugin_sources = " ".join([
@@ -108,8 +109,7 @@ plugin_sources = " ".join([
     "Source/PluginEditor.cpp",
     "Source/Preamp.cpp",
     "Source/IRLoader.cpp", 
-    "Source/Tonestack.cpp",
-    "Source/pffft/pffft.c"
+    "Source/Tonestack.cpp"
 ])
 
 juce_sources = " ".join([
@@ -124,7 +124,8 @@ juce_sources = " ".join([
     "libs/juce/modules/juce_graphics/juce_graphics.cpp",
     "libs/juce/modules/juce_gui_basics/juce_gui_basics.cpp",
     "libs/juce/modules/juce_gui_extra/juce_gui_extra.cpp",
-    "libs/juce/modules/juce_events/juce_events.cpp"
+    "libs/juce/modules/juce_events/juce_events.cpp",
+    "libs/pffft/pffft.c"
 ])
     
 libs = " ".join([
@@ -163,15 +164,9 @@ if (not path.isdir(juce_build_dir) and not juce_only):
 elif juce_only:
     os.system("rm -r juce_build")    
     
-    for config in ["debug", "release", "relwithdebug"]:
-        flags = ""
-        if config == "debug":            flags = debug_flags
-        elif config == "release":        flags = release_flags
-        elif config == "relwithdebug":   flags = relwithdebug_flags 
-    
-        juce_build_dir = f"juce_build/{config}"
-        build_juce(juce_sources, juce_build_dir, flags)
-        
+    build_juce(juce_sources, "juce_build/debug", debug_flags)    
+    build_juce(juce_sources, "juce_build/release", release_flags)
+    build_juce(juce_sources, "juce_build/relwithdebug", relwithdebug_flags)        
     exit(0)
 
 

@@ -35,11 +35,12 @@ target_sources(${PROJECT_NAME}
         Source/IRLoader.cpp 
         Source/Preamp.cpp 
         Source/Tonestack.cpp
-        Source/pffft/pffft.c
+        libs/pffft/pffft.c
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
+        ${LIB_DIR}
         ${JUCE_SOURCE_DIR}/modules
 )
 

@@ -11,7 +11,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "common.h"
-#include "pffft/pffft.h"
+#include <pffft/pffft.h>
 
 /*
 
