@@ -16,10 +16,16 @@
 
 constexpr double BITS_24_MAX = (double)((1 << 23) - 1);
 
-#define BASE_IR_SIZE 1323
-static float baseIR[BASE_IR_SIZE] = {
-#include "data/baseIR.inc"
+#define BASE_IR_441_SIZE 1323
+static float baseIR_441[BASE_IR_441_SIZE] = {
+#include "data/baseIR_441.txt"
 };
+
+#define BASE_IR_48_SIZE 1440
+static float baseIR_48[BASE_IR_48_SIZE] = {
+#include "data/baseIR_48.txt"
+};
+
 
 static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
 
@@ -353,7 +359,21 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
 IRLoaderError IRLoader::loadIR() {
     
     if (defaultIR) {
-        prepareConvolution(baseIR, BASE_IR_SIZE);
+        
+        if (samplerate == 44100.0) {
+            prepareConvolution(baseIR_441, BASE_IR_441_SIZE);
+        
+        } else if (samplerate == 48000.0) {
+            prepareConvolution(baseIR_48, BASE_IR_48_SIZE);
+        } else {
+            juce::AlertWindow::showMessageBox(
+                juce::MessageBoxIconType::WarningIcon, 
+                "Samplerate error",
+                "Sorry, the default provided IR is only available at 44.1 or 48kHz, if you work at another sampling rate, please provide your own IR.", 
+                "Ok");        
+            return IRLoaderError::Error;
+        }
+        
         return IRLoaderError::OK;
     }
 
