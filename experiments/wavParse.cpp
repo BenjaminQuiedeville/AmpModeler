@@ -6,56 +6,46 @@
 
 #define BITS_24_MAX (double)(1 << 23 - 1)
 
-struct Signal {
-
-    float *data = nullptr;
-    size_t size = 0;
-    double samplerate = 0.0;
-
-    ~Signal() {
-        if (data != nullptr) {
-            free(data);
-        }
-    }
-};
-
-struct ChunkData {
-
-    char riffString[4];
-    int32_t fileSize; 
-    char format[4];
-
-    char subChunk1ID[4];
-    int32_t subChunk1Size;
-    int16_t audioFormat;
-    int16_t numChannels;
-    int32_t samplerate;
-    int32_t byteRate;
-    int16_t blockAlign;
-    int16_t bitsPerSample;
-    
-    char subChunk2ID[4];
-    int32_t signalSizeBytes;
-};
-
-static void wavParse(std::string &filepath, Signal *outSignal) {
+static u64 parseWavFile(const std::string& filepath, float **outputBuffer) {
 
     FILE *wavFile = nullptr;
-    
     fopen_s(&wavFile, filepath.data(), "rb");
-
+    
     if (ferror(wavFile)) {
         fclose(wavFile);
-        return;
+        return 0;
     }
 
-    ChunkData chunk_data;
-
-    int8_t temp[1] = {0};
-    int8_t buffer[4] = {0};
+    struct {
+        char riffString[4];
+        int32_t fileSize; 
+        char format[4];
+    
+        char subChunk1ID[4];
+        int32_t subChunk1Size;
+        int16_t audioFormat;
+        int16_t numChannels;
+        int32_t samplerate;
+        int32_t byteRate;
+        int16_t blockAlign;
+        int16_t bitsPerSample;
+        
+        char subChunk2ID[4];
+        int32_t signalSizeBytes;
+    } chunk_data;
     
     fread(chunk_data.riffString, 1, 4, wavFile);
-    assert(memcmp(chunk_data.riffString, "RIFF", 4) == 0);
+
+    if (memcmp(chunk_data.riffString, "RIFF", 4) != 0) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "There is an error in the \"RIFF\" header of the .wav file, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        return 0;
+    }
 
     fread((int8_t *)(&chunk_data.fileSize), 1, 4, wavFile);
     
@@ -67,11 +57,22 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
     file_data_index += 4;
     
     assert(memcmp(chunk_data.format, "WAVE", 4) == 0);
+    if (memcmp(chunk_data.format, "WAVE", 4) != 0) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "There is an error in the \"WAVE\" header of the .wav file, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        free(file_data);
+        return 0;
+    }
     
     printf("RIFF String = %4s \n", chunk_data.riffString);
     printf("fileSize = %d \n", chunk_data.fileSize);
     printf("format = %4s \n", chunk_data.format);
-
+    
     while (memcmp(file_data + file_data_index, "fmt ", 4)) {
         file_data_index++;
     }
@@ -108,6 +109,18 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
     assert(chunk_data.byteRate == chunk_data.samplerate * chunk_data.numChannels * chunk_data.bitsPerSample / 8);
     assert(chunk_data.blockAlign == chunk_data.numChannels * chunk_data.bitsPerSample / 8);    
         
+    if (chunk_data.numChannels != 1) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "Sorry, I don't support IRs with more than one channels for now, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        free(file_data);
+        return 0;        
+    }
+    
     printf("subChunk1ID = %4s \n", chunk_data.subChunk1ID);
     printf("subChunk1Size = %d \n", chunk_data.subChunk1Size);
     printf("audioFormat = %d \n", chunk_data.audioFormat);
@@ -118,6 +131,7 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
     printf("blockAlign = %d \n", chunk_data.blockAlign);
     printf("bitsPerSample = %d \n", chunk_data.bitsPerSample);
 
+    
     while (memcmp(file_data + file_data_index, "data", 4)) {
         file_data_index++;
     }
@@ -126,6 +140,18 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
     
     assert(memcmp(chunk_data.subChunk2ID, "data", 4) == 0);
 
+    if (memcmp(chunk_data.subChunk2ID, "data", 4) != 0) {
+        juce::AlertWindow::showMessageBox(
+            juce::MessageBoxIconType::WarningIcon, 
+            "IR file error",
+            "The file contains anoying meta data than I can't decode for now, please choose another file", 
+            "Ok");
+        
+        fclose(wavFile);
+        free(file_data);
+        return 0;        
+    }
+    
     printf("subChunk2ID = %4s \n", chunk_data.subChunk2ID);
 
     chunk_data.signalSizeBytes = *(int32_t*)(file_data + file_data_index);
@@ -136,10 +162,7 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
     size_t sampleSizeBytes = chunk_data.blockAlign/chunk_data.numChannels;
     size_t numSamples = chunk_data.signalSizeBytes/sampleSizeBytes;
 
-
-    outSignal->samplerate = (double)chunk_data.samplerate;
-    outSignal->size = numSamples;
-    outSignal->data = (float *)calloc(numSamples, sizeof(float));
+    *outputBuffer = (float *)calloc(numSamples, sizeof(float));
     
     int8_t *signal_ptr = file_data + file_data_index;
     
@@ -150,7 +173,7 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
 
         int8_t sampleChar[2] = {0x00, 0x00};
         
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
             
             memcpy(sampleChar, signal_ptr + byte_counter, 2);
             byte_counter += 2;
@@ -162,21 +185,21 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
                 sampleInt |= ~0xFFFF;
             }            
 
-            float sample = sampleInt / (float)_I16_MAX / 2.0;
+            float sample = sampleInt / (float)_I16_MAX * 0.5f;
 
-            outSignal->data[sampleCounter] = sample;
+            (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
         }
 
     } else if (chunk_data.bitsPerSample == 24) {
     
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
             
             memcpy(sampleChar, signal_ptr + byte_counter, 3);
             byte_counter += 3;
 
-            int64_t mask = 0x01 << (chunk_data.bitsPerSample - 1);
+            int64_t mask = 0x01i64 << (chunk_data.bitsPerSample - 1);
             // uint32_t mask = 0x800000;
             int32_t sampleInt = *(int32_t *)sampleChar;
 
@@ -184,9 +207,9 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
                 sampleInt |= ~0xFFFFFF;
             }
 
-            float sample = sampleInt / BITS_24_MAX / 2.0;
+            float sample = (float)(sampleInt / BITS_24_MAX * 0.5f);
 
-            outSignal->data[sampleCounter] = sample;
+            (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
         }
 
@@ -194,31 +217,42 @@ static void wavParse(std::string &filepath, Signal *outSignal) {
         
         int8_t sampleChar[4] = {0x00, 0x00, 0x00, 0x00};
 
-        while (sampleCounter < numSamples && byte_counter < chunk_data.signalSizeBytes) {
+        while (sampleCounter < numSamples && byte_counter < (uint32_t)chunk_data.signalSizeBytes) {
 
             memcpy(sampleChar, signal_ptr + byte_counter, 4);
             byte_counter += 4;
             
-            int64_t mask = 0x01 << (chunk_data.bitsPerSample - 1);
+            int64_t mask = 0x01i64 << (chunk_data.bitsPerSample - 1);
             int32_t sampleInt = *(int32_t *)sampleChar;
 
             if (sampleInt & mask) {
                 sampleInt |= ~0xFFFFFFFF;
             }
 
-            float sample = sampleInt / (float)_I32_MAX / 2.0;
+            float sample = sampleInt / (float)_I32_MAX * 0.5f;
 
-            outSignal->data[sampleCounter] = sample;
+            (*outputBuffer)[sampleCounter] = sample;
             sampleCounter++;
         }
     }
 
-    printf("\n");    
+
+    float irMax = 0.0f;
+
+    for (u64 i = 0; i < (u64)(numSamples/4); i++) {
+        if (abs((*outputBuffer)[i]) > abs(irMax)) {
+            irMax = abs((*outputBuffer)[i]);
+        }
+    }
+
+    for (u64 i = 0; i < numSamples; i++) {
+        (*outputBuffer)[i] /= irMax;
+    }
 
     free(file_data);
     fclose(wavFile);
 
-    return;
+    return numSamples;
 }
 
 int main(int argc, char **argv) {

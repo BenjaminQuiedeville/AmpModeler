@@ -71,8 +71,6 @@ struct IRLoader {
     float *fftWorkBuffer = nullptr;
 };
 
-static size_t parseWavFile(const std::string& filepath, float **buffer);
-
 #endif // IR_LOADER_H
 
 /*
