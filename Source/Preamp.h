@@ -70,6 +70,7 @@ struct Preamp {
 
     Sample outputAttenuationdB = -40.0f;    
     u8 channel = 0;
+    bool bright = true;
 };
 
 #endif // PREAMP_H

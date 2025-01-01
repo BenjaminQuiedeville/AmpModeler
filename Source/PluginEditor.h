@@ -76,6 +76,12 @@ struct GateBoostPage : public juce::Component {
     juce::ToggleButton preampToggle {"Activate Preamp"};
     juce::ToggleButton tonestackToggle {"Activate Tonestack"};
     juce::ToggleButton EQToggle {"Activate EQ"};
+
+    juce::unique_ptr<juce::ButtonAttachment> gateToggleAttachment;
+    juce::unique_ptr<juce::ButtonAttachment> preampToggleAttachment;
+    juce::unique_ptr<juce::ButtonAttachment> tonestackToggleAttachment;
+    juce::unique_ptr<juce::ButtonAttachment> EQToggleAttachment;
+
 };
 
 
@@ -96,6 +102,9 @@ struct AmplifierPage : public juce::Component {
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
     ComboBox channelConfigBox;
+
+    juce::ToggleButton brightToggle {"Bright Switch"};
+    std::unique_ptr<ButtonAttachment> brightToggleAttachment;
 };
 
 

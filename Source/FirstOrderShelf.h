@@ -52,7 +52,7 @@ struct FirstOrderShelfFilter {
         a1 = (Sample)((rho + alpha1)/(1 + rho * alpha1));
     }
 
-    void process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+    inline void process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
         if (bufferL) {
             for (u32 i = 0; i < nSamples; i++) {
                 Sample outSample = b0 * bufferL[i] 

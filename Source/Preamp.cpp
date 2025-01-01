@@ -68,7 +68,6 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
 }
 
 void Preamp::setBias(float bias, int tube_index) {
-    assert(tube_index >= 0 && tube_index <= 4 && "Wrong tube_index in setBias");
     
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
@@ -77,11 +76,11 @@ void Preamp::setBias(float bias, int tube_index) {
         case 2: { selected_stage_bias = stage2_bias; break; }
         case 3: { selected_stage_bias = stage3_bias; break; }
         case 4: { selected_stage_bias = stage4_bias; break; }
-        default: { assert(false && "wrong tube_index in setBias"); }
+        default: { assert(false && "setBias: wrong tube_index"); }
     }
     
-    static const float pos_clip_point = 0.3f;
-    static const float neg_clip_point = -5.0f;
+    static const float pos_clip_point = 0.2f;
+    static const float neg_clip_point = 3.0f;
     static const float bias_multiplier = 1.5f;
     
     bias *= bias_multiplier;
@@ -221,21 +220,20 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample INPUT_GAIN   = (Sample)dbtoa(9.0);
-        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0) * 0.3f;
+        static const Sample INPUT_GAIN   = (Sample)dbtoa(0.0);
+        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0);
         static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0) * 0.9f;
         static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.6f;
         static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.6f;
-        // static const Sample STAGE_4_GAIN = (Sample)dbtoa(35.0) * 0.25f;
         static const Sample STAGE_4_GAIN = 1.0f;
         
-        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(3.0);
+        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(-10.0);
         static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-21.0);
         static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
         static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
         
         // Input Gain
-        applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
+        // applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
         
         // Stage 0
         tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN, stage0_bias);
@@ -251,7 +249,10 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
         inputMudFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
         midBoost.process(upBufferL, upBufferR, upNumSamples);
-        brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
+        
+        if (bright) {
+            brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
+        }
     
         tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN, stage1_bias);
         tube_sim(upBufferR, upNumSamples, STAGE_1_GAIN, stage1_bias);

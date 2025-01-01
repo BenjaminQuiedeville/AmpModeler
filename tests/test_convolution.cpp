@@ -20,7 +20,7 @@ faire la convolution OLA et la UPOLS avec les IRs de bases
 
 #define BASE_IR_SIZE 1323
 static float baseIR[BASE_IR_SIZE] = {
-#include "../Source/data/baseIR.inc"
+#include "../Source/data/baseIR_441.txt"
 };
 
 

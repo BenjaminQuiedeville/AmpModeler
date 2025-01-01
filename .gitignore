@@ -29,3 +29,6 @@ build/*
 executables/
 profile reports/
 imgui.ini
+tests/UPOLS_output.txt
+experiments/baseIR_48.txt
+experiments/baseIR_441.txt

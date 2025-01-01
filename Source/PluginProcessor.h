@@ -32,16 +32,16 @@ const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
-    
-général 
-    presets
-    
 irloader 
-
+    algorithme partitionné mono
     double IR mixable
     alignement de phase
-
-    algorithme partitionné
+    
+général 
+    bypass le bright cap et mettre un bright switch ?
+    controller les attenuations en sortie des étages de gain ?
+    
+    presets
 */
 
 enum Params {
@@ -56,8 +56,15 @@ enum Params {
     SCREAMER_AMOUNT,
     SCREAMER_FREQ,
     TIGHT,
+
+    GATE_ACTIVE,
+    PREAMP_ACTIVE,
+    TONESTACK_ACTIVE,
+    EQ_ACTIVE,
+    IR_ACTIVE,
     
     PREAMP_GAIN,
+    BRIGHT_CAP,
     CHANNEL,
     INPUT_FILTER,
     PREAMP_VOLUME,
@@ -111,7 +118,6 @@ enum Params {
     HIGH_SHELF_GAIN,
     HIGH_CUT_FREQ,
     
-    BYPASS_IR,
     MASTER_VOLUME,
     CHANNEL_CONFIG,
     N_PARAMS
@@ -129,8 +135,15 @@ static std::vector<juce::Identifier> ParamIDs = {
     "SCREAMER_AMOUNT",
     "SCEAMER_FREQ",
     "TIGHT",
-    
+
+    "GATE_ACTIVE",
+    "PREAMP_ACTIVE",
+    "TONESTACK_ACTIVE",
+    "EQ_ACTIVE",
+    "IR_ACTIVE",
+
     "PREAMP_GAIN",
+    "BRIGHT_CAP",
     "CHANNEL",
     "INPUT_FILTER",
     "PREAMP_VOLUME",
@@ -183,7 +196,6 @@ static std::vector<juce::Identifier> ParamIDs = {
     "HIGH_SHELF_GAIN",
     "HIGH_CUT_FREQ",
     
-    "BYPASS_IR",
     "MASTER_VOLUME",
     "CHANNEL_CONFIG"
 };
@@ -199,8 +211,15 @@ static const float defaultParamValues[N_PARAMS] = {
     0.0f,               // SCREAMER_AMOUNT
     1300.0f,            // SCEAMER_FREQ
     10.0f,              // TIGHT
+
+    1.0f,               // GATE_ACTIVE
+    1.0f,               // PREAMP_ACTIVE
+    1.0f,               // TONESTACK_ACTIVE
+    1.0f,               // EQ_ACTIVE
+    1.0f,               // IR_ACTIVE
     
     5.0f,               // PREAMP_GAIN
+    1.0f,               // BRIGHT_CAP
     3.0f,               // CHANNEL 
     100.0f,             // INPUT_FILTER
     0.0f,               // PREAMP_VOLUME
@@ -249,7 +268,6 @@ static const float defaultParamValues[N_PARAMS] = {
     0.0f,               // HIGH_SHELF_GAIN
     20000.0f,           // HIGH_CUT_FREQ
 
-    1.0f,               // BYPASS_IR
     -3.0f,              // MASTER_VOLUME
     0.0f                // CHANNEL_CONFIG
 };

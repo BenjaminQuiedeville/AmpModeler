@@ -192,6 +192,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     float *audioPtrL = buffer.getWritePointer(0);
     float *audioPtrR = buffer.getWritePointer(1);
 
+    assert(audioPtrL && "processBlock() : audioPtrL is Null");
+    assert(audioPtrR && "processBlock() : audioPtrR is Null");
+
     if (channelConfig == Mono) { 
         audioPtrR = nullptr;
     }
@@ -205,9 +208,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     inputGain.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
     
-    if (gateActive) {
-        inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
-    }
+    // if (gateActive) {
+    //     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
+    // }
     
     if (channelConfig == Stereo) {
         for (u32 i = 0; i < numSamples; i++) {
@@ -306,7 +309,6 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
         if (irPath.endsWith(".wav")){
             juce::File openedFile(irPath);
             irLoader.irFile = openedFile;
-            irLoader.loadIR();
             
             // get the list of files in the same directory
             juce::File parentFolder = openedFile.getParentDirectory();
@@ -322,7 +324,6 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
 
         } else {
             irLoader.irFile = juce::File();
-            irLoader.loadIR();
             DBG("could not load the stored ir file");
         }
     }
@@ -390,6 +391,26 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
+    if (id == ParamIDs[GATE_ACTIVE]) {
+        gateActive = (bool)newValue;
+    }
+    
+    if (id == ParamIDs[PREAMP_ACTIVE]) {
+        preampActive = (bool)newValue;
+    }
+    
+    if (id == ParamIDs[TONESTACK_ACTIVE]) {
+        tonestackActive = (bool)newValue;
+    }
+    
+    if (id == ParamIDs[EQ_ACTIVE]) {
+        EQActive = (bool)newValue;
+    }
+        
+    if (id == ParamIDs[IR_ACTIVE]) {
+        irLoader.active = (bool)newValue;
+    }
+    
     if (id == ParamIDs[PREAMP_GAIN]) {
         auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
@@ -403,6 +424,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         );
         
         return;
+    }
+
+    if (id == ParamIDs[BRIGHT_CAP]) {
+        preamp.bright = (bool)newValue;
     }
 
     if (id == ParamIDs[CHANNEL]) {
@@ -603,10 +628,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         EQ.highCut.setCoefficients(*apvts.getRawParameterValue(ParamIDs[HIGH_CUT_FREQ]), 0.7, 0.0, samplerate);
         return;
     }
-    
-    if (id == ParamIDs[BYPASS_IR]) {
-        irLoader.active = (bool)newValue;
-    }
+
 
     if (id == ParamIDs[MASTER_VOLUME]) {
         masterVolume.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
@@ -617,23 +639,14 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         channelConfig = (u8)newValue;
         return;
     }
-    
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLayout()
 {   
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     
-    
     auto attributes = juce::AudioParameterFloatAttributes()
-                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });
-    
-    // auto freqAttributes = juce::AudioParameterFloatAttributes()
-    //                     .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });
-    
-    // auto dBAttributes = juce::AudioParameterFloatAttributes()
-    //                     .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });
-    
+                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });    
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[INPUT_GAIN].toString(), "Input Gain", 
@@ -675,11 +688,49 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.7f), defaultParamValues[TIGHT], attributes
     ));
 
+        
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[GATE_ACTIVE].toString(), "",
+        (bool)defaultParamValues[GATE_ACTIVE]
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[PREAMP_ACTIVE].toString(), "",
+        (bool)defaultParamValues[PREAMP_ACTIVE]
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[TONESTACK_ACTIVE].toString(), "",
+        (bool)defaultParamValues[TONESTACK_ACTIVE]
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[EQ_ACTIVE].toString(), "",
+        (bool)defaultParamValues[EQ_ACTIVE]
+    ));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[IR_ACTIVE].toString(), "",
+        (bool)defaultParamValues[IR_ACTIVE]
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[IR_ACTIVE].toString(), "Activate IR Loader", 
+        (bool)defaultParamValues[IR_ACTIVE]
+    ));
+
+
     // Preamp Params 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[PREAMP_GAIN].toString(), "Pre Gain",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), defaultParamValues[PREAMP_GAIN], attributes
     ));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[BRIGHT_CAP].toString(), "Bright Switch", 
+        (bool)defaultParamValues[BRIGHT_CAP]
+    ));
+
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[INPUT_FILTER].toString(), "Input Filter", 
@@ -900,13 +951,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         ParamIDs[HIGH_CUT_FREQ].toString(), "High cut",
         juce::NormalisableRange<float>(4000.0f, 20000.0f, 1.0f, 0.7f), defaultParamValues[HIGH_CUT_FREQ], attributes
     ));
-        
 
-
-    params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[BYPASS_IR].toString(), "Activate IR Loader", 
-        (bool)defaultParamValues[BYPASS_IR]
-    ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[MASTER_VOLUME].toString(), "Master Vol",

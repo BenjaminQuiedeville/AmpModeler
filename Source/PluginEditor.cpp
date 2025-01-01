@@ -29,15 +29,18 @@ GateBoostPage::GateBoostPage(Processor &p) :
     inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, ParamIDs[INPUT_GAIN].toString(),      p.apvts, " dB")
 
 {
-    gateToggle.setToggleState(p.gateActive, juce::NotificationType::dontSendNotification);
-    preampToggle.setToggleState(p.preampActive, juce::NotificationType::dontSendNotification);
-    tonestackToggle.setToggleState(p.tonestackActive, juce::NotificationType::dontSendNotification);
-    EQToggle.setToggleState(p.EQActive, juce::NotificationType::dontSendNotification);
-
-    gateToggle.onClick = [&p, this]() { p.gateActive = gateToggle.getToggleState(); };
-    preampToggle.onClick = [&p, this]() { p.preampActive = preampToggle.getToggleState(); };
-    tonestackToggle.onClick = [&p, this]() { p.tonestackActive = tonestackToggle.getToggleState(); };
-    EQToggle.onClick = [&p, this]() { p.EQActive = EQToggle.getToggleState(); };
+    gateToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+        p.apvts, ParamIDs[GATE_ACTIVE].toString(), gateToggle
+    );
+    preampToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+        p.apvts, ParamIDs[PREAMP_ACTIVE].toString(), preampToggle
+    );
+    tonestackToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+        p.apvts, ParamIDs[TONESTACK_ACTIVE].toString(), tonestackToggle
+    );
+    EQToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+        p.apvts, ParamIDs[EQ_ACTIVE].toString(), EQToggle
+    );
 
     addAndMakeVisible(gateToggle);
     addAndMakeVisible(preampToggle);
@@ -123,6 +126,11 @@ AmplifierPage::AmplifierPage(Processor &p) :
     channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
     channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
                                     juce::NotificationType::dontSendNotification);
+    brightToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, ParamIDs[BRIGHT_CAP].toString(), brightToggle
+    );
+    
+    addAndMakeVisible(brightToggle);
 }
 
 
@@ -178,6 +186,8 @@ void AmplifierPage::resized() {
     channelConfigBox.label.setBounds(channelConfigBox.getX(), channelConfigBox.getY() - 20,
                                       channelConfigBox.getWidth(), 20);
 
+    brightToggle.setBounds(channelConfigBox.getX(), channelConfigBox.getY() + 40, 
+                            120, 30);
 }
 
 GainStagesPage::GainStagesPage(Processor &p) :
@@ -316,7 +326,7 @@ void GainStagesPage::resized() {
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     bypassButtonAttachment = std::make_unique<ButtonAttachment>(
-        audioProcessor.apvts, ParamIDs[BYPASS_IR].toString(), bypassToggle
+        audioProcessor.apvts, ParamIDs[IR_ACTIVE].toString(), bypassToggle
     );
 
     irLoadButton.onClick = [&audioProcessor, this]() {
@@ -584,6 +594,8 @@ Editor::Editor (Processor& p)
     tabs.addTab("Gain Stages", colour, &gainStagesPage, true);
     tabs.addTab("EQ", colour, &eqPage, true);
     tabs.addTab("IR Loader", colour, &irLoaderPage, true);
+    tabs.setCurrentTabIndex(1);
+
 
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);

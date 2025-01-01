@@ -172,14 +172,14 @@ IRLoaderError IRLoader::loadIR() {
         if (numFramesRead != wav.totalPCMFrameCount) { return IRLoaderError::Error; }
         irBufferSize = numFramesRead;
 
+        // the IR is fully loaded at the end of the process function
+        updateIR = true;
+    
         wav_opening_scope_end: {
             drwav_uninit(&wav);
         }
     }
 
-    // the IR is fully loaded at the end of the process function
-    updateIR = true;
-    
     return error;
 }
 
