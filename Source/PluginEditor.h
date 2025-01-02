@@ -34,6 +34,7 @@ struct Knob : public juce::Slider {
 };
 
 
+
 struct VSlider : public juce::Slider {
     VSlider(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts, juce::String suffix);
 
