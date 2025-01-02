@@ -52,11 +52,11 @@ struct Tonestack {
     
     void updateCoefficients(float t, float m, float l, double samplerate);
     
-    void process(Sample *bufferL, Sample *bufferR, size_t nSamples) {
+    void process(float *bufferL, float *bufferR, size_t nSamples) {
         if (bufferL) {
             for (size_t i = 0; i < nSamples; i++) {
             
-                Sample outputSample = (Sample)(bufferL[i] * b0
+                float outputSample = (float)(bufferL[i] * b0
                                     + x1L * b1
                                     + x2L * b2
                                     + x3L * b3
@@ -79,7 +79,7 @@ struct Tonestack {
         if (bufferR) {    
             for (size_t i = 0; i < nSamples; i++) {
                 
-                Sample outputSample = (Sample)(bufferR[i] * b0
+                float outputSample = (float)(bufferR[i] * b0
                                     + x1R * b1
                                     + x2R * b2
                                     + x3R * b3
@@ -109,21 +109,21 @@ struct Tonestack {
     double a2 = 0.0;
     double a3 = 0.0;
 
-    Sample x1L = 0.0f;
-    Sample x2L = 0.0f;
-    Sample x3L = 0.0f;
+    float x1L = 0.0f;
+    float x2L = 0.0f;
+    float x3L = 0.0f;
 
-    Sample y1L = 0.0f;
-    Sample y2L = 0.0f;
-    Sample y3L = 0.0f;
+    float y1L = 0.0f;
+    float y2L = 0.0f;
+    float y3L = 0.0f;
 
-    Sample x1R = 0.0f;
-    Sample x2R = 0.0f;
-    Sample x3R = 0.0f;
+    float x1R = 0.0f;
+    float x2R = 0.0f;
+    float x3R = 0.0f;
 
-    Sample y1R = 0.0f;
-    Sample y2R = 0.0f;
-    Sample y3R = 0.0f;
+    float y1R = 0.0f;
+    float y2R = 0.0f;
+    float y3R = 0.0f;
 
     TonestackModel model;
     

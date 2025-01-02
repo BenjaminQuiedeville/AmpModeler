@@ -22,8 +22,6 @@ typedef int32_t  s32;
 typedef uint64_t u64;
 typedef int64_t  s64;
 
-typedef float Sample;
-
 inline double dbtoa(double value) {
     return std::pow(10, value/20.0);
 }
@@ -54,7 +52,7 @@ static inline u64 nextPowTwo(u64 n) {
     return n;
 }
 
-static inline void applyGainLinear(Sample gain, Sample *bufferL, Sample *bufferR, u32 nSamples) {
+static inline void applyGainLinear(float gain, float *bufferL, float *bufferR, u32 nSamples) {
     for (u32 index = 0; index < nSamples; index++) {
         bufferL[index] *= gain;
     }

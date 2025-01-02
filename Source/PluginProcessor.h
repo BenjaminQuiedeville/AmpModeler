@@ -227,19 +227,19 @@ static const float defaultParamValues[N_PARAMS] = {
     10000.0f,           // STAGE0_LP
     -5.0f,              // STAGE0_BYPASS
     0.0f,               // STAGE0_BIAS
-    15.0f,              // STAGE1_HP
+    10.0f,              // STAGE1_HP
     18000.0f,           // STAGE1_LP
-    0.0f,               // STAGE1_BYPASS
+    -4.0f,               // STAGE1_BYPASS
     0.0f,               // STAGE1_BIAS
-    15.0f,              // STAGE2_HP
+    10.0f,              // STAGE2_HP
     16000.0f,           // STAGE2_LP
-    -2.0f,              // STAGE2_BYPASS
-    0.0f,               // STAGE2_BIAS
-    15.0f,              // STAGE3_HP
+    0.0f,               // STAGE2_BYPASS
+    0.7f,               // STAGE2_BIAS
+    10.0f,              // STAGE3_HP
     16000.0f,           // STAGE3_LP
     -6.0f,              // STAGE3_BYPASS
     0.0f,               // STAGE3_BIAS
-    15.0f,              // STAGE4_HP
+    10.0f,              // STAGE4_HP
     16000.0f,           // STAGE4_LP
     -6.0f,              // STAGE4_BYPASS
     0.0f,               // STAGE4_BIAS
@@ -358,7 +358,7 @@ struct Processor  : public juce::AudioProcessor,
     double samplerate = 44100.0;
     double preampSamplerate = 44100.0f;
 
-    Sample *sideChainBuffer = nullptr;
+    float *sideChainBuffer = nullptr;
     
     u8 channelConfig = Mono;    
     bool gateActive = true;

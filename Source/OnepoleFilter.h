@@ -24,28 +24,28 @@ struct OnepoleFilter {
         a1 = b0 - 1.0;
     }
 
-    void processLowpass(Sample *bufferL, Sample *bufferR, u64 numSamples) {
+    void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
         
         if (bufferL) {
             for (u64 index = 0; index < numSamples; index++) {
-                bufferL[index] = (Sample)(bufferL[index] * b0 - a1 * y1L);
+                bufferL[index] = (float)(bufferL[index] * b0 - a1 * y1L);
                 y1L = bufferL[index];                    
             }
         }
         
         if (bufferR) {
             for (u64 index = 0; index < numSamples; index++) {
-                bufferR[index] = (Sample)(bufferR[index] * b0 - a1 * y1R);
+                bufferR[index] = (float)(bufferR[index] * b0 - a1 * y1R);
                 y1R = bufferR[index];                    
             }
         }                
     }
 
-    void processHighpass(Sample *bufferL, Sample *bufferR, u64 numSamples) {
+    void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
         
         if (bufferL) {
             for (u64 index = 0; index < numSamples; index++) {
-                Sample lpSample = (Sample)(bufferL[index] * b0 - a1 * y1L);
+                float lpSample = (float)(bufferL[index] * b0 - a1 * y1L);
                 y1L = lpSample;
                 bufferL[index] -= lpSample;
             }
@@ -53,7 +53,7 @@ struct OnepoleFilter {
         
         if (bufferR){
             for (u64 index = 0; index < numSamples; index++) {
-                Sample lpSample = (Sample)(bufferR[index] * b0 - a1 * y1R);
+                float lpSample = (float)(bufferR[index] * b0 - a1 * y1R);
                 y1R = lpSample;
                 bufferR[index] -= lpSample;
             }
@@ -63,8 +63,8 @@ struct OnepoleFilter {
     
     double b0 = 1.0;
     double a1 = 0.0;
-    Sample y1L = 0.0f;
-    Sample y1R = 0.0f;
+    float y1L = 0.0f;
+    float y1R = 0.0f;
 };
 
 #endif // ONEPOLE_H

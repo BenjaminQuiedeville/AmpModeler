@@ -190,7 +190,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
  
     pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
     
-    memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
+    memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(float));
 
     pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
 
@@ -205,7 +205,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     }
 
     // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
-    Sample outputScaling = 1.0f / fftSize;
+    float outputScaling = 1.0f / fftSize;
     for (size_t i = 0; i < nSamples; i++) {
         size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
         bufferL[i] = overlapAddBufferL[index] * outputScaling;
@@ -219,7 +219,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     
         pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
     
-        memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
+        memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(float));
     
         pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
     

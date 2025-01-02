@@ -24,12 +24,12 @@ struct FirstOrderShelfFilter {
         float gainLinear = 1.0f;
 
         if (filterType == ShelfType::lowshelf) {
-            outGain = (Sample)dbtoa(gain_db);
-            gainLinear = (Sample)dbtoa(-gain_db);
+            outGain = (float)dbtoa(gain_db);
+            gainLinear = (float)dbtoa(-gain_db);
         
         } else if (filterType == ShelfType::highshelf) {
             outGain = 1.0f;
-            gainLinear = (Sample)dbtoa(gain_db);
+            gainLinear = (float)dbtoa(gain_db);
 
         } else {
             assert(false && "wrong type of filter");
@@ -47,15 +47,15 @@ struct FirstOrderShelfFilter {
         double beta0 = ((1 + gainLinear) + (1 - gainLinear) * alpha1) * 0.5;
         double beta1 = ((1 - gainLinear) + (1 + gainLinear) * alpha1) * 0.5;
 
-        b0 = (Sample)((beta0 + rho * beta1)/(1 + rho * alpha1));
-        b1 = (Sample)((beta1 + rho * beta0)/(1 + rho * alpha1));
-        a1 = (Sample)((rho + alpha1)/(1 + rho * alpha1));
+        b0 = (float)((beta0 + rho * beta1)/(1 + rho * alpha1));
+        b1 = (float)((beta1 + rho * beta0)/(1 + rho * alpha1));
+        a1 = (float)((rho + alpha1)/(1 + rho * alpha1));
     }
 
-    inline void process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+    inline void process(float *bufferL, float *bufferR, u32 nSamples) {
         if (bufferL) {
             for (u32 i = 0; i < nSamples; i++) {
-                Sample outSample = b0 * bufferL[i] 
+                float outSample = b0 * bufferL[i] 
                                  + b1 * x1L 
                                  - a1 * y1L;
     
@@ -68,7 +68,7 @@ struct FirstOrderShelfFilter {
         
         if (bufferR) {
             for (u32 i = 0; i < nSamples; i++) {
-                Sample outSample = b0 * bufferR[i] 
+                float outSample = b0 * bufferR[i] 
                           + b1 * x1R 
                           - a1 * y1R;
     
@@ -79,14 +79,14 @@ struct FirstOrderShelfFilter {
         }
     }
 
-    Sample b0 = 1.0f;
-    Sample b1 = 0.0f;
-    Sample a1 = 0.0f;
-    Sample x1L = 0.0f;
-    Sample y1L = 0.0f;
-    Sample x1R = 0.0f;
-    Sample y1R = 0.0f;
-    Sample outGain = 1.0f; 
+    float b0 = 1.0f;
+    float b1 = 0.0f;
+    float a1 = 0.0f;
+    float x1L = 0.0f;
+    float y1L = 0.0f;
+    float x1R = 0.0f;
+    float y1R = 0.0f;
+    float outGain = 1.0f; 
     ShelfType filterType;
 };
 

@@ -29,16 +29,16 @@ GateBoostPage::GateBoostPage(Processor &p) :
     inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, ParamIDs[INPUT_GAIN].toString(),      p.apvts, " dB")
 
 {
-    gateToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+    gateToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[GATE_ACTIVE].toString(), gateToggle
     );
-    preampToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+    preampToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[PREAMP_ACTIVE].toString(), preampToggle
     );
-    tonestackToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+    tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[TONESTACK_ACTIVE].toString(), tonestackToggle
     );
-    EQToggleAttachment = std::make_unique<juce::ButtonAttachment>(
+    EQToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[EQ_ACTIVE].toString(), EQToggle
     );
 

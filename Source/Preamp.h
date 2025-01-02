@@ -23,7 +23,7 @@ struct Preamp {
     
     void prepareToPlay(double samplerate, u32 blockSize);
     void setBias(float value, int tube_index);  
-    void process(Sample *bufferL, Sample *bufferR, u32 nSamples);
+    void process(float *bufferL, float *bufferR, u32 nSamples);
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
@@ -59,8 +59,8 @@ struct Preamp {
         Biquad downSampleFilter2 {BIQUAD_LOWPASS};
     } overSampler;
     
-    Sample *upBufferL = nullptr;
-    Sample *upBufferR = nullptr;
+    float *upBufferL = nullptr;
+    float *upBufferR = nullptr;
 
     float stage0_bias[2] = {0};
     float stage1_bias[2] = {0};
@@ -68,7 +68,7 @@ struct Preamp {
     float stage3_bias[2] = {0};
     float stage4_bias[2] = {0};
 
-    Sample outputAttenuationdB = -40.0f;    
+    float outputAttenuationdB = -40.0f;    
     u8 channel = 0;
     bool bright = true;
 };

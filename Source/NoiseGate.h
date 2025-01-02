@@ -29,16 +29,16 @@ struct NoiseGate {
         returnGain = threshold;
 
         if (gateBuffer == nullptr) {
-            gateBuffer = (Sample *)calloc(gateBufferLength, sizeof(Sample));
+            gateBuffer = (float *)calloc(gateBufferLength, sizeof(float));
 
         } else {
-            memset(gateBuffer, 0, gateBufferLength * sizeof(Sample));
+            memset(gateBuffer, 0, gateBufferLength * sizeof(float));
         }
         
         gateGain.init(0.0);
     }
 
-    void process(Sample *bufferL, Sample *bufferR, Sample *sidechain, size_t nSamples) {
+    void process(float *bufferL, float *bufferR, float *sidechain, size_t nSamples) {
 
         for (size_t i = 0; i < nSamples; i++) {
             
@@ -75,7 +75,7 @@ struct NoiseGate {
                                isOpen ? attackTimeMs : releaseTimeMs,
                                samplerate);
             
-            Sample gateGainValue = (Sample)gateGain.nextValue(); 
+            float gateGainValue = (float)gateGain.nextValue(); 
             
             bufferL[i] *= gateGainValue;
             
@@ -88,7 +88,7 @@ struct NoiseGate {
     double samplerate = 0.0;
     double threshold = 0.0;
     
-    Sample *gateBuffer = nullptr;
+    float *gateBuffer = nullptr;
     size_t gateBufferLength = 0;
     s32 gateBufferIndex = 0;
     

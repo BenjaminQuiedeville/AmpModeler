@@ -59,10 +59,10 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
 
     if (upBufferL) {
-        upBufferL = (Sample *)realloc(upBufferL, upBlockSize * sizeof(Sample) * 2);
+        upBufferL = (float *)realloc(upBufferL, upBlockSize * sizeof(float) * 2);
         upBufferR = upBufferL + upBlockSize;
     } else {
-        upBufferL = (Sample *)calloc(upBlockSize * 2,  sizeof(Sample));
+        upBufferL = (float *)calloc(upBlockSize * 2,  sizeof(float));
         upBufferR = upBufferL + upBlockSize;
     }
 }
@@ -100,9 +100,9 @@ void Preamp::setBias(float bias, int tube_index) {
     selected_stage_bias[1] = result;
 }
 
-// auto cubicClip = [](Sample x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
+// auto cubicClip = [](float x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
 
-static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
+static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
         
     if (!buffer) { return; }
         
@@ -112,7 +112,7 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
     static const float gridCondKnee   = gridCondRatio / 4.0f;
     
     for (u32 index = 0; index < nSamples; index++) {
-        Sample sample = buffer[index];
+        float sample = buffer[index];
         
         if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
             sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
@@ -144,14 +144,14 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
     }
 }
 
-// static inline void tableWaveshape(Sample *buffer, u32 nSamples) {
+// static inline void tableWaveshape(float *buffer, u32 nSamples) {
 
 //     if (!buffer) { return; }
 
 //     for (u32 i = 0; i < nSamples; i++) {
     
-//         Sample sample = buffer[i];
-//         Sample normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
+//         float sample = buffer[i];
+//         float normalizedPosition = scale_linear(sample, table_min, table_max, 0.0f, 1.0f);
         
 //         int tableIndex = (int)(normalizedPosition * WAVESHAPE_TABLE_SIZE);
 //         float interpCoeff = normalizedPosition * WAVESHAPE_TABLE_SIZE - (float)tableIndex;
@@ -198,18 +198,18 @@ static void tube_sim(Sample *buffer, u32 nSamples, Sample gain, Sample *bias) {
 //     }
 // }
 
-void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
+void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
     u32 upNumSamples = nSamples*PREAMP_UP_SAMPLE_FACTOR;        
     
     // upsampling
-    memset(upBufferL, 0, upNumSamples * sizeof(Sample));
+    memset(upBufferL, 0, upNumSamples * sizeof(float));
     for (u32 i = 0; i < nSamples; i++) {
         upBufferL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
     }
 
     if (bufferR) {  
-        memset(upBufferR, 0, upNumSamples * sizeof(Sample));
+        memset(upBufferR, 0, upNumSamples * sizeof(float));
         for (u32 i = 0; i < nSamples; i++) {
             upBufferR[PREAMP_UP_SAMPLE_FACTOR*i] = bufferR[i];
         }    
@@ -220,17 +220,17 @@ void Preamp::process(Sample *bufferL, Sample *bufferR, u32 nSamples) {
     
     //processing the gain stages
     {
-        static const Sample INPUT_GAIN   = (Sample)dbtoa(0.0);
-        static const Sample STAGE_0_GAIN = (Sample)dbtoa(40.0);
-        static const Sample STAGE_1_GAIN = (Sample)dbtoa(40.0) * 0.9f;
-        static const Sample STAGE_2_GAIN = (Sample)dbtoa(40.0) * 0.6f;
-        static const Sample STAGE_3_GAIN = (Sample)dbtoa(40.0) * 0.6f;
-        static const Sample STAGE_4_GAIN = 1.0f;
+        static const float INPUT_GAIN   = (float)dbtoa(0.0);
+        static const float STAGE_0_GAIN = (float)dbtoa(40.0);
+        static const float STAGE_1_GAIN = (float)dbtoa(40.0) * 0.9f;
+        static const float STAGE_2_GAIN = (float)dbtoa(40.0) * 0.6f;
+        static const float STAGE_3_GAIN = (float)dbtoa(40.0) * 0.6f;
+        static const float STAGE_4_GAIN = 1.0f;
         
-        static const Sample STAGE1_COMPENSATION = (Sample)dbtoa(-10.0);
-        static const Sample STAGE2_COMPENSATION = (Sample)dbtoa(-21.0);
-        static const Sample STAGE3_COMPENSATION = (Sample)dbtoa(-30.0);
-        static const Sample STAGE4_COMPENSATION = (Sample)dbtoa(6.0);
+        static const float STAGE1_COMPENSATION = (float)dbtoa(-10.0);
+        static const float STAGE2_COMPENSATION = (float)dbtoa(-21.0);
+        static const float STAGE3_COMPENSATION = (float)dbtoa(-30.0);
+        static const float STAGE4_COMPENSATION = (float)dbtoa(6.0);
         
         // Input Gain
         // applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);

@@ -77,10 +77,10 @@ struct GateBoostPage : public juce::Component {
     juce::ToggleButton tonestackToggle {"Activate Tonestack"};
     juce::ToggleButton EQToggle {"Activate EQ"};
 
-    juce::unique_ptr<juce::ButtonAttachment> gateToggleAttachment;
-    juce::unique_ptr<juce::ButtonAttachment> preampToggleAttachment;
-    juce::unique_ptr<juce::ButtonAttachment> tonestackToggleAttachment;
-    juce::unique_ptr<juce::ButtonAttachment> EQToggleAttachment;
+    std::unique_ptr<ButtonAttachment> gateToggleAttachment;
+    std::unique_ptr<ButtonAttachment> preampToggleAttachment;
+    std::unique_ptr<ButtonAttachment> tonestackToggleAttachment;
+    std::unique_ptr<ButtonAttachment> EQToggleAttachment;
 
 };
 

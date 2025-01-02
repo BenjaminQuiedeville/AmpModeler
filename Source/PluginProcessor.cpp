@@ -136,7 +136,7 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     irLoader.init(sampleRate, samplesPerBlock);
 
     if (!sideChainBuffer) {
-        sideChainBuffer = (Sample *)calloc(samplesPerBlock,  sizeof(Sample));
+        sideChainBuffer = (float *)calloc(samplesPerBlock,  sizeof(float));
     }
 
     initParameters();
@@ -646,7 +646,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     
     auto attributes = juce::AudioParameterFloatAttributes()
-                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 1); });    
+                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 2); });    
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         ParamIDs[INPUT_GAIN].toString(), "Input Gain", 
@@ -690,30 +690,25 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
         
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[GATE_ACTIVE].toString(), "",
+        ParamIDs[GATE_ACTIVE].toString(), "Activate Gate",
         (bool)defaultParamValues[GATE_ACTIVE]
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[PREAMP_ACTIVE].toString(), "",
+        ParamIDs[PREAMP_ACTIVE].toString(), "Activate Preamp",
         (bool)defaultParamValues[PREAMP_ACTIVE]
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[TONESTACK_ACTIVE].toString(), "",
+        ParamIDs[TONESTACK_ACTIVE].toString(), "Activate Tonestack",
         (bool)defaultParamValues[TONESTACK_ACTIVE]
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[EQ_ACTIVE].toString(), "",
+        ParamIDs[EQ_ACTIVE].toString(), "Activate EQ",
         (bool)defaultParamValues[EQ_ACTIVE]
     ));
     
-    params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[IR_ACTIVE].toString(), "",
-        (bool)defaultParamValues[IR_ACTIVE]
-    ));
-
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         ParamIDs[IR_ACTIVE].toString(), "Activate IR Loader", 
         (bool)defaultParamValues[IR_ACTIVE]
