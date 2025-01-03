@@ -357,6 +357,7 @@ struct Processor  : public juce::AudioProcessor,
 
     double samplerate = 44100.0;
     double preampSamplerate = 44100.0f;
+    int bufferSize = 64;
 
     float *sideChainBuffer = nullptr;
     

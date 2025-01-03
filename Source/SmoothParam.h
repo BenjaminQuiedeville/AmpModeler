@@ -80,11 +80,11 @@ struct SmoothParamLinear {
     }
 
 
-    double target;
-    double prevTarget;
-    double stepHeight;
-    double normValue;
-    double currentValue;
+    double target = 0.0;
+    double prevTarget = 0.0;
+    double stepHeight = 0.0;
+    double normValue = 0.0;
+    double currentValue = 0.0;
 
     bool isSmoothing;
 };  

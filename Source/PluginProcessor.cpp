@@ -117,6 +117,7 @@ void Processor::changeProgramName (int index, const juce::String& newName)
 void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
+    bufferSize = samplesPerBlock;
     preampSamplerate = sampleRate * PREAMP_UP_SAMPLE_FACTOR;
     inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, sampleRate);
 
@@ -130,9 +131,9 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
     inputGain.init(0.0);
     masterVolume.init(0.0);
     
+    toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
-    toneStack.prepareToPlay(sampleRate);
-    
+    toneStack.prepareToPlay();
     irLoader.init(sampleRate, samplesPerBlock);
 
     if (!sideChainBuffer) {
@@ -174,8 +175,7 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 }
 #endif
 
-void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
-{   
+void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {   
     midiMessages;
 
     juce::ScopedNoDenormals noDenormals;
@@ -188,10 +188,8 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         buffer.clear (i, 0, (int)numSamples);
     }
 
-
     float *audioPtrL = buffer.getWritePointer(0);
     float *audioPtrR = buffer.getWritePointer(1);
-
     assert(audioPtrL && "processBlock() : audioPtrL is Null");
     assert(audioPtrR && "processBlock() : audioPtrR is Null");
 
@@ -553,10 +551,13 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             toneStack.setModel(model);
         }
         
-        float bassParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
-        float trebbleParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
-        float midParam = *apvts.getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
-        toneStack.updateCoefficients(trebbleParam/10.0f, midParam/10.0f, bassParam/10.0f, samplerate);
+        float bassValue = (float)*apvts.getRawParameterValue(ParamIDs[TONESTACK_BASS]);
+        float midValue = (float)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
+        float trebbleValue = (float)*apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
+            
+        toneStack.bassParam.newTarget(bassValue/10.0f,       100.0f * bufferSize, samplerate/bufferSize);
+        toneStack.midParam.newTarget(midValue/10.0f,         100.0f * bufferSize, samplerate/bufferSize);
+        toneStack.trebbleParam.newTarget(trebbleValue/10.0f, 100.0f * bufferSize, samplerate/bufferSize);
         return;
     }
 

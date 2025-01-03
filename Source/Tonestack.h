@@ -8,14 +8,12 @@
 #define TONE_STACK_H
 
 #include "common.h"
+#include "SmoothParam.h"
 
 enum TonestackModel {
     Soldano = 0,
     EnglSavage,
     JCM800,
-    // Rectifier,
-    // Orange,
-    // Custom,
     N_MODELS
 };
 
@@ -25,11 +23,16 @@ struct Tonestack {
         setModel(EnglSavage);
     }
 
+    void prepareToPlay() {
 
-    void prepareToPlay(double _samplerate) {
+        bassParam.init(0.5);
+        midParam.init(0.5);
+        trebbleParam.init(0.5);
 
-        updateCoefficients(0.5, 0.5, 0.5, _samplerate);
-
+        updateCoefficients((float)trebbleParam.currentValue,
+                            (float)midParam.currentValue, 
+                            (float)bassParam.currentValue);
+        
         x1L = 0.0f;
         x2L = 0.0f;
         x3L = 0.0f;
@@ -45,38 +48,48 @@ struct Tonestack {
         y3R = 0.0f;
     }
 
-
     void setModel(TonestackModel newModel);
-
-    void updateConstants();
     
-    void updateCoefficients(float t, float m, float l, double samplerate);
+    void updateCoefficients(float t, float m, float l);
     
     void process(float *bufferL, float *bufferR, size_t nSamples) {
-        if (bufferL) {
-            for (size_t i = 0; i < nSamples; i++) {
-            
-                float outputSample = (float)(bufferL[i] * b0
-                                    + x1L * b1
-                                    + x2L * b2
-                                    + x3L * b3
-                                    - y1L * a1
-                                    - y2L * a2
-                                    - y3L * a3);
-    
-                x3L = x2L; 
-                x2L = x1L;
-                x1L = bufferL[i];
-                
-                y3L = y2L; 
-                y2L = y1L;
-                y1L = outputSample;
-    
-                bufferL[i] = outputSample;
-            }
+        
+        double bassValue = bassParam.currentValue;
+        double midValue = midParam.currentValue;
+        double trebbleValue = trebbleParam.currentValue;
+        
+        if (bassParam.nextValue() != bassValue 
+            || midParam.nextValue() != midValue
+            || trebbleParam.nextValue() != trebbleValue)
+        {
+            updateCoefficients((float)trebbleParam.currentValue,
+                                (float)midParam.currentValue,
+                                (float)bassParam.currentValue);
         }
         
-        if (bufferR) {    
+        
+        for (size_t i = 0; i < nSamples; i++) {
+        
+            float outputSample = (float)(bufferL[i] * b0
+                                + x1L * b1
+                                + x2L * b2
+                                + x3L * b3
+                                - y1L * a1
+                                - y2L * a2
+                                - y3L * a3);
+
+            x3L = x2L; 
+            x2L = x1L;
+            x1L = bufferL[i];
+            
+            y3L = y2L; 
+            y2L = y1L;
+            y1L = outputSample;
+
+            bufferL[i] = outputSample;
+        }
+            
+        if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
                 
                 float outputSample = (float)(bufferR[i] * b0
@@ -99,6 +112,11 @@ struct Tonestack {
             }
         }           
     }
+
+    double samplerate;
+    SmoothParamLinear bassParam;
+    SmoothParamLinear midParam;
+    SmoothParamLinear trebbleParam;
 
     double b0 = 1.0;
     double b1 = 0.0;
