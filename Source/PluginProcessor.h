@@ -32,7 +32,10 @@ const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
+parameterChanged : comparer la file de if avec des elseif
+
 irloader 
+    normaliser les IRs et compenser le volume du mode sans IR
     algorithme partitionné mono
     double IR mixable
     alignement de phase

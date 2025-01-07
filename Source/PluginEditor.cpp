@@ -126,6 +126,11 @@ AmplifierPage::AmplifierPage(Processor &p) :
     channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
     channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
                                     juce::NotificationType::dontSendNotification);
+    
+    channelConfigBox.valueChanged = [&](juce::Value &value) {
+        // changer le style des potard dans le gainstages 
+    }
+
     brightToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[BRIGHT_CAP].toString(), brightToggle
     );
@@ -595,8 +600,10 @@ Editor::Editor (Processor& p)
     tabs.addTab("EQ", colour, &eqPage, true);
     tabs.addTab("IR Loader", colour, &irLoaderPage, true);
     tabs.setCurrentTabIndex(1);
-
-
+    
+    // passer un ptr vers gainStagesPage dans ampPage pour 
+    // ampPage.gainstages = &gainStagesPage;
+    
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);
 
