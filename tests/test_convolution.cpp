@@ -32,7 +32,7 @@ struct OLAConvolution {
      
         pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
         
-        memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
+        memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(float));
     
         pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
     
@@ -47,7 +47,7 @@ struct OLAConvolution {
         }
     
         // mettre les samples dans le buffer de sortie et effacer les samples qui sont déjà sortis
-        Sample outputScaling = 1.0f / fftSize;
+        float outputScaling = 1.0f / fftSize;
         for (size_t i = 0; i < nSamples; i++) {
             size_t index = (overlapAddIndex + i) % overlapAddBufferSize;
             bufferL[i] = overlapAddBufferL[index] * outputScaling;
@@ -60,7 +60,7 @@ struct OLAConvolution {
             memcpy(inputBufferPadded, bufferR, nSamples * sizeof(float));
         
             pffft_transform(fftEngine, inputBufferPadded, inputDftBuffer, fftWorkBuffer, PFFFT_FORWARD);
-            memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(Sample));
+            memset(convolutionResultDftBuffer, 0, (fftSize+2)*sizeof(float));
         
             pffft_zconvolve_accumulate(fftEngine, inputDftBuffer, irDftBuffer, convolutionResultDftBuffer, 1.0f);
             pffft_transform(fftEngine, convolutionResultDftBuffer, convolutionResultBuffer, fftWorkBuffer, PFFFT_BACKWARD);
@@ -171,6 +171,8 @@ void test_UPOLS(double samplerate, double length_s, u64 bufferSize) {
     
     
     {
+        conv.fftSetup = pffft_new_setup((int)conv.fftSize, PFFFT_REAL);
+    
         u64 part_size_bytes = conv.dftSize * sizeof(float);
         u64 padding = part_size_bytes & 0xF; 
         part_size_bytes += padding;
@@ -183,6 +185,7 @@ void test_UPOLS(double samplerate, double length_s, u64 bufferSize) {
 
         conv.convolutionDftResult = (float*)pffft_aligned_malloc(part_size_bytes);
 
+        conv.fftTimeBuffer = (float*)pffft_aligned_malloc(conv.fftSize * sizeof(float));
     
         //memcpy(dest, source, taille_bytes)
         
@@ -192,12 +195,8 @@ void test_UPOLS(double samplerate, double length_s, u64 bufferSize) {
         }
     }
     
-    conv.fftSetup = pffft_new_setup((int)conv.fftSize, PFFFT_REAL);
-    
     u32 baseIRIndex = 0;
     u32 partSize = 0;
-    conv.fftTimeBuffer = (float*)pffft_aligned_malloc(conv.fftSize * sizeof(float));
-    
     for (u32 index = 0; index < conv.numIRParts; index++) {
         baseIRIndex = index * bufferSize;
         
@@ -260,8 +259,7 @@ void test_UPOLS(double samplerate, double length_s, u64 bufferSize) {
     pffft_aligned_free(conv.convolutionDftResult);
     pffft_aligned_free(conv.fftTimeBuffer);
 
-    pffft_destroy_setup(conv.fftSetup);
-    
+    pffft_destroy_setup(conv.fftSetup);    
 }
 
 void test_OLA(double samplerate, double length_s, u64 buffer_size) {

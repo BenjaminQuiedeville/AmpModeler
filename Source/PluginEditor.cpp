@@ -127,9 +127,11 @@ AmplifierPage::AmplifierPage(Processor &p) :
     channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
                                     juce::NotificationType::dontSendNotification);
     
-    channelConfigBox.valueChanged = [&](juce::Value &value) {
-        // changer le style des potard dans le gainstages 
-    }
+    // channelConfigBox.valueChanged = [&, this](juce::Value &value) {
+        
+    //     value;
+    //     // changer le style des potard dans le gainstages 
+    // };
 
     brightToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, ParamIDs[BRIGHT_CAP].toString(), brightToggle
