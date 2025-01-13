@@ -268,6 +268,17 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
             audioPtrR[i] *= -1.0f;
         }
     }
+    
+    for (u32 index = 0; index < numSamples; index++) {
+        audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
+    }
+    
+    if (audioPtrR) {
+        for (u32 index = 0; index < numSamples; index++) {
+            audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
+        }
+    }
+
 }
 
 //==============================================================================

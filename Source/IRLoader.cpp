@@ -35,14 +35,17 @@ void IRLoader::deallocateFFTEngine() {
     if (irDftBuffers) {
         pffft_aligned_free(irDftBuffers[0]);
     }
-    if (irDftBuffers) {
-        pffft_aligned_free(FDL[0]);
+    
+    if (FDL) {
+        pffft_aligned_free(FDLMemory);
     }
+    
     free(irDftBuffers);
     free(FDL);
 
     pffft_aligned_free(convolutionDftResult);
-    pffft_aligned_free(fftTimeBuffer);
+    pffft_aligned_free(fftTimeInputBuffer);
+    pffft_aligned_free(fftTimeOutputBuffer);
 }
 
 IRLoader::~IRLoader() {
@@ -61,38 +64,39 @@ void IRLoader::init(double _samplerate, size_t _blockSize) {
 
 void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     
-    u64 newfftSize = 2*blockSize;
+    numIRParts = (u32)(irSize / blockSize);
+    if (irSize % blockSize != 0) { numIRParts += 1; } 
 
-    {
-        numIRParts = (u32)(irSize / blockSize);
-        if (irSize % blockSize != 0) { numIRParts += 1; } 
+    assert(nextPowTwo(blockSize) == blockSize && "IRLoader, blockSize must be a power of 2!");
     
-        fftSize = newfftSize;
-        dftSize = blockSize*2 + 2;
-        deallocateFFTEngine();
-        
-        fftSetup = pffft_new_setup((int)fftSize, PFFFT_REAL);
-        
-        u64 part_size_bytes = dftSize * sizeof(float);
-        u64 padding = part_size_bytes & 0xF; 
-        part_size_bytes += padding;
-
-        irDftBuffers = (float**)calloc(numIRParts, sizeof(float*));
-        irDftBuffers[0] = (float*)pffft_aligned_malloc(numIRParts * (part_size_bytes));
-        
-        FDL = (float**)calloc(numIRParts, sizeof(float));
-        FDL[0] = (float*)pffft_aligned_malloc(numIRParts * (part_size_bytes));
-
-        convolutionDftResult = (float*)pffft_aligned_malloc(part_size_bytes);
-
-        fftTimeBuffer = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
-
-        for (u32 index = 1; index < numIRParts; index++) {
-            irDftBuffers[index] = (float*)((uintptr_t)irDftBuffers[index-1] + part_size_bytes);
-            FDL[index]          = (float*)((uintptr_t)FDL[index-1] + part_size_bytes);
-        }
-    }    
+    fftSize = 2*blockSize;
+    dftSize = fftSize + 2;
+    deallocateFFTEngine();
     
+    fftSetup = pffft_new_setup((int)fftSize, PFFFT_REAL);
+    
+    u64 part_size_bytes = dftSize * sizeof(float);
+    u64 padding = part_size_bytes & 0xF; 
+
+
+    irDftBuffers = (float**)calloc(numIRParts, sizeof(float*));
+    irDftBuffers[0] = (float*)pffft_aligned_malloc(numIRParts * (part_size_bytes+padding));
+    
+    FDL = (float**)calloc(numIRParts, sizeof(float*));
+    FDLMemory = (float*)pffft_aligned_malloc(numIRParts * (part_size_bytes+padding));
+    memset(FDLMemory, 0, numIRParts * (part_size_bytes+padding));
+    FDL[0] = FDLMemory;
+    
+    convolutionDftResult = (float*)pffft_aligned_malloc(part_size_bytes);
+
+    fftTimeInputBuffer = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
+    fftTimeOutputBuffer = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
+    
+    for (u32 index = 1; index < numIRParts; index++) {
+        irDftBuffers[index] = (float*)((uintptr_t)irDftBuffers[index-1] + (part_size_bytes+padding));
+        FDL[index]          = (float*)((uintptr_t)FDL[index-1] + (part_size_bytes+padding));
+    }
+
     u32 baseIRIndex = 0;
     u32 partSize = 0;
     for (u32 index = 0; index < numIRParts; index++) {
@@ -104,12 +108,15 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
             partSize = (u32)blockSize;
         }
         
-        memset(fftTimeBuffer, 0, fftSize * sizeof(float));
-        memcpy(fftTimeBuffer, &irPtr[baseIRIndex], partSize * sizeof(float));
+        memset(fftTimeInputBuffer, 0, fftSize * sizeof(float));
+        memcpy(fftTimeInputBuffer, &irPtr[baseIRIndex], partSize * sizeof(float));
         
-        pffft_transform(fftSetup, fftTimeBuffer, irDftBuffers[index], nullptr, PFFFT_FORWARD);
+        pffft_transform(fftSetup, fftTimeInputBuffer, irDftBuffers[index], nullptr, PFFFT_FORWARD);
     }
 
+    memset(fftTimeInputBuffer, 0, fftSize * sizeof(float));
+    memset(fftTimeOutputBuffer, 0, fftSize * sizeof(float));
+    
     updateIR = false;
 }
 
@@ -134,7 +141,6 @@ IRLoaderError IRLoader::loadIR() {
     }
 
     std::string irPath = irFile.getFullPathName().toStdString();
-
     if (irPath == "") { return IRLoaderError::Error; }
     
     IRLoaderError error = IRLoaderError::OK;
@@ -142,7 +148,9 @@ IRLoaderError IRLoader::loadIR() {
     {
         drwav wav;
         drwav_uint64 numFramesRead = 0;
-        if (!drwav_init_file(&wav, irPath.data(), NULL)) {
+        bool result = drwav_init_file(&wav, irPath.data(), NULL);
+        
+        if (!result) {
             juce::AlertWindow::showMessageBox(
                 juce::MessageBoxIconType::WarningIcon, 
                 "IR file error",
@@ -161,21 +169,11 @@ IRLoaderError IRLoader::loadIR() {
             error = IRLoaderError::Error;
             goto wav_opening_scope_end;
         }
-    
-        if (wav.sampleRate != 44100 && wav.sampleRate != 48000) {
-            juce::AlertWindow::showMessageBox(
-                juce::MessageBoxIconType::WarningIcon, 
-                "Samplerate error",
-                "Sorry, the default provided IR is only available at 44.1 or 48kHz, if you work at another sampling rate, please provide your own IR.", 
-                "Ok");
-            error = IRLoaderError::Error;
-            goto wav_opening_scope_end;
-        }
-    
+        
         irBuffer = (float*)calloc(wav.totalPCMFrameCount, sizeof(float));
         numFramesRead = drwav_read_pcm_frames_f32(&wav, wav.totalPCMFrameCount, irBuffer);
         
-        assert(numFramesRead != wav.totalPCMFrameCount && "Error in decoding the wav file");
+        assert(numFramesRead == wav.totalPCMFrameCount && "Error in decoding the wav file");
         irBufferSize = (u32)numFramesRead;
 
         // the IR is fully loaded at the end of the process function
@@ -193,10 +191,17 @@ IRLoaderError IRLoader::loadIR() {
 void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     
     (void*)bufferR;
+    u32 index = 0;
     
-    memset(fftTimeBuffer, 0, fftSize * sizeof(float));
-    memcpy(fftTimeBuffer, bufferL, nSamples*sizeof(float));
-
+    for (index = 0; index < fftSize-nSamples; index++) {
+        fftTimeInputBuffer[index] = fftTimeInputBuffer[index + nSamples];
+    }
+    
+    for (index = 0; index < nSamples; index++) {
+        fftTimeInputBuffer[fftSize-nSamples + index] = bufferL[index];
+    }
+        
+    
     //shift the FDL
     float* tempPtr = FDL[numIRParts-1];
     for (u32 FDLIndex = numIRParts-1; FDLIndex > 0; FDLIndex--) {
@@ -204,24 +209,23 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     }
     FDL[0] = tempPtr;
 
-    pffft_transform(fftSetup, fftTimeBuffer, FDL[0], nullptr, PFFFT_FORWARD);
+    pffft_transform(fftSetup, fftTimeInputBuffer, FDL[0], nullptr, PFFFT_FORWARD);
 
     memset(convolutionDftResult, 0, dftSize * sizeof(float));
     
     for (u32 part_index = 0; part_index < numIRParts; part_index++) {
-        pffft_zconvolve_accumulate(fftSetup, 
-                                   FDL[part_index], 
-                                   irDftBuffers[part_index], 
-                                   convolutionDftResult, 
-                                   1.0);
+        pffft_zconvolve_accumulate(fftSetup,
+                                   FDL[part_index],
+                                   irDftBuffers[part_index],
+                                   convolutionDftResult,
+                                   1.0f);
     }
     
-    pffft_transform(fftSetup, convolutionDftResult, fftTimeBuffer, nullptr, PFFFT_BACKWARD);
-
-    memcpy(bufferL, fftTimeBuffer, nSamples*sizeof(float));
-
-    for (u32 sample_index = 0; sample_index < nSamples; sample_index++) {
-        bufferL[sample_index] *= 1.0f/(float)(fftSize);
+    pffft_transform(fftSetup, convolutionDftResult, fftTimeOutputBuffer, nullptr, PFFFT_BACKWARD);
+    
+    float fftSizeInv = 1.0f/(float)(fftSize);
+    for (index = 0; index < nSamples; index++) {
+        bufferL[index] = fftTimeOutputBuffer[fftSize - nSamples + index] * fftSizeInv;
     }
 
     

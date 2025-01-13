@@ -63,8 +63,10 @@ struct IRLoader {
     u32 numIRParts = 0;
 
     void *memory = nullptr;
-    float *fftTimeBuffer = nullptr;
+    float *fftTimeInputBuffer = nullptr;
+    float *fftTimeOutputBuffer = nullptr;
     float **irDftBuffers = nullptr;
+    float *FDLMemory = nullptr;
     float **FDL = nullptr;
     float *convolutionDftResult = nullptr;
 
