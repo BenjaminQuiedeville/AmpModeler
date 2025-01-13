@@ -21,7 +21,7 @@ juce_add_plugin(${PROJECT_NAME}
     NEEDS_MIDI_INPUT            FALSE 
     NEEDS_MIDI_OUTPUT           FALSE 
     PLUGIN_MANUFACTURER_CODE    HRMS 
-    PLUGIN_CODE                 AMPM 
+    PLUGIN_CODE                 Ampm 
     FORMATS                     VST3 Standalone
     PRODUCT_NAME                "AmpModeler"
     

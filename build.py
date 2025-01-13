@@ -4,6 +4,7 @@ import sys
 
 argc = len(sys.argv)
 
+
 release = False
 debug = False
 juce_only = False
@@ -37,6 +38,7 @@ else:
     print("wrong config, use either 'release', 'relwithdebug', 'debug', 'juce'")
     exit(-1)
 
+plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 optim_flags = " /Ox /Ob2 /GL /Gy"
 debugging_flags = " /Zi"
@@ -84,8 +86,8 @@ defines = " ".join([
     "/D \"JucePlugin_Manufacturer=\\\"Hermes140\\\"\"",
     "/D JucePlugin_PluginCode=0x414d504d",
     "/D JucePlugin_Version=0.2.0",
-    f"/D \"JucePlugin_Name=\\\"AmpSimp_{config}\\\"\"",
-    f"/D \"JucePlugin_Desc=\\\"AmpSimp_{config}\\\"\"",
+    f"/D \"JucePlugin_Name=\\\"{plugin_name}\\\"\"",
+    f"/D \"JucePlugin_Desc=\\\"{plugin_name}\\\"\"",
     "/D \"JucePlugin_VersionString=\\\"0.2.0\\\"\"",
     "/D \"JucePlugin_Vst3Category=\\\"Fx\\\"\"",
     "/D \"JucePlugin_ManufacturerWebsite=\\\"\\\"\"",
@@ -172,7 +174,7 @@ elif juce_only:
 
 juce_objects = " ".join([f"{juce_build_dir}/{file}" for file in filter(lambda string : ".obj" in string, os.listdir(juce_build_dir))])
 
-command = f"cl {command_flags} /Fe:AmpSimp_{config}.vst3 /Fd:AmpSimp{config}.pdb {defines} {includes} {plugin_sources} /link {link_flags} {juce_objects} {libs}"
+command = f"cl {command_flags} /Fe:{plugin_name}.vst3 /Fd:{plugin_name}.pdb {defines} {includes} {plugin_sources} /link {link_flags} {juce_objects} {libs}"
 
 print(command)
 
@@ -183,5 +185,5 @@ if return_code != 0:
     exit(-1)
 
 print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
-os.system(f"cp AmpSimp_{config}.vst3 \"C:/Program Files/Common Files/VST3/AmpSimp_{config}.vst3\"")
+os.system(f"cp {plugin_name}.vst3 \"C:/Program Files/Common Files/VST3/{plugin_name}.vst3\"")
 os.system("rm *.obj")
