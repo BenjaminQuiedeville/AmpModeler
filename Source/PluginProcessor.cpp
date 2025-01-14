@@ -193,11 +193,13 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     assert(audioPtrL && "processBlock() : audioPtrL is Null");
     assert(audioPtrR && "processBlock() : audioPtrR is Null");
 
-    if (channelConfig == Mono) { 
+    u8 currentChannelConfig = channelConfig;
+
+    if (currentChannelConfig == Mono) { 
         audioPtrR = nullptr;
     }
 
-    if (channelConfig == FakeStereo) {
+    if (currentChannelConfig == FakeStereo) {
         for (u32 i = 0; i < numSamples; i++) {
             audioPtrR[i] = -audioPtrL[i];
         }
@@ -210,7 +212,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     //     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
     // }
     
-    if (channelConfig == Stereo) {
+    if (currentChannelConfig == Stereo) {
         for (u32 i = 0; i < numSamples; i++) {
             sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
         }
@@ -258,12 +260,12 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
     }
 
-    if (channelConfig == Mono) {
+    if (currentChannelConfig == Mono) {
         // copy left channel into right channel if processing is in mono
         buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
     }
 
-    if (channelConfig == FakeStereo) {
+    if (currentChannelConfig == FakeStereo) {
         for (u32 i = 0; i < numSamples; i++) {
             audioPtrR[i] *= -1.0f;
         }

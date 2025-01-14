@@ -42,10 +42,19 @@ struct IRLoader {
     void process(float *bufferL, float *bufferR, size_t nSamples);
 
     PFFFT_Setup *fftSetup = nullptr;
-    size_t fftSize = 16384;
-    size_t dftSize = 0;    
-    size_t blockSize = 0;
-    size_t convolutionResultSize = 0;
+    float *fftSignalsMemory = nullptr;
+    float **ptrBuffersMemory = nullptr;
+    
+    float *fftTimeInputBuffer = nullptr;
+    float *fftTimeOutputBuffer = nullptr;
+    float **irDftBuffers = nullptr;
+    float **FDL = nullptr;
+    float *convolutionDftResult = nullptr;
+
+    u32 numIRParts = 0;
+    u64 fftSize = 16384;
+    u64 dftSize = 0;    
+    u64 blockSize = 0;
 
     bool active = true;
     bool updateIR = false;
@@ -53,22 +62,11 @@ struct IRLoader {
     float *irBuffer = nullptr;
     u32 irBufferSize = 0;
     double samplerate = 0.0;
-
-    int overlapAddIndex = 0;
     
     juce::File irFile;
     juce::Array<juce::File> directoryWavFiles;
     int indexOfCurrentFile = 0;
 
-    u32 numIRParts = 0;
-
-    void *memory = nullptr;
-    float *fftTimeInputBuffer = nullptr;
-    float *fftTimeOutputBuffer = nullptr;
-    float **irDftBuffers = nullptr;
-    float *FDLMemory = nullptr;
-    float **FDL = nullptr;
-    float *convolutionDftResult = nullptr;
 
 };
 
