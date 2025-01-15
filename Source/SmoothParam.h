@@ -52,13 +52,13 @@ struct SmoothParamLinear {
     inline void applySmoothGainDeciBels(float *bufferL, float *bufferR, u32 nSamples) {
         if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
-                float gainValue = (float)dbtoa(nextValue()); 
+                float gainValue = (float)dbtoa(nextValue());
                 bufferL[i] *= gainValue;
                 bufferR[i] *= gainValue;
             }
             return;
         }
-        
+
         for (size_t i = 0; i < nSamples; i++) {
             bufferL[i] *= (float)dbtoa(nextValue());
         }
@@ -67,13 +67,13 @@ struct SmoothParamLinear {
     inline void applySmoothGainLinear(float *bufferL, float *bufferR, u32 nSamples) {
         if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
-                float gainValue = (float)nextValue(); 
+                float gainValue = (float)nextValue();
                 bufferL[i] *= gainValue;
                 bufferR[i] *= gainValue;
             }
             return;
         }
-        
+
         for (size_t i = 0; i < nSamples; i++) {
             bufferL[i] *= (float)nextValue();
         }
@@ -87,9 +87,10 @@ struct SmoothParamLinear {
     double currentValue = 0.0;
 
     bool isSmoothing;
-};  
+};
 
-
+// supprimer et remplacer le gain de la gate par un onepole
+// ca sera plus simple
 struct SmoothParamIIR {
 
     void init(double initValue) {
@@ -100,13 +101,13 @@ struct SmoothParamIIR {
         b0 = 1.0;
         a1 = 0.0;
     }
-    
+
     void newTarget(double newTarget, double tauMs, double samplerate) {
         b0 = std::sin(M_PI / (samplerate * tauMs * 0.001));
         a1 = b0 - 1.0;
         target = newTarget;
     }
-    
+
     double nextValue() {
         currentValue = target * b0 - y1 * a1;
         y1 = currentValue;
