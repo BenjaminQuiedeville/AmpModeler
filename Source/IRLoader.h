@@ -45,15 +45,17 @@ struct IRLoader {
     float *fftSignalsMemory = nullptr;
     float **ptrBuffersMemory = nullptr;
     
-    float *fftTimeInputBuffer = nullptr;
+    float *fftTimeInputBufferLeft = nullptr;
+    float *fftTimeInputBufferRight = nullptr;
     float *fftTimeOutputBuffer = nullptr;
     float **irDftBuffers = nullptr;
-    float **FDL = nullptr;
+    float **FDLLeft = nullptr;
+    float **FDLRight = nullptr;
     float *convolutionDftResult = nullptr;
 
     u32 numIRParts = 0;
     u64 fftSize = 16384;
-    u64 dftSize = 0;    
+    u64 dftSize = 0;
     u64 blockSize = 0;
 
     bool active = true;
@@ -66,8 +68,6 @@ struct IRLoader {
     juce::File irFile;
     juce::Array<juce::File> directoryWavFiles;
     int indexOfCurrentFile = 0;
-
-
 };
 
 #endif // IR_LOADER_H
