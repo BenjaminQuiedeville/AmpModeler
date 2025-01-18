@@ -39,7 +39,8 @@ struct NoiseGate {
     }
 
     void process(float *bufferL, float *bufferR, float *sidechain, size_t nSamples) {
-
+        ZoneScoped;
+        
         for (size_t i = 0; i < nSamples; i++) {
             
             absoluteSum -= std::abs(gateBuffer[gateBufferIndex]);

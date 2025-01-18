@@ -121,7 +121,7 @@ struct Biquad {
     }
 
     void process(float *bufferL, float *bufferR, size_t nSamples) {
-
+        ZoneScoped;
         if (bufferL) {
             for (size_t index = 0; index < nSamples; index++) {
         

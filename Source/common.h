@@ -13,6 +13,14 @@
 #include <cmath>
 #include <stdint.h>
 
+#ifdef TRACY_ENABLE
+    #include <tracy/Tracy.hpp>
+#else 
+    #define ZoneScoped
+    #define FrameMark
+    #define ZoneScopedN(text)
+#endif
+
 typedef uint8_t  u8;
 typedef int8_t   s8;
 typedef uint16_t u16;
@@ -53,6 +61,7 @@ static inline u64 nextPowTwo(u64 n) {
 }
 
 static inline void applyGainLinear(float gain, float *bufferL, float *bufferR, u32 nSamples) {
+    ZoneScoped;
     for (u32 index = 0; index < nSamples; index++) {
         bufferL[index] *= gain;
     }

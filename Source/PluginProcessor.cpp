@@ -176,6 +176,8 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 #endif
 
 void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {   
+    ZoneScoped;
+    
     midiMessages;
 
     juce::ScopedNoDenormals noDenormals;
@@ -280,7 +282,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
             audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
         }
     }
-
+    FrameMark;
 }
 
 //==============================================================================

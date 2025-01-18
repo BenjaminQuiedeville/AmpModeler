@@ -220,6 +220,7 @@ IRLoaderError IRLoader::loadIR() {
 
 
 void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
+    ZoneScoped;
     
     float fftSizeInv = 1.0f/(float)(fftSize);
 

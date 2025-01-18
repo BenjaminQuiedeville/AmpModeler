@@ -50,6 +50,7 @@ struct SmoothParamLinear {
     }
 
     inline void applySmoothGainDeciBels(float *bufferL, float *bufferR, u32 nSamples) {
+        ZoneScoped;
         if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
                 float gainValue = (float)dbtoa(nextValue());
@@ -65,6 +66,7 @@ struct SmoothParamLinear {
     }
 
     inline void applySmoothGainLinear(float *bufferL, float *bufferR, u32 nSamples) {
+        ZoneScoped;
         if (bufferR) {
             for (size_t i = 0; i < nSamples; i++) {
                 float gainValue = (float)nextValue();

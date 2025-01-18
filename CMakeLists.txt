@@ -37,12 +37,14 @@ target_sources(${PROJECT_NAME}
         Source/Preamp.cpp 
         Source/Tonestack.cpp
         libs/pffft/pffft.c
+        # W:/Tracy-Profiler/tracy-0.11.1/public/TracyClient.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${LIB_DIR}
         ${JUCE_SOURCE_DIR}/modules
+        # W:/Tracy-Profiler/tracy-0.11.1/public
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -52,7 +54,8 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_MODAL_LOOPS_PERMITTED=1
         JUCE_ASIO=0
-        _USE_MATH_DEFINES=1
+        _USE_MATH_DEFINES
+        # TRACY_ENABLE
 )
 
 target_link_libraries(${PROJECT_NAME}

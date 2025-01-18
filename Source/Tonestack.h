@@ -53,7 +53,7 @@ struct Tonestack {
     void updateCoefficients(float t, float m, float l);
     
     void process(float *bufferL, float *bufferR, size_t nSamples) {
-        
+        ZoneScoped;
         double bassValue = bassParam.currentValue;
         double midValue = midParam.currentValue;
         double trebbleValue = trebbleParam.currentValue;

@@ -103,7 +103,8 @@ void Preamp::setBias(float bias, int tube_index) {
 // auto cubicClip = [](float x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
 
 static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
-
+    ZoneScoped;
+    
     if (!buffer) { return; }
 
     static const float gridCondThresh = 1.0f;
@@ -206,7 +207,8 @@ static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
 // }
 
 void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
-
+    ZoneScopedN("Preamp");
+    
     u32 upNumSamples = nSamples*PREAMP_UP_SAMPLE_FACTOR;
 
     // upsampling
@@ -227,6 +229,8 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
     //processing the gain stages
     {
+        ZoneScopedN("GainsStages");
+        
         static const float INPUT_GAIN   = (float)dbtoa(0.0);
         static const float STAGE_0_GAIN = (float)dbtoa(40.0);
         static const float STAGE_1_GAIN = (float)dbtoa(40.0) * 0.9f;

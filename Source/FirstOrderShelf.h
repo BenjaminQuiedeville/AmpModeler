@@ -53,6 +53,7 @@ struct FirstOrderShelfFilter {
     }
 
     inline void process(float *bufferL, float *bufferR, u32 nSamples) {
+        ZoneScoped;
         if (bufferL) {
             for (u32 i = 0; i < nSamples; i++) {
                 float outSample = b0 * bufferL[i] 

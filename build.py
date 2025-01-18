@@ -8,6 +8,8 @@ argc = len(sys.argv)
 release = False
 debug = False
 juce_only = False
+use_tracy_profiler = False
+tracy_dir = "W:/Tracy-Profiler/tracy-0.11.1"
 config: str = ""
 
 if argc == 1:
@@ -41,7 +43,7 @@ else:
 plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 optim_flags = " /Ox /Ob2 /GL /Gy"
-debugging_flags = " /Zi"
+debugging_flags = " /Zi /fsanitize=address"
 
 debug_flags = compile_flags + debugging_flags
 release_flags = compile_flags + optim_flags
@@ -98,12 +100,13 @@ defines = " ".join([
     "/D JucePlugin_VSTCategory=kPlugCategEffect",
     
     "/D JUCE_VST3_CAN_REPLACE_VST2=0",
+    
 ])
 
 includes = " ".join([
     "/Ilibs/juce/modules",
     "/Ilibs/juce/modules/juce_audio_processors/format_types/VST3_SDK",
-    "/Ilibs"
+    "/Ilibs",
 ])
 
 plugin_sources = " ".join([
@@ -111,7 +114,7 @@ plugin_sources = " ".join([
     "Source/PluginEditor.cpp",
     "Source/Preamp.cpp",
     "Source/IRLoader.cpp", 
-    "Source/Tonestack.cpp"
+    "Source/Tonestack.cpp",
 ])
 
 juce_sources = " ".join([
@@ -141,6 +144,11 @@ libs = " ".join([
     "comdlg32.lib", 
 ])
 
+if use_tracy_profiler:
+    plugin_sources += f" {tracy_dir}/public/TracyClient.cpp"
+    includes += f" /I{tracy_dir}/public"
+    defines += " /D TRACY_ENABLE"
+    
 
 def build_juce(sources: str, out_path: str, flags: str) -> None:
     os.makedirs(out_path)
