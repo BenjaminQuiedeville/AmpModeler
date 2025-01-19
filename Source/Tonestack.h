@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "SmoothParam.h"
+#include <memory>
 
 enum TonestackModel {
     Soldano = 0,
@@ -23,7 +24,11 @@ struct Tonestack {
         setModel(EnglSavage);
     }
 
-    void prepareToPlay() {
+    ~Tonestack() {
+        if (dummyBuffer) { free(dummyBuffer); }    
+    }
+
+    void prepareToPlay(int blockSize) {
 
         bassParam.init(0.5);
         midParam.init(0.5);
@@ -46,6 +51,14 @@ struct Tonestack {
         y1R = 0.0f;
         y2R = 0.0f;
         y3R = 0.0f;
+        
+        if (dummyBuffer) {
+            dummyBuffer = (float*)realloc(dummyBuffer, blockSize * sizeof(float));
+            memset(dummyBuffer, 0, blockSize * sizeof(float));
+        } else {
+            dummyBuffer = (float*)calloc(blockSize, sizeof(float));
+        }
+    
     }
 
     void setModel(TonestackModel newModel);
@@ -54,21 +67,25 @@ struct Tonestack {
     
     void process(float *bufferL, float *bufferR, size_t nSamples) {
         ZoneScoped;
-        double bassValue = bassParam.currentValue;
-        double midValue = midParam.currentValue;
-        double trebbleValue = trebbleParam.currentValue;
+        bool update = false;
         
-        if (bassParam.nextValue() != bassValue 
-            || midParam.nextValue() != midValue
-            || trebbleParam.nextValue() != trebbleValue)
+        if (bassParam.isSmoothing 
+            || midParam.isSmoothing
+            || trebbleParam.isSmoothing)
         {
-            updateCoefficients((float)trebbleParam.currentValue,
-                                (float)midParam.currentValue,
-                                (float)bassParam.currentValue);
+            update = true;
         }
         
+        if (!bufferR) { bufferR = dummyBuffer; }
         
         for (size_t i = 0; i < nSamples; i++) {
+        
+            if (update) {
+                updateCoefficients((float)trebbleParam.nextValue(),
+                                    (float)midParam.nextValue(),
+                                    (float)bassParam.nextValue());
+        
+            }
         
             float outputSample = (float)(bufferL[i] * b0
                                 + x1L * b1
@@ -87,33 +104,28 @@ struct Tonestack {
             y1L = outputSample;
 
             bufferL[i] = outputSample;
-        }
             
-        if (bufferR) {
-            for (size_t i = 0; i < nSamples; i++) {
                 
-                float outputSample = (float)(bufferR[i] * b0
-                                    + x1R * b1
-                                    + x2R * b2
-                                    + x3R * b3
-                                    - y1R * a1
-                                    - y2R * a2
-                                    - y3R * a3);
-    
-                x3R = x2R; 
-                x2R = x1R;
-                x1R = bufferR[i];
-                
-                y3R = y2R; 
-                y2R = y1R;
-                y1R = outputSample;
-    
-                bufferR[i] = outputSample;
-            }
-        }           
+            outputSample = (float)(bufferR[i] * b0
+                                + x1R * b1
+                                + x2R * b2
+                                + x3R * b3
+                                - y1R * a1
+                                - y2R * a2
+                                - y3R * a3);
+
+            x3R = x2R; 
+            x2R = x1R;
+            x1R = bufferR[i];
+            
+            y3R = y2R; 
+            y2R = y1R;
+            y1R = outputSample;
+
+            bufferR[i] = outputSample;
+        }
     }
 
-    double samplerate;
     SmoothParamLinear bassParam;
     SmoothParamLinear midParam;
     SmoothParamLinear trebbleParam;
@@ -142,7 +154,9 @@ struct Tonestack {
     float y1R = 0.0f;
     float y2R = 0.0f;
     float y3R = 0.0f;
-
+    
+    float *dummyBuffer = nullptr;
+    double samplerate = 0.0;
     TonestackModel model;
     
     struct TonestackConstants {

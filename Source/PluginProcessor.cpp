@@ -118,26 +118,26 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     samplerate = sampleRate;
     bufferSize = samplesPerBlock;
-    preampSamplerate = sampleRate * PREAMP_UP_SAMPLE_FACTOR;
-    inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, sampleRate);
+    preampSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
+    inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, samplerate);
 
     tightFilter.prepareToPlay();
     biteFilter.prepareToPlay();
     
-    noiseGate.prepareToPlay(sampleRate);
+    noiseGate.prepareToPlay(samplerate);
 
-    preamp.prepareToPlay(sampleRate, samplesPerBlock);
+    preamp.prepareToPlay(samplerate, bufferSize);
     
     inputGain.init(0.0);
     masterVolume.init(0.0);
     
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
-    toneStack.prepareToPlay();
-    irLoader.init(sampleRate, samplesPerBlock);
+    toneStack.prepareToPlay(bufferSize);
+    irLoader.init(samplerate, bufferSize);
 
     if (!sideChainBuffer) {
-        sideChainBuffer = (float *)calloc(samplesPerBlock,  sizeof(float));
+        sideChainBuffer = (float *)calloc(bufferSize,  sizeof(float));
     }
 
     initParameters();
@@ -570,9 +570,9 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         float midValue = (float)*apvts.getRawParameterValue(ParamIDs[TONESTACK_MIDDLE]);
         float trebbleValue = (float)*apvts.getRawParameterValue(ParamIDs[TONESTACK_TREBBLE]);
             
-        toneStack.bassParam.newTarget(bassValue/10.0f,       100.0f * bufferSize, samplerate/bufferSize);
-        toneStack.midParam.newTarget(midValue/10.0f,         100.0f * bufferSize, samplerate/bufferSize);
-        toneStack.trebbleParam.newTarget(trebbleValue/10.0f, 100.0f * bufferSize, samplerate/bufferSize);
+        toneStack.bassParam.newTarget(bassValue/10.0f,       100.0f, samplerate);
+        toneStack.midParam.newTarget(midValue/10.0f,         100.0f, samplerate);
+        toneStack.trebbleParam.newTarget(trebbleValue/10.0f, 100.0f, samplerate);
         return;
     }
 
