@@ -13,10 +13,9 @@ tracy_dir = "W:/Tracy-Profiler/tracy-0.11.1"
 config: str = ""
 
 if argc == 1:
-    release = False
-    debug = True
-    config = "debug"
-
+    print("First call 'build.py juce' to build the juce dependencies and then call 'build.py debug/release/relwithdebug'")
+    exit(0)
+    
 elif sys.argv[1] == "release":
     release = True
     debug = False
@@ -44,10 +43,6 @@ plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 optim_flags = " /Ox /Ob2 /GL /Gy"
 debugging_flags = " /Zi /fsanitize=address"
-
-debug_flags = compile_flags + debugging_flags
-release_flags = compile_flags + optim_flags
-relwithdebug_flags = compile_flags + optim_flags + debugging_flags
 
 link_flags = "/OPT:REF"
 if release: link_flags += " /LTCG"
@@ -110,11 +105,12 @@ includes = " ".join([
 ])
 
 plugin_sources = " ".join([
-    "Source/PluginProcessor.cpp",
-    "Source/PluginEditor.cpp",
-    "Source/Preamp.cpp",
-    "Source/IRLoader.cpp", 
-    "Source/Tonestack.cpp",
+    # "Source/PluginProcessor.cpp",
+    # "Source/PluginEditor.cpp",
+    # "Source/Preamp.cpp",
+    # "Source/IRLoader.cpp", 
+    # "Source/Tonestack.cpp",
+    "Source/main.cpp",
 ])
 
 juce_sources = " ".join([
@@ -144,12 +140,6 @@ libs = " ".join([
     "comdlg32.lib", 
 ])
 
-if use_tracy_profiler:
-    plugin_sources += f" {tracy_dir}/public/TracyClient.cpp"
-    includes += f" /I{tracy_dir}/public"
-    defines += " /D TRACY_ENABLE"
-    
-
 def build_juce(sources: str, out_path: str, flags: str) -> None:
     os.makedirs(out_path)
 
@@ -160,32 +150,35 @@ def build_juce(sources: str, out_path: str, flags: str) -> None:
     assert(not return_code)
     return    
 
+if use_tracy_profiler:
+    plugin_sources += f" {tracy_dir}/public/TracyClient.cpp"
+    includes += f" /I{tracy_dir}/public"
+    defines += " /D TRACY_ENABLE"    
 
 juce_build_dir: str = f"juce_build/{config}"
 
 command_flags = ""
-if config == "debug":            command_flags = debug_flags
-elif config == "release":        command_flags = release_flags
-elif config == "relwithdebug":   command_flags = relwithdebug_flags 
+if config == "debug":            command_flags = compile_flags + debugging_flags
+elif config == "release":        command_flags = compile_flags + optim_flags
+elif config == "relwithdebug":   command_flags = compile_flags + optim_flags + debugging_flags 
 
+# see if we need to rebuild the juce dependencies
 if (not path.isdir(juce_build_dir) and not juce_only):
-    build_juce(juce_sources, juce_build_dir, compile_flags)
+    build_juce(juce_sources, juce_build_dir, command_flags)
     
 elif juce_only:
     os.system("rm -r juce_build")    
     
-    build_juce(juce_sources, "juce_build/debug", debug_flags)    
-    build_juce(juce_sources, "juce_build/release", release_flags)
-    build_juce(juce_sources, "juce_build/relwithdebug", relwithdebug_flags)        
+    build_juce(juce_sources, "juce_build/debug",        command_flags)    
+    build_juce(juce_sources, "juce_build/release",      command_flags)
+    build_juce(juce_sources, "juce_build/relwithdebug", command_flags)        
     exit(0)
-
 
 juce_objects = " ".join([f"{juce_build_dir}/{file}" for file in filter(lambda string : ".obj" in string, os.listdir(juce_build_dir))])
 
 command = f"cl {command_flags} /Fe:{plugin_name}.vst3 /Fd:{plugin_name}.pdb {defines} {includes} {plugin_sources} /link {link_flags} {juce_objects} {libs}"
 
 print(command)
-
 return_code = os.system(command)
 
 if return_code != 0:

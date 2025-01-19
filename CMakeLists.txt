@@ -31,11 +31,11 @@ juce_add_plugin(${PROJECT_NAME}
 
 target_sources(${PROJECT_NAME}
     PRIVATE 
-        Source/PluginProcessor.cpp
-        Source/PluginEditor.cpp 
-        Source/IRLoader.cpp 
-        Source/Preamp.cpp 
-        Source/Tonestack.cpp
+        # Source/PluginProcessor.cpp
+        # Source/PluginEditor.cpp 
+        # Source/IRLoader.cpp 
+        # Source/Preamp.cpp 
+        Source/main.cpp
         libs/pffft/pffft.c
         # W:/Tracy-Profiler/tracy-0.11.1/public/TracyClient.cpp
 )

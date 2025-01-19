@@ -68,7 +68,7 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
 }
 
 void Preamp::setBias(float bias, int tube_index) {
-
+    // add smoothing
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
         case 0: { selected_stage_bias = stage0_bias; break; }
