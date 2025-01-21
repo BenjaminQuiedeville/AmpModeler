@@ -4,6 +4,7 @@ import sys
 
 argc = len(sys.argv)
 
+def Print(message: str): print(message, file = sys.stdout, flush = True)
 
 release = False
 debug = False
@@ -13,7 +14,7 @@ tracy_dir = "W:/Tracy-Profiler/tracy-0.11.1"
 config: str = ""
 
 if argc == 1:
-    print("First call 'build.py juce' to build the juce dependencies and then call 'build.py debug/release/relwithdebug'")
+    Print("First call 'build.py juce' to build the juce dependencies and then call 'build.py debug/release/relwithdebug'")
     exit(0)
     
 elif sys.argv[1] == "release":
@@ -36,7 +37,7 @@ elif sys.argv[1] == "juce":
     debug = True
         
 else: 
-    print("wrong config, use either 'release', 'relwithdebug', 'debug', 'juce'")
+    Print("wrong config, use either 'release', 'relwithdebug', 'debug', 'juce'")
     exit(-1)
 
 plugin_name = f"AmpSimp_{config}"
@@ -144,7 +145,7 @@ def build_juce(sources: str, out_path: str, flags: str) -> None:
     os.makedirs(out_path)
 
     command = f"cl {flags} /c /Fo:{out_path}/ /Fd:{out_path}/ {defines} {includes} {juce_sources}"
-    print(command)
+    # Print(command)
     return_code = os.system(command)
     
     assert(not return_code)
@@ -178,13 +179,13 @@ juce_objects = " ".join([f"{juce_build_dir}/{file}" for file in filter(lambda st
 
 command = f"cl {command_flags} /Fe:{plugin_name}.vst3 /Fd:{plugin_name}.pdb {defines} {includes} {plugin_sources} /link {link_flags} {juce_objects} {libs}"
 
-print(command)
+# Print(command)
 return_code = os.system(command)
 
 if return_code != 0:
-    print("Problems during compilation, exiting")
+    Print("Problems during compilation, exiting")
     exit(-1)
 
-print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
+Print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
 os.system(f"cp {plugin_name}.vst3 \"C:/Program Files/Common Files/VST3/{plugin_name}.vst3\"")
 os.system("rm *.obj")
