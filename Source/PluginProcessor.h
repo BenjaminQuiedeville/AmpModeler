@@ -64,7 +64,8 @@ enum Params {
     PREAMP_ACTIVE,
     TONESTACK_ACTIVE,
     EQ_ACTIVE,
-    IR_ACTIVE,
+    IR1_ACTIVE,
+    IR2_ACTIVE,
     
     PREAMP_GAIN,
     BRIGHT_CAP,
@@ -143,7 +144,8 @@ static std::vector<juce::Identifier> ParamIDs = {
     "PREAMP_ACTIVE",
     "TONESTACK_ACTIVE",
     "EQ_ACTIVE",
-    "IR_ACTIVE",
+    "IR1_ACTIVE",
+    "IR2_ACTIVE",
 
     "PREAMP_GAIN",
     "BRIGHT_CAP",
@@ -219,7 +221,8 @@ static const float defaultParamValues[N_PARAMS] = {
     1.0f,               // PREAMP_ACTIVE
     1.0f,               // TONESTACK_ACTIVE
     1.0f,               // EQ_ACTIVE
-    1.0f,               // IR_ACTIVE
+    1.0f,               // IR1_ACTIVE
+    0.0f,               // IR2_ACTIVE
     
     5.0f,               // PREAMP_GAIN
     1.0f,               // BRIGHT_CAP

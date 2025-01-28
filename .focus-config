@@ -22,7 +22,7 @@ libs/juce/examples
 *.rdi
 *.ilk
 *.exp
-
+Profiling
 
 [allow]
 # Files and directories matching the wildcards in this section will be loaded, even if they are ignored in the previous section.

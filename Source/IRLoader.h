@@ -36,7 +36,7 @@ struct IRLoader {
     void init(double samplerate, size_t blockSize);
 
     void deallocateFFTEngine();
-    IRLoaderError loadIR(int whichIR);
+    IRLoaderError loadIR(u32 whichIR);
     void prepareConvolution();
     void process(float *bufferL, float *bufferR, size_t nSamples);
 
@@ -46,8 +46,9 @@ struct IRLoader {
     float *ir1Memory = nullptr;
     float *ir2Memory = nullptr;
     
-    // float **ptrBuffersMemory = nullptr;
-    float **irDftBuffers = nullptr;
+    float **ptrBuffersMemory = nullptr;
+    float **irDftBuffers1 = nullptr;
+    float **irDftBuffers2 = nullptr;
 
     float *fftTimeInputBufferLeft = nullptr;
     float *fftTimeInputBufferRight = nullptr;
@@ -57,13 +58,13 @@ struct IRLoader {
     float *convolutionDftResult = nullptr;
 
     u32 numIRParts = 0;
-    u64 fftSize = 16384;
-    u64 dftSize = 0;
-    u64 blockSize = 0;
+    u32 fftSize = 16384;
+    u32 dftSize = 0;
+    u32 blockSize = 0;
 
-    bool active = true;
-    bool reloadIR = false;
-    bool defaultIR = true;
+    bool active1 = true;
+    bool active2 = false;
+    bool updateIR = false;
     
     struct IRData {
         float *buffer = nullptr;
@@ -71,6 +72,7 @@ struct IRLoader {
         juce::File file;
         juce::Array<juce::File> filesArray;
         u32 fileIndex = 0;
+        bool defaultIR = true;
     } ir1, ir2;
     
     double samplerate = 0.0;

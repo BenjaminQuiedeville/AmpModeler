@@ -242,10 +242,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
         presenceFilter.process(audioPtrL, audioPtrR, numSamples);
     }
-        
-    if (irLoader.active) {
-        irLoader.process(audioPtrL, audioPtrR, numSamples);
-    }
+
+    irLoader.process(audioPtrL, audioPtrR, numSamples);
+
     if (EQActive) {
         EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
         EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
@@ -317,27 +316,30 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
                 
         initParameters();
         
-        juce::String irPath = valueTree.getProperty(irPath1);
+        juce::String irPaths[2] = {valueTree.getProperty(irPath1), valueTree.getProperty(irPath2)};
+        IRLoader::IRData *irs[2] = {&irLoader.ir1, &irLoader.ir2};
         
-        if (irPath.endsWith(".wav")){
-            juce::File openedFile(irPath);
-            irLoader.ir1.file = openedFile;
-            
-            // get the list of files in the same directory
-            juce::File parentFolder = openedFile.getParentDirectory();
-            irLoader.directoryWavFiles = parentFolder.findChildFiles(
-                juce::File::TypesOfFileToFind::findFiles,
-                false, 
-                "*.wav",
-                juce::File::FollowSymlinks::no
-            );
-
-            irLoader.indexOfCurrentFile = irLoader.directoryWavFiles.indexOf(openedFile);            
-            DBG("ir file properly loaded from saved state");
-
-        } else {
-            irLoader.ir1.file = juce::File();
-            DBG("could not load the stored ir file");
+        for (u32 irIndex = 0; irIndex < 2; irIndex++) {
+            if (irPaths[irIndex].endsWith(".wav")){
+                juce::File openedFile(irPaths[irIndex]);
+                irs[irIndex]->file = openedFile;
+                
+                // get the list of files in the same directory
+                juce::File parentFolder = openedFile.getParentDirectory();
+                irs[irIndex]->filesArray = parentFolder.findChildFiles(
+                    juce::File::TypesOfFileToFind::findFiles,
+                    false, 
+                    "*.wav",
+                    juce::File::FollowSymlinks::no
+                );
+    
+                irs[irIndex]->fileIndex = irs[irIndex]->filesArray.indexOf(openedFile);
+                DBG("ir file properly imported from saved state");
+    
+            } else {
+                irs[irIndex]->file = juce::File();
+                DBG("could not import the stored ir file");
+            }
         }
     }
 }
@@ -420,10 +422,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         EQActive = (bool)newValue;
     }
         
-    if (id == ParamIDs[IR_ACTIVE]) {
-        irLoader.active = (bool)newValue;
+    if (id == ParamIDs[IR1_ACTIVE]) {
+        irLoader.active1 = (bool)newValue;
+    }
+
+    if (id == ParamIDs[IR2_ACTIVE]) {
+        irLoader.active2 = (bool)newValue;
     }
     
+
     if (id == ParamIDs[PREAMP_GAIN]) {
         auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
@@ -726,8 +733,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        ParamIDs[IR_ACTIVE].toString(), "Activate IR Loader", 
-        (bool)defaultParamValues[IR_ACTIVE]
+        ParamIDs[IR1_ACTIVE].toString(), "Activate IR Loader 1", 
+        (bool)defaultParamValues[IR1_ACTIVE]
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        ParamIDs[IR2_ACTIVE].toString(), "Activate IR Loader 2", 
+        (bool)defaultParamValues[IR2_ACTIVE]
     ));
 
 

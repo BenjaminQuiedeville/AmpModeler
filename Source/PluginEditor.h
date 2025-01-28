@@ -145,16 +145,24 @@ struct IRLoaderPage : public juce::Component {
     IRLoaderPage(Processor &audioProcessor);
     void resized();
 
-    juce::TextButton irLoadButton {"Load IR"};
-    juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
+    juce::TextButton ir1LoadButton {"Load IR"};
+    juce::TextButton ir2LoadButton {"Load IR"};
+    juce::Label ir1NameLabel {"IR1_NAME_LABEL", "Default IR"};
+    juce::Label ir2NameLabel {"IR2_NAME_LABEL", "Default IR"};
 
-    juce::TextButton nextIRButton {"Next"};
-    juce::TextButton prevIRButton {"Previous"};
+    juce::TextButton nextIR1Button {"Next"};
+    juce::TextButton prevIR1Button {"Previous"};
 
-    juce::TextButton defaultIRButton {"Load default IR"};
+    juce::TextButton nextIR2Button {"Next"};
+    juce::TextButton prevIR2Button {"Previous"};
 
-    juce::ToggleButton bypassToggle {"Activate IRloader"};
-    std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
+    juce::TextButton defaultIR1Button {"Load default IR"};
+    juce::TextButton defaultIR2Button {"Load default IR"};
+
+    juce::ToggleButton bypassLoader1Toggle {"Activate Loader 1"};
+    juce::ToggleButton bypassLoader2Toggle {"Activate Loader 2"};
+    std::unique_ptr<ButtonAttachment> bypassButtonAttachment1;
+    std::unique_ptr<ButtonAttachment> bypassButtonAttachment2;
 };
 
 
