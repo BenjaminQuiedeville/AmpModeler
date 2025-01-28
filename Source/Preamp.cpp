@@ -68,7 +68,7 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
 }
 
 void Preamp::setBias(float bias, int tube_index) {
-    // add smoothing
+    // @TODO: add smoothing to avoid clicks
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
         case 0: { selected_stage_bias = stage0_bias; break; }
@@ -112,7 +112,7 @@ static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
     // static const float gridCondKnee   = 0.05f;
     static const float gridCondKnee   = gridCondRatio / 4.0f;
 
-    // pour le bias, puis utiliser un Onepole pour smooth l'offset calculé sur ~10ms
+    // @TODO: pour le bias, puis utiliser un Onepole pour smooth l'offset calculé sur ~10ms
     // refaire une fonction de calcul d'un seul echantillon pour les onepole
     // toujours trouver si le cathode bypass doit se faire avant ou apres le tube cutoff
 

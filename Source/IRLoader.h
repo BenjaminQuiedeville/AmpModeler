@@ -36,19 +36,22 @@ struct IRLoader {
     void init(double samplerate, size_t blockSize);
 
     void deallocateFFTEngine();
-    // void reallocFFTEngine(u64 newSize);
-    IRLoaderError loadIR();
-    void prepareConvolution(float* irPtr, size_t irSize);
+    IRLoaderError loadIR(int whichIR);
+    void prepareConvolution();
     void process(float *bufferL, float *bufferR, size_t nSamples);
 
     PFFFT_Setup *fftSetup = nullptr;
     float *fftSignalsMemory = nullptr;
-    float **ptrBuffersMemory = nullptr;
     
+    float *ir1Memory = nullptr;
+    float *ir2Memory = nullptr;
+    
+    // float **ptrBuffersMemory = nullptr;
+    float **irDftBuffers = nullptr;
+
     float *fftTimeInputBufferLeft = nullptr;
     float *fftTimeInputBufferRight = nullptr;
     float *fftTimeOutputBuffer = nullptr;
-    float **irDftBuffers = nullptr;
     float **FDLLeft = nullptr;
     float **FDLRight = nullptr;
     float *convolutionDftResult = nullptr;
@@ -59,23 +62,18 @@ struct IRLoader {
     u64 blockSize = 0;
 
     bool active = true;
-    bool updateIR = false;
+    bool reloadIR = false;
     bool defaultIR = true;
-    float *irBuffer = nullptr;
-    u32 irBufferSize = 0;
-    double samplerate = 0.0;
     
-    juce::File irFile;
-    juce::Array<juce::File> directoryWavFiles;
-    int indexOfCurrentFile = 0;
+    struct IRData {
+        float *buffer = nullptr;
+        u32 size = 0;
+        juce::File file;
+        juce::Array<juce::File> filesArray;
+        u32 fileIndex = 0;
+    } ir1, ir2;
+    
+    double samplerate = 0.0;
 };
 
 #endif // IR_LOADER_H
-
-/*
-
-FFT::TimeVector *vector 
-
-vector
-
-*/

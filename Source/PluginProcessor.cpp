@@ -321,7 +321,7 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
         
         if (irPath.endsWith(".wav")){
             juce::File openedFile(irPath);
-            irLoader.irFile = openedFile;
+            irLoader.ir1.file = openedFile;
             
             // get the list of files in the same directory
             juce::File parentFolder = openedFile.getParentDirectory();
@@ -336,7 +336,7 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
             DBG("ir file properly loaded from saved state");
 
         } else {
-            irLoader.irFile = juce::File();
+            irLoader.ir1.file = juce::File();
             DBG("could not load the stored ir file");
         }
     }

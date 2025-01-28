@@ -351,7 +351,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
             return;
         }
 
-        audioProcessor.irLoader.irFile = returnedFile;
+        audioProcessor.irLoader.ir1.file = returnedFile;
         audioProcessor.irLoader.defaultIR = false;
         IRLoaderError error = audioProcessor.irLoader.loadIR();
 
@@ -364,14 +364,14 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
         // get the list of files in the same directory
         juce::File parentFolder = returnedFile.getParentDirectory();
-        audioProcessor.irLoader.directoryWavFiles = parentFolder.findChildFiles(
+        audioProcessor.irLoader.ir1.filesArray = parentFolder.findChildFiles(
             juce::File::TypesOfFileToFind::findFiles,
             false,
             "*.wav",
             juce::File::FollowSymlinks::no
         );
 
-        audioProcessor.irLoader.indexOfCurrentFile = audioProcessor.irLoader.directoryWavFiles.indexOf(returnedFile);
+        audioProcessor.irLoader.ir1.fileIndex = audioProcessor.irLoader.ir1.filesArray.indexOf(returnedFile);
     };
 
     addAndMakeVisible(irLoadButton);
@@ -381,10 +381,10 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         // if the defualt ir is loader, ignore the button
         if (audioProcessor.irLoader.defaultIR) { return; }
 
-        audioProcessor.irLoader.indexOfCurrentFile = (audioProcessor.irLoader.indexOfCurrentFile + 1) % audioProcessor.irLoader.directoryWavFiles.size();
+        audioProcessor.irLoader.ir1.fileIndex = (audioProcessor.irLoader.ir1.fileIndex + 1) % audioProcessor.irLoader.ir1.filesArray.size();
 
-        juce::File fileToLoad = audioProcessor.irLoader.directoryWavFiles[audioProcessor.irLoader.indexOfCurrentFile];
-        audioProcessor.irLoader.irFile = fileToLoad;
+        juce::File fileToLoad = audioProcessor.irLoader.ir1.filesArray[audioProcessor.irLoader.ir1.fileIndex];
+        audioProcessor.irLoader.ir1.file = fileToLoad;
         IRLoaderError error = audioProcessor.irLoader.loadIR();
 
         if (error == IRLoaderError::Error) { return; }
@@ -400,13 +400,13 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
         if (audioProcessor.irLoader.defaultIR) { return; }
 
-        audioProcessor.irLoader.indexOfCurrentFile--;
-        if (audioProcessor.irLoader.indexOfCurrentFile < 0) {
-            audioProcessor.irLoader.indexOfCurrentFile +=  audioProcessor.irLoader.directoryWavFiles.size();
+        audioProcessor.irLoader.ir1.fileIndex--;
+        if (audioProcessor.irLoader.ir1.fileIndex < 0) {
+            audioProcessor.irLoader.ir1.fileIndex +=  audioProcessor.irLoader.ir1.filesArray.size();
         }
 
-        juce::File fileToLoad = audioProcessor.irLoader.directoryWavFiles[audioProcessor.irLoader.indexOfCurrentFile];
-        audioProcessor.irLoader.irFile = fileToLoad;
+        juce::File fileToLoad = audioProcessor.irLoader.ir1.filesArray[audioProcessor.irLoader.ir1.fileIndex];
+        audioProcessor.irLoader.ir1.file = fileToLoad;
         IRLoaderError error = audioProcessor.irLoader.loadIR();
 
         if (error == IRLoaderError::Error) { return; }
@@ -424,7 +424,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     irNameLabel.setJustificationType(juce::Justification::left);
     irNameLabel.setFont(15.0f);
 
-    juce::String irNameText = audioProcessor.irLoader.irFile.getFileNameWithoutExtension();
+    juce::String irNameText = audioProcessor.irLoader.ir1.file.getFileNameWithoutExtension();
 
 
     if (audioProcessor.irLoader.defaultIR) {
