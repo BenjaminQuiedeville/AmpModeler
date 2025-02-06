@@ -16,9 +16,9 @@
 #ifdef TRACY_ENABLE
     #include <tracy/Tracy.hpp>
 #else 
-    #define ZoneScoped
-    #define FrameMark
-    #define ZoneScopedN(text)
+    #define ZoneScoped (void)0;
+    #define FrameMark (void)0;
+    #define ZoneScopedN(text) (void)0;
 #endif
 
 typedef uint8_t  u8;

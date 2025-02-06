@@ -145,24 +145,24 @@ struct IRLoaderPage : public juce::Component {
     IRLoaderPage(Processor &audioProcessor);
     void resized();
 
-    juce::TextButton ir1LoadButton {"Load IR"};
-    juce::TextButton ir2LoadButton {"Load IR"};
-    juce::Label ir1NameLabel {"IR1_NAME_LABEL", "Default IR"};
-    juce::Label ir2NameLabel {"IR2_NAME_LABEL", "Default IR"};
+    juce::TextButton ir1LoadButton {"Load IR 1"};
+    // juce::TextButton ir2LoadButton {"Load IR 2"};
+    juce::Label ir1NameLabel {"IR1_NAME_LABEL", "Default IR 1"};
+    // juce::Label ir2NameLabel {"IR2_NAME_LABEL", "Default IR 2"};
 
     juce::TextButton nextIR1Button {"Next"};
     juce::TextButton prevIR1Button {"Previous"};
 
-    juce::TextButton nextIR2Button {"Next"};
-    juce::TextButton prevIR2Button {"Previous"};
+    // juce::TextButton nextIR2Button {"Next"};
+    // juce::TextButton prevIR2Button {"Previous"};
 
-    juce::TextButton defaultIR1Button {"Load default IR"};
-    juce::TextButton defaultIR2Button {"Load default IR"};
+    juce::TextButton defaultIR1Button {"Load default IR 1"};
+    // juce::TextButton defaultIR2Button {"Load default IR 2"};
 
     juce::ToggleButton bypassLoader1Toggle {"Activate Loader 1"};
-    juce::ToggleButton bypassLoader2Toggle {"Activate Loader 2"};
+    // juce::ToggleButton bypassLoader2Toggle {"Activate Loader 2"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment1;
-    std::unique_ptr<ButtonAttachment> bypassButtonAttachment2;
+    // std::unique_ptr<ButtonAttachment> bypassButtonAttachment2;
 };
 
 
@@ -219,8 +219,7 @@ struct MasterVolPanel : public juce::Component {
 };
 
 
-struct Editor : public juce::AudioProcessorEditor
-{
+struct Editor : public juce::AudioProcessorEditor {
     Editor (Processor&);
 
     //==============================================================================

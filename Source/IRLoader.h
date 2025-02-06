@@ -43,8 +43,8 @@ struct IRLoader {
     PFFFT_Setup *fftSetup = nullptr;
     float *fftSignalsMemory = nullptr;
     
-    float *ir1Memory = nullptr;
-    float *ir2Memory = nullptr;
+    // float *ir1Memory = nullptr;
+    // float *ir2Memory = nullptr;
     
     float **ptrBuffersMemory = nullptr;
     float **irDftBuffers1 = nullptr;

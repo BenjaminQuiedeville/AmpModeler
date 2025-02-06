@@ -336,21 +336,20 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
         audioProcessor.apvts, ParamIDs[IR1_ACTIVE].toString(), bypassLoader1Toggle
     );
 
-    bypassButtonAttachment2 = std::make_unique<ButtonAttachment>(
-        audioProcessor.apvts, ParamIDs[IR2_ACTIVE].toString(), bypassLoader2Toggle
-    );
+    // bypassButtonAttachment2 = std::make_unique<ButtonAttachment>(
+    //     audioProcessor.apvts, ParamIDs[IR2_ACTIVE].toString(), bypassLoader2Toggle
+    // );
 
 
     ir1LoadButton.onClick = [&audioProcessor, this]() {
-        auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open",
-                                                           juce::File(), "*.wav");
+        juce::FileChooser chooser("Choose a .wav File to open", juce::File(), "*.wav");
 
-        bool fileChoosed = chooser->browseForFileToOpen();
+        bool fileChoosed = chooser.browseForFileToOpen();
         if (!fileChoosed) {
             return;
         }
 
-        juce::File returnedFile = chooser->getResult();
+        juce::File returnedFile = chooser.getResult();
 
         if (returnedFile.getFileExtension() != ".wav") {
             return;
@@ -380,43 +379,43 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     };
 
 
-    ir2LoadButton.onClick = [&audioProcessor, this]() {
-        auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open",
-                                                           juce::File(), "*.wav");
+    // ir2LoadButton.onClick = [&audioProcessor, this]() {
+        
+    //     juce::FileChooser chooser("Choose a .wav File to open", juce::File(), "*.wav");
 
-        bool fileChoosed = chooser->browseForFileToOpen();
-        if (!fileChoosed) {
-            return;
-        }
+    //     bool fileChoosed = chooser.browseForFileToOpen();
+    //     if (!fileChoosed) {
+    //         return;
+    //     }
 
-        juce::File returnedFile = chooser->getResult();
+    //     juce::File returnedFile = chooser.getResult();
 
-        if (returnedFile.getFileExtension() != ".wav") {
-            return;
-        }
+    //     if (returnedFile.getFileExtension() != ".wav") {
+    //         return;
+    //     }
 
-        audioProcessor.irLoader.ir2.file = returnedFile;
-        audioProcessor.irLoader.ir2.defaultIR = false;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(2);
+    //     audioProcessor.irLoader.ir2.file = returnedFile;
+    //     audioProcessor.irLoader.ir2.defaultIR = false;
+    //     IRLoaderError error = audioProcessor.irLoader.loadIR(2);
 
-        if (error == IRLoaderError::Error) { return; }
+    //     if (error == IRLoaderError::Error) { return; }
 
-        ir2NameLabel.setText(returnedFile.getFileNameWithoutExtension(),
-                            juce::NotificationType::dontSendNotification);
+    //     ir2NameLabel.setText(returnedFile.getFileNameWithoutExtension(),
+    //                         juce::NotificationType::dontSendNotification);
 
-        audioProcessor.valueTree.setProperty(irPath2, returnedFile.getFullPathName(), nullptr);
+    //     audioProcessor.valueTree.setProperty(irPath2, returnedFile.getFullPathName(), nullptr);
 
-        // get the list of files in the same directory
-        juce::File parentFolder = returnedFile.getParentDirectory();
-        audioProcessor.irLoader.ir2.filesArray = parentFolder.findChildFiles(
-            juce::File::TypesOfFileToFind::findFiles,
-            false,
-            "*.wav",
-            juce::File::FollowSymlinks::no
-        );
+    //     // get the list of files in the same directory
+    //     juce::File parentFolder = returnedFile.getParentDirectory();
+    //     audioProcessor.irLoader.ir2.filesArray = parentFolder.findChildFiles(
+    //         juce::File::TypesOfFileToFind::findFiles,
+    //         false,
+    //         "*.wav",
+    //         juce::File::FollowSymlinks::no
+    //     );
 
-        audioProcessor.irLoader.ir2.fileIndex = audioProcessor.irLoader.ir2.filesArray.indexOf(returnedFile);
-    };
+    //     audioProcessor.irLoader.ir2.fileIndex = audioProcessor.irLoader.ir2.filesArray.indexOf(returnedFile);
+    // };
 
 
     nextIR1Button.onClick = [&audioProcessor, this]() {
@@ -463,67 +462,67 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     };
 
 
-    nextIR2Button.onClick = [&audioProcessor, this]() {
+    // nextIR2Button.onClick = [&audioProcessor, this]() {
 
-        // if the defualt ir is loader, ignore the button
-        if (audioProcessor.irLoader.ir2.defaultIR) { return; }
+    //     // if the defualt ir is loader, ignore the button
+    //     if (audioProcessor.irLoader.ir2.defaultIR) { return; }
 
-        audioProcessor.irLoader.ir2.fileIndex = (audioProcessor.irLoader.ir2.fileIndex + 1) % audioProcessor.irLoader.ir2.filesArray.size();
+    //     audioProcessor.irLoader.ir2.fileIndex = (audioProcessor.irLoader.ir2.fileIndex + 1) % audioProcessor.irLoader.ir2.filesArray.size();
 
-        juce::File fileToLoad = audioProcessor.irLoader.ir2.filesArray[audioProcessor.irLoader.ir2.fileIndex];
-        audioProcessor.irLoader.ir2.file = fileToLoad;
-        audioProcessor.irLoader.ir2.defaultIR = false;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(2);
+    //     juce::File fileToLoad = audioProcessor.irLoader.ir2.filesArray[audioProcessor.irLoader.ir2.fileIndex];
+    //     audioProcessor.irLoader.ir2.file = fileToLoad;
+    //     audioProcessor.irLoader.ir2.defaultIR = false;
+    //     IRLoaderError error = audioProcessor.irLoader.loadIR(2);
 
-        if (error == IRLoaderError::Error) { return; }
+    //     if (error == IRLoaderError::Error) { return; }
 
-        ir2NameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
-                            juce::NotificationType::dontSendNotification);
+    //     ir2NameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
+    //                         juce::NotificationType::dontSendNotification);
 
-        audioProcessor.valueTree.setProperty(irPath2, fileToLoad.getFullPathName(), nullptr);
+    //     audioProcessor.valueTree.setProperty(irPath2, fileToLoad.getFullPathName(), nullptr);
 
-    };
+    // };
 
-    prevIR2Button.onClick = [&audioProcessor, this]() {
+    // prevIR2Button.onClick = [&audioProcessor, this]() {
 
-        if (audioProcessor.irLoader.ir2.defaultIR) { return; }
+    //     if (audioProcessor.irLoader.ir2.defaultIR) { return; }
 
-        audioProcessor.irLoader.ir2.fileIndex--;
-        if (audioProcessor.irLoader.ir2.fileIndex < 0) {
-            audioProcessor.irLoader.ir2.fileIndex +=  audioProcessor.irLoader.ir2.filesArray.size();
-        }
+    //     audioProcessor.irLoader.ir2.fileIndex--;
+    //     if (audioProcessor.irLoader.ir2.fileIndex < 0) {
+    //         audioProcessor.irLoader.ir2.fileIndex +=  audioProcessor.irLoader.ir2.filesArray.size();
+    //     }
 
-        juce::File fileToLoad = audioProcessor.irLoader.ir2.filesArray[audioProcessor.irLoader.ir2.fileIndex];
-        audioProcessor.irLoader.ir2.file = fileToLoad;
-        audioProcessor.irLoader.ir2.defaultIR = false;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(2);
+    //     juce::File fileToLoad = audioProcessor.irLoader.ir2.filesArray[audioProcessor.irLoader.ir2.fileIndex];
+    //     audioProcessor.irLoader.ir2.file = fileToLoad;
+    //     audioProcessor.irLoader.ir2.defaultIR = false;
+    //     IRLoaderError error = audioProcessor.irLoader.loadIR(2);
 
-        if (error == IRLoaderError::Error) { return; }
+    //     if (error == IRLoaderError::Error) { return; }
 
-        ir2NameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
-                            juce::NotificationType::dontSendNotification);
+    //     ir2NameLabel.setText(fileToLoad.getFileNameWithoutExtension(),
+    //                         juce::NotificationType::dontSendNotification);
 
-        audioProcessor.valueTree.setProperty(irPath2, fileToLoad.getFullPathName(), nullptr);
-    };
+    //     audioProcessor.valueTree.setProperty(irPath2, fileToLoad.getFullPathName(), nullptr);
+    // };
 
 
     addAndMakeVisible(ir1LoadButton);
-    addAndMakeVisible(ir2LoadButton);
+    // addAndMakeVisible(ir2LoadButton);
 
     addAndMakeVisible(nextIR1Button);
     addAndMakeVisible(prevIR1Button);
 
-    addAndMakeVisible(nextIR2Button);
-    addAndMakeVisible(prevIR2Button);
+    // addAndMakeVisible(nextIR2Button);
+    // addAndMakeVisible(prevIR2Button);
 
 
     ir1NameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
     ir1NameLabel.setJustificationType(juce::Justification::left);
     ir1NameLabel.setFont(15.0f);
 
-    ir2NameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
-    ir2NameLabel.setJustificationType(juce::Justification::left);
-    ir2NameLabel.setFont(15.0f);
+    // ir2NameLabel.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    // ir2NameLabel.setJustificationType(juce::Justification::left);
+    // ir2NameLabel.setFont(15.0f);
 
     if (audioProcessor.irLoader.ir1.defaultIR) {
         ir1NameLabel.setText(defaultIRText,
@@ -533,16 +532,16 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
                             juce::NotificationType::dontSendNotification);
     }
 
-    if (audioProcessor.irLoader.ir2.defaultIR) {
-        ir2NameLabel.setText(defaultIRText,
-                            juce::NotificationType::dontSendNotification);
-    } else {
-        ir2NameLabel.setText(audioProcessor.irLoader.ir2.file.getFileNameWithoutExtension(),
-                            juce::NotificationType::dontSendNotification);
-    }
+    // if (audioProcessor.irLoader.ir2.defaultIR) {
+    //     ir2NameLabel.setText(defaultIRText,
+    //                         juce::NotificationType::dontSendNotification);
+    // } else {
+    //     ir2NameLabel.setText(audioProcessor.irLoader.ir2.file.getFileNameWithoutExtension(),
+    //                         juce::NotificationType::dontSendNotification);
+    // }
 
     addAndMakeVisible(ir1NameLabel);
-    addAndMakeVisible(ir2NameLabel);
+    // addAndMakeVisible(ir2NameLabel);
 
 
     defaultIR1Button.onClick = [&audioProcessor, this]() {
@@ -559,37 +558,37 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     addAndMakeVisible(defaultIR1Button);
 
-    defaultIR2Button.onClick = [&audioProcessor, this]() {
-        audioProcessor.irLoader.ir2.defaultIR = true;
-        IRLoaderError error = audioProcessor.irLoader.loadIR(2);
+    // defaultIR2Button.onClick = [&audioProcessor, this]() {
+    //     audioProcessor.irLoader.ir2.defaultIR = true;
+    //     IRLoaderError error = audioProcessor.irLoader.loadIR(2);
 
-        if (error == IRLoaderError::Error) { return; }
+    //     if (error == IRLoaderError::Error) { return; }
 
-        ir2NameLabel.setText(defaultIRText,
-                            juce::NotificationType::dontSendNotification);
+    //     ir2NameLabel.setText(defaultIRText,
+    //                         juce::NotificationType::dontSendNotification);
 
-        audioProcessor.valueTree.setProperty(irPath2, "", nullptr);
-    };
+    //     audioProcessor.valueTree.setProperty(irPath2, "", nullptr);
+    // };
 
-    addAndMakeVisible(defaultIR2Button);
+    // addAndMakeVisible(defaultIR2Button);
 
     bypassLoader1Toggle.setToggleState(audioProcessor.irLoader.active1,
                                         juce::NotificationType::dontSendNotification);
 
-    bypassLoader2Toggle.setToggleState(audioProcessor.irLoader.active2,
-                                        juce::NotificationType::dontSendNotification);
+    // bypassLoader2Toggle.setToggleState(audioProcessor.irLoader.active2,
+    //                                     juce::NotificationType::dontSendNotification);
 
 
     bypassLoader1Toggle.onClick = [&audioProcessor, this]() {
         audioProcessor.irLoader.active1 = bypassLoader1Toggle.getToggleState();
     };
 
-    bypassLoader1Toggle.onClick = [&audioProcessor, this]() {
-        audioProcessor.irLoader.active2 = bypassLoader2Toggle.getToggleState();
-    };
+    // bypassLoader2Toggle.onClick = [&audioProcessor, this]() {
+    //     audioProcessor.irLoader.active2 = bypassLoader2Toggle.getToggleState();
+    // };
 
     addAndMakeVisible(bypassLoader1Toggle);
-    addAndMakeVisible(bypassLoader2Toggle);
+    // addAndMakeVisible(bypassLoader2Toggle);
 
 }
 
@@ -612,18 +611,18 @@ void IRLoaderPage::resized() {
     prevIR1Button.setBounds(nextIR1Button.getX(), nextIR1Button.getY() + 50, 120, 30);
 
 
-    ir2LoadButton.setBounds(computeXcoord(4, width), computeYcoord(0, height), 100, 50);
+    // ir2LoadButton.setBounds(computeXcoord(4, width), computeYcoord(0, height), 100, 50);
 
-    bypassLoader2Toggle.setBounds(computeXcoord(5, width), computeYcoord(0, height) - 20, 120, 30);
-    defaultIR2Button.setBounds(bypassLoader2Toggle.getX(), bypassLoader2Toggle.getY() + 40,
-                                      120, 30);
+    // bypassLoader2Toggle.setBounds(computeXcoord(5, width), computeYcoord(0, height) - 20, 120, 30);
+    // defaultIR2Button.setBounds(bypassLoader2Toggle.getX(), bypassLoader2Toggle.getY() + 40,
+    //                                   120, 30);
 
-    ir2NameLabel.setBounds(ir2LoadButton.getX(),
-                          ir2LoadButton.getY() + ir2LoadButton.getHeight() + 5,
-                          400, 50);
+    // ir2NameLabel.setBounds(ir2LoadButton.getX(),
+    //                       ir2LoadButton.getY() + ir2LoadButton.getHeight() + 5,
+    //                       400, 50);
 
-    nextIR2Button.setBounds(computeXcoord(4, width), computeYcoord(1, height), 120, 30);
-    prevIR2Button.setBounds(nextIR2Button.getX(), nextIR2Button.getY() + 50, 120, 30);
+    // nextIR2Button.setBounds(computeXcoord(4, width), computeYcoord(1, height), 120, 30);
+    // prevIR2Button.setBounds(nextIR2Button.getX(), nextIR2Button.getY() + 50, 120, 30);
 
 }
 

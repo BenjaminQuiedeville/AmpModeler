@@ -280,8 +280,8 @@ static const float defaultParamValues[N_PARAMS] = {
 
 
 enum ChannelConfig {
-    Mono, 
-    FakeStereo, 
+    Mono,
+    FakeStereo,
     Stereo
 };
 
@@ -367,7 +367,7 @@ struct Processor  : public juce::AudioProcessor,
 
     float *sideChainBuffer = nullptr;
     
-    u8 channelConfig = Mono;    
+    u8 channelConfig = Mono;
     bool gateActive = true;
     bool preampActive = true;
     bool tonestackActive = true;

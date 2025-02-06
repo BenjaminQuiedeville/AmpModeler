@@ -110,7 +110,6 @@ plugin_sources = " ".join([
     # "Source/PluginEditor.cpp",
     # "Source/Preamp.cpp",
     # "Source/IRLoader.cpp", 
-    # "Source/Tonestack.cpp",
     "Source/main.cpp",
 ])
 
@@ -186,6 +185,6 @@ if return_code != 0:
     Print("Problems during compilation, exiting")
     exit(-1)
 
-Print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
-os.system(f"cp {plugin_name}.vst3 \"C:/Program Files/Common Files/VST3/{plugin_name}.vst3\"")
+# Print("copying binaries to \"C:/Program Files/Common Files/VST3/\"")
+# os.system(f"cp {plugin_name}.vst3 \"C:/Program Files/Common Files/VST3/{plugin_name}.vst3\"")
 os.system("rm *.obj")
