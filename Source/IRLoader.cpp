@@ -30,8 +30,22 @@ void IRLoader::deallocateFFTEngine() {
         pffft_destroy_setup(fftSetup);
     }
 
-    pffft_aligned_free(fftSignalsMemory);
+    if (ptrBuffersMemory && FDLLeft) {
+        for (u32 index = 0; index < numIRParts; index++) {
+            pffft_aligned_free(irDftBuffers1[index]);
+            pffft_aligned_free(irDftBuffers2[index]);
+            pffft_aligned_free(FDLLeft[index]);
+            pffft_aligned_free(FDLRight[index]);
+        }
+    }
+
+    pffft_aligned_free(convolutionDftResult);
+    pffft_aligned_free(fftTimeInputBufferLeft);
+    pffft_aligned_free(fftTimeInputBufferRight);
+    pffft_aligned_free(fftTimeOutputBuffer);
+
     free(ptrBuffersMemory);
+    ptrBuffersMemory = nullptr;
 }
 
 
@@ -58,6 +72,7 @@ void IRLoader::prepareConvolution() {
     // Comme chaque segment d'IR sera déphasé de la même manière, on peut précalculer les valeurs à appliquer et juste faire les multiplications
 
     // irPtr
+    deallocateFFTEngine();
 
     u32 irSize = std::max(ir1.size, ir2.size);
 
@@ -68,113 +83,78 @@ void IRLoader::prepareConvolution() {
 
     fftSize = 2*blockSize;
     dftSize = fftSize + 2;
-    deallocateFFTEngine();
 
     fftSetup = pffft_new_setup((int)fftSize, PFFFT_REAL);
 
     // we need to align to 64 bytes any buffer that is involved in the fft;
-    ptrBuffersMemory = (float**)calloc(numIRParts*3*2, sizeof(float*));
+    ptrBuffersMemory = (float**)calloc(numIRParts * 4, sizeof(float*));
     irDftBuffers1 = ptrBuffersMemory;
-    irDftBuffers2 = ptrBuffersMemory + numIRParts*3;
-
-    FDLLeft = (float**)calloc(numIRParts*2, sizeof(float*));
+    irDftBuffers2 = irDftBuffers1 + numIRParts;
+    FDLLeft = irDftBuffers2 + numIRParts;
     FDLRight = FDLLeft + numIRParts;
 
-    u32 alignment = 64;
-    u64 partAllocSize = dftSize * sizeof(float);
-    partAllocSize += alignment - (partAllocSize & (alignment-1));
 
-    u64 fftAllocSize = fftSize * sizeof(float);
-    fftAllocSize += alignment - (fftAllocSize & (alignment-1));
-
-    u64 memorySize = numIRParts * partAllocSize
-                    + numIRParts * partAllocSize
-                    + numIRParts * partAllocSize
-                    + numIRParts * partAllocSize
-                    + partAllocSize
-                    + fftAllocSize
-                    + fftAllocSize
-                    + fftAllocSize;
-
-    fftSignalsMemory = (float*)pffft_aligned_malloc(memorySize);
-    memset(fftSignalsMemory, 0, memorySize);
-    assert(((uintptr_t)fftSignalsMemory & (alignment-1)) == 0);
-
-
-    u64 memoryIndex = 0;
-    for (u32 index = 0; index < numIRParts; index++) {
-        irDftBuffers1[index] = (float*)(fftSignalsMemory + memoryIndex);
-        memoryIndex += partAllocSize / sizeof(float);
-        assert(((uintptr_t)irDftBuffers1[index] & (alignment-1)) == 0);
-    }
+    convolutionDftResult = (float*)pffft_aligned_malloc(dftSize * sizeof(float));
+    fftTimeInputBufferLeft = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
+    fftTimeInputBufferRight = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
+    fftTimeOutputBuffer = (float*)pffft_aligned_malloc(fftSize * sizeof(float));
 
     for (u32 index = 0; index < numIRParts; index++) {
-        irDftBuffers2[index] = (float*)(fftSignalsMemory + memoryIndex);
-        memoryIndex += partAllocSize / sizeof(float);
-        assert(((uintptr_t)irDftBuffers2[index] & (alignment-1)) == 0);
+        irDftBuffers1[index] = (float*)pffft_aligned_malloc(sizeof(float) * dftSize);
+        irDftBuffers2[index] = (float*)pffft_aligned_malloc(sizeof(float) * dftSize);
+        FDLLeft[index] = (float*)pffft_aligned_malloc(sizeof(float) * dftSize);
+        FDLRight[index] = (float*)pffft_aligned_malloc(sizeof(float) * dftSize);
     }
 
+    u32 irIndex = 0;
+    u32 partSize = 0;
+    
     for (u32 index = 0; index < numIRParts; index++) {
-        FDLLeft[index] = (float*)(fftSignalsMemory + memoryIndex);
-        memoryIndex += partAllocSize / sizeof(float);
-        assert(((uintptr_t)FDLLeft[index] & (alignment-1)) == 0);
-    }
+        irIndex = (u32)(index * blockSize);
 
-    for (u32 index = 0; index < numIRParts; index++) {
-        FDLRight[index] = (float*)(fftSignalsMemory + memoryIndex);
-        memoryIndex += partAllocSize / sizeof(float);
-        assert(((uintptr_t)FDLLeft[index] & (alignment-1)) == 0);
-    }
+        if (irIndex > ir1.size) {
+            partSize = 0;
+        } else if (irIndex + blockSize >= ir1.size) {
+            partSize = (u32)(ir1.size - irIndex);
+        } else {
+            partSize = (u32)blockSize;
+        }
 
-    convolutionDftResult = (float*)(fftSignalsMemory + memoryIndex);
-    memoryIndex += partAllocSize / sizeof(float);
-    assert(((uintptr_t)convolutionDftResult & (alignment-1)) == 0);
-
-    fftTimeInputBufferLeft = (float*)(fftSignalsMemory + memoryIndex);
-    memoryIndex += fftAllocSize / sizeof(float);
-    assert(((uintptr_t)fftTimeInputBufferLeft & (alignment-1)) == 0);
-
-    fftTimeInputBufferRight = (float*)(fftSignalsMemory + memoryIndex);
-    memoryIndex += fftAllocSize / sizeof(float);
-    assert(((uintptr_t)fftTimeInputBufferRight & (alignment-1)) == 0);
-
-    fftTimeOutputBuffer = (float*)(fftSignalsMemory + memoryIndex);
-    memoryIndex += fftAllocSize / sizeof(float);
-    assert(((uintptr_t)fftTimeOutputBuffer & (alignment-1)) == 0);
-
-    assert(memoryIndex == memorySize/4);
-
-    IRData *currentIR[2] = {&ir1, &ir2};
-    float **currentDftBuffers[2] = {irDftBuffers1, irDftBuffers2};
-
-    for (u32 loaderIndex = 0; loaderIndex < 2; loaderIndex++) {
-        u32 irIndex = 0;
-        u32 partSize = 0;
-        
-        for (u32 index = 0; index < numIRParts; index++) {
-            irIndex = (u32)(index * blockSize);
-
-            if (irIndex + blockSize >= currentIR[loaderIndex]->size) {
-                partSize = (u32)(irSize - irIndex);
-            } else if (irIndex > irSize) {
-                partSize = 0;
-            } else {
-                partSize = (u32)blockSize;
-            }
-
-            if (partSize != 0) {
-                memset(fftTimeInputBufferLeft, 0, fftSize * sizeof(float));
-                memcpy(fftTimeInputBufferLeft, &currentIR[loaderIndex]->buffer[irIndex], partSize * sizeof(float));
-                pffft_transform(fftSetup, fftTimeInputBufferLeft, currentDftBuffers[loaderIndex][index], nullptr, PFFFT_FORWARD);
-            } else {
-                memset(currentDftBuffers[loaderIndex][index], 0, partAllocSize);
-            }
+        if (partSize != 0) {
+            memset(fftTimeInputBufferLeft, 0, fftSize * sizeof(float));
+            memcpy(fftTimeInputBufferLeft, &ir1.buffer[irIndex], partSize * sizeof(float));
+            pffft_transform(fftSetup, fftTimeInputBufferLeft, irDftBuffers1[index], nullptr, PFFFT_FORWARD);
+        } else {
+            memset(irDftBuffers1[index], 0, dftSize * sizeof(float));
         }
     }
 
-    memset(fftTimeInputBufferLeft, 0, fftAllocSize);
-    memset(fftTimeInputBufferRight, 0, fftAllocSize);
-    memset(fftTimeOutputBuffer, 0, fftAllocSize);
+    irIndex = 0;
+    partSize = 0;
+
+    for (u32 index = 0; index < numIRParts; index++) {
+        irIndex = (u32)(index * blockSize);
+
+        if (irIndex > ir2.size) {
+            partSize = 0;
+        } else if (irIndex + blockSize >= ir2.size) {
+            partSize = (u32)(ir2.size - irIndex);
+        } else {
+            partSize = (u32)blockSize;
+        }
+
+        if (partSize != 0) {
+            memset(fftTimeInputBufferLeft, 0, fftSize * sizeof(float));
+            memcpy(fftTimeInputBufferLeft, &ir2.buffer[irIndex], partSize * sizeof(float));
+            pffft_transform(fftSetup, fftTimeInputBufferLeft, irDftBuffers2[index], nullptr, PFFFT_FORWARD);
+        } else {
+            memset(irDftBuffers2[index], 0, dftSize * sizeof(float));
+        }
+    }
+
+    memset(fftTimeInputBufferLeft, 0, fftSize * sizeof(float));
+    memset(fftTimeInputBufferRight, 0, fftSize * sizeof(float));
+    memset(fftTimeOutputBuffer, 0, fftSize * sizeof(float));
 
     updateIR = false;
 }

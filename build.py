@@ -16,7 +16,7 @@ config: str = ""
 if argc == 1:
     Print("First call 'build.py juce' to build the juce dependencies and then call 'build.py debug/release/relwithdebug'")
     exit(0)
-    
+
 elif sys.argv[1] == "release":
     release = True
     debug = False
@@ -31,19 +31,19 @@ elif sys.argv[1] == "debug":
     release = False
     debug = True
     config = sys.argv[1]
-    
+
 elif sys.argv[1] == "juce":
     juce_only = True
     debug = True
-        
-else: 
+
+else:
     Print("wrong config, use either 'release', 'relwithdebug', 'debug', 'juce'")
     exit(-1)
 
 plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 optim_flags = " /Ox /Ob2 /GL /Gy"
-debugging_flags = " /Zi /fsanitize=address"
+debugging_flags = " /Zi"# /fsanitize=address"
 
 link_flags = "/OPT:REF"
 if release: link_flags += " /LTCG"
@@ -65,24 +65,24 @@ defines = " ".join([
     "/D JUCE_MODULE_AVAILABLE_juce_audio_utils=1",
     "/D JUCE_MODULE_AVAILABLE_juce_audio_formats=1",
     "/D JUCE_MODULE_AVAILABLE_juce_audio_devices=1",
-    
+
     "/D DEBUG=1",
     "/D _DEBUG=1",
     "/D _MT=1",
-    
+
     "/D WIN32",
     "/D _WINDOWS",
     "/D JucePlugin_Build_VST3=1",
     "/D JucePlugin_IsSynth=0",
-    
+
     "/D JucePlugin_ProducesMidiOutput=0",
     "/D JucePlugin_IsMidiEffect=0",
     "/D JucePlugin_WantsMidiInput=0",
     "/D JucePlugin_EditorRequiresKeyboardFocus=0",
-    
+
     "/D JucePlugin_ManufacturerCode=0x48524d53",
     "/D \"JucePlugin_Manufacturer=\\\"Hermes140\\\"\"",
-    "/D JucePlugin_PluginCode=0x414d504d",
+    "/D JucePlugin_PluginCode=0x41736d70",
     "/D JucePlugin_Version=0.2.0",
     f"/D \"JucePlugin_Name=\\\"{plugin_name}\\\"\"",
     f"/D \"JucePlugin_Desc=\\\"{plugin_name}\\\"\"",
@@ -94,9 +94,9 @@ defines = " ".join([
     "/D JucePlugin_VersionCode=0x200",
     "/D JucePlugin_VSTUniqueID=JucePlugin_PluginCode",
     "/D JucePlugin_VSTCategory=kPlugCategEffect",
-    
+
     "/D JUCE_VST3_CAN_REPLACE_VST2=0",
-    
+
 ])
 
 includes = " ".join([
@@ -109,7 +109,7 @@ plugin_sources = " ".join([
     # "Source/PluginProcessor.cpp",
     # "Source/PluginEditor.cpp",
     # "Source/Preamp.cpp",
-    # "Source/IRLoader.cpp", 
+    # "Source/IRLoader.cpp",
     "Source/main.cpp",
 ])
 
@@ -128,16 +128,15 @@ juce_sources = " ".join([
     "libs/juce/modules/juce_events/juce_events.cpp",
     "libs/pffft/pffft.c"
 ])
-    
+
 libs = " ".join([
-    "kernel32.lib", 
-    "user32.lib", 
-    "gdi32.lib", 
-    "shell32.lib", 
-    "ole32.lib", 
-    "oleaut32.lib", 
-    "uuid.lib", 
-    "comdlg32.lib", 
+    "kernel32.lib",
+    "user32.lib",
+    "gdi32.lib",
+    "shell32.lib",
+    "ole32.lib",
+    "oleaut32.lib",
+    "comdlg32.lib",
 ])
 
 def build_juce(sources: str, out_path: str, flags: str) -> None:
@@ -146,32 +145,32 @@ def build_juce(sources: str, out_path: str, flags: str) -> None:
     command = f"cl {flags} /c /Fo:{out_path}/ /Fd:{out_path}/ {defines} {includes} {juce_sources}"
     # Print(command)
     return_code = os.system(command)
-    
+
     assert(not return_code)
-    return    
+    return
 
 if use_tracy_profiler:
     plugin_sources += f" {tracy_dir}/public/TracyClient.cpp"
     includes += f" /I{tracy_dir}/public"
-    defines += " /D TRACY_ENABLE"    
+    defines += " /D TRACY_ENABLE"
 
 juce_build_dir: str = f"juce_build/{config}"
 
 command_flags = ""
 if config == "debug":            command_flags = compile_flags + debugging_flags
 elif config == "release":        command_flags = compile_flags + optim_flags
-elif config == "relwithdebug":   command_flags = compile_flags + optim_flags + debugging_flags 
+elif config == "relwithdebug":   command_flags = compile_flags + optim_flags + debugging_flags
 
 # see if we need to rebuild the juce dependencies
 if (not path.isdir(juce_build_dir) and not juce_only):
     build_juce(juce_sources, juce_build_dir, command_flags)
-    
+
 elif juce_only:
-    os.system("rm -r juce_build")    
-    
-    build_juce(juce_sources, "juce_build/debug",        command_flags)    
-    build_juce(juce_sources, "juce_build/release",      command_flags)
-    build_juce(juce_sources, "juce_build/relwithdebug", command_flags)        
+    os.system("rm -r juce_build")
+
+    build_juce(juce_sources, "juce_build/debug",        compile_flags + debugging_flags)
+    build_juce(juce_sources, "juce_build/release",      compile_flags + optim_flags)
+    build_juce(juce_sources, "juce_build/relwithdebug", compile_flags + optim_flags + debugging_flags)
     exit(0)
 
 juce_objects = " ".join([f"{juce_build_dir}/{file}" for file in filter(lambda string : ".obj" in string, os.listdir(juce_build_dir))])
