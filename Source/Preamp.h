@@ -36,6 +36,9 @@ struct Preamp {
     OnepoleFilter inputMudFilter;
     Biquad midBoost {BIQUAD_PEAK};
     
+    OnepoleFilter gridCondOffsetLeft;
+    OnepoleFilter gridCondOffsetRight;
+    
     FirstOrderShelfFilter brightCapFilter {lowshelf};
     
     OnepoleFilter couplingFilter1;
