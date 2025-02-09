@@ -48,6 +48,7 @@ GateBoostPage::GateBoostPage(Processor &p) :
     addAndMakeVisible(EQToggle);
 }
 
+
 void GateBoostPage::resized() {
 
     int width = getWidth();
@@ -55,38 +56,30 @@ void GateBoostPage::resized() {
 
 
     inputGainKnob.setBounds(computeXcoord(0, width), computeYcoord(0, height), knobSize, knobSize);
-    inputGainKnob.label.setBounds(inputGainKnob.getX(), inputGainKnob.getY() - 15,
-                              inputGainKnob.getWidth(), 20);
+    inputGainKnob.label.setBounds(inputGainKnob.getX(), inputGainKnob.getY() - 15, knobSize, 20);
 
     gateKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
-    gateKnob.label.setBounds(gateKnob.getX(), gateKnob.getY() - 15,
-                              gateKnob.getWidth(), 20);
+    gateKnob.label.setBounds(gateKnob.getX(), gateKnob.getY() - 15, knobSize, 20);
 
 
     // gateAttackKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
-    // gateAttackKnob.label.setBounds(gateAttackKnob.getX(), gateAttackKnob.getY() - 15,
-    //                                gateAttackKnob.getWidth(), 20);
+    // gateAttackKnob.label.setBounds(gateAttackKnob.getX(), gateAttackKnob.getY() - 15, knobSize, 20);
 
     // gateReleaseKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
-    // gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(), gateReleaseKnob.getY() - 15,
-    //                                 gateReleaseKnob.getWidth(), 20);
+    // gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(), gateReleaseKnob.getY() - 15, knobSize, 20);
 
     // gateReturnKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
-    // gateReturnKnob.label.setBounds(gateReturnKnob.getX(), gateReturnKnob.getY() - 15,
-    //                                gateReturnKnob.getWidth(), 20);
+    // gateReturnKnob.label.setBounds(gateReturnKnob.getX(), gateReturnKnob.getY() - 15, knobSize, 20);
 
 
     boostAttackKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), knobSize, knobSize);
-    boostAttackKnob.label.setBounds(boostAttackKnob.getX(), boostAttackKnob.getY() - 15,
-                                  boostAttackKnob.getWidth(), 20);
+    boostAttackKnob.label.setBounds(boostAttackKnob.getX(), boostAttackKnob.getY() - 15, knobSize, 20);
 
     boostFreqKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), knobSize, knobSize);
-    boostFreqKnob.label.setBounds(boostFreqKnob.getX(), boostFreqKnob.getY() - 15,
-                                  boostFreqKnob.getWidth(), 20);
+    boostFreqKnob.label.setBounds(boostFreqKnob.getX(), boostFreqKnob.getY() - 15, knobSize, 20);
 
     boostTightKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), knobSize, knobSize);
-    boostTightKnob.label.setBounds(boostTightKnob.getX(), boostTightKnob.getY() - 15,
-                                    boostTightKnob.getWidth(), 20);
+    boostTightKnob.label.setBounds(boostTightKnob.getX(), boostTightKnob.getY() - 15, knobSize, 20);
 
     gateToggle.setBounds(computeXcoord(4, width), computeYcoord(0, height), 200, 30);
     preampToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 20));
@@ -147,55 +140,43 @@ void AmplifierPage::resized() {
     int height = getHeight();
 
     gainKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
-    gainKnob.label.setBounds(gainKnob.getX(), gainKnob.getY() - 15,
-                              gainKnob.getWidth(), 20);
+    gainKnob.label.setBounds(gainKnob.getX(), gainKnob.getY() - 15, knobSize, 20);
 
     inputFilterKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
-    inputFilterKnob.label.setBounds(inputFilterKnob.getX(), inputFilterKnob.getY() - 15,
-                                     inputFilterKnob.getWidth(), 20);
+    inputFilterKnob.label.setBounds(inputFilterKnob.getX(), inputFilterKnob.getY() - 15, knobSize, 20);
 
     bassEQKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), knobSize, knobSize);
-    bassEQKnob.label.setBounds(bassEQKnob.getX(), bassEQKnob.getY() - 15,
-                                bassEQKnob.getWidth(), 20);
+    bassEQKnob.label.setBounds(bassEQKnob.getX(), bassEQKnob.getY() - 15, knobSize, 20);
 
     midEQKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), knobSize, knobSize);
-    midEQKnob.label.setBounds(midEQKnob.getX(), midEQKnob.getY() - 15,
-                               midEQKnob.getWidth(), 20);
+    midEQKnob.label.setBounds(midEQKnob.getX(), midEQKnob.getY() - 15, knobSize, 20);
 
     trebbleEQKnob.setBounds(computeXcoord(4, width), computeYcoord(0, height), knobSize, knobSize);
-    trebbleEQKnob.label.setBounds(trebbleEQKnob.getX(), trebbleEQKnob.getY() - 15,
-                                   trebbleEQKnob.getWidth(), 20);
+    trebbleEQKnob.label.setBounds(trebbleEQKnob.getX(), trebbleEQKnob.getY() - 15, knobSize, 20);
 
     resonanceKnob.setBounds(computeXcoord(5, width), computeYcoord(1, height), knobSize, knobSize);
-    resonanceKnob.label.setBounds(resonanceKnob.getX(), resonanceKnob.getY() - 15,
-                                   resonanceKnob.getWidth(), 20);
+    resonanceKnob.label.setBounds(resonanceKnob.getX(), resonanceKnob.getY() - 15, knobSize, 20);
 
     presenceKnob.setBounds(computeXcoord(5, width), computeYcoord(0, height), knobSize, knobSize);
-    presenceKnob.label.setBounds(presenceKnob.getX(), presenceKnob.getY() - 15,
-                                   presenceKnob.getWidth(), 20);
-
+    presenceKnob.label.setBounds(presenceKnob.getX(), presenceKnob.getY() - 15, knobSize, 20);
 
 
     preampVolumeKnob.setBounds(computeXcoord(6, width), computeYcoord(0, height), knobSize, knobSize);
-    preampVolumeKnob.label.setBounds(preampVolumeKnob.getX(), preampVolumeKnob.getY() - 15,
-                                      preampVolumeKnob.getWidth(), 20);
+    preampVolumeKnob.label.setBounds(preampVolumeKnob.getX(), preampVolumeKnob.getY() - 15, knobSize, 20);
 
 
     ampChannelBox.setBounds(computeXcoord(2, width), computeYcoord(1, height) + 30, 120, 30);
-    ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20,
-                                   ampChannelBox.getWidth(), 20);
+    ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20, knobSize, 20);
 
     toneStackModelBox.setBounds(computeXcoord(3, width), computeYcoord(1, height) + 30, 120, 30);
-    toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20,
-                                       toneStackModelBox.getWidth(), 20);
+    toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, knobSize, 20);
 
     channelConfigBox.setBounds(computeXcoord(0, width), computeYcoord(0, height) + 30, 120, 30);
-    channelConfigBox.label.setBounds(channelConfigBox.getX(), channelConfigBox.getY() - 20,
-                                      channelConfigBox.getWidth(), 20);
+    channelConfigBox.label.setBounds(channelConfigBox.getX(), channelConfigBox.getY() - 20, knobSize, 20);
 
-    brightToggle.setBounds(channelConfigBox.getX(), channelConfigBox.getY() + 40, 
-                            120, 30);
+    brightToggle.setBounds(channelConfigBox.getX(), channelConfigBox.getY() + 40, 120, 30);
 }
+
 
 GainStagesPage::GainStagesPage(Processor &p) :
     stage0LPSlider("STAGE0_LP_SLIDER_LABEL",         "Stage 0 output filter",   this, paramInfos[STAGE0_LP].id.toString(),          p.apvts, " Hz"),
@@ -221,7 +202,6 @@ GainStagesPage::GainStagesPage(Processor &p) :
     stage4BypassSlider("STAGE4_BYPASS_SLIDER_LABEL", "Stage 4 cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(),      p.apvts, " dB"),
     stage4BiasSlider("STAGE4_BIAS_SLIDER_LABEL",     "Stage 4 tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),        p.apvts, "")
 {
-
     resetButton.onClick = [&p, this]() {
     
         HSlider* slider_refs[19] = { 
@@ -249,84 +229,64 @@ void GainStagesPage::resized() {
     static const int sliderHeight = 50;
 
     stage0LPSlider.setBounds(horizontalMargin, verticalMargin, sliderWidth, sliderHeight);
-    stage0LPSlider.label.setBounds(stage0LPSlider.getX(), stage0LPSlider.getY() - 15,
-                                        stage0LPSlider.getWidth(), 20);
+    stage0LPSlider.label.setBounds(stage0LPSlider.getX(), stage0LPSlider.getY() - 15, sliderWidth, 20);
 
     stage0BypassSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage0BypassSlider.label.setBounds(stage0BypassSlider.getX(), stage0BypassSlider.getY() - 15,
-                                        stage0BypassSlider.getWidth(), 20);
+    stage0BypassSlider.label.setBounds(stage0BypassSlider.getX(), stage0BypassSlider.getY() - 15, sliderWidth, 20);
 
     stage0BiasSlider.setBounds(stage0BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage0BiasSlider.label.setBounds(stage0BiasSlider.getX(), stage0BiasSlider.getY() - 15,
-                                        stage0BiasSlider.getWidth(), 20);
+    stage0BiasSlider.label.setBounds(stage0BiasSlider.getX(), stage0BiasSlider.getY() - 15, sliderWidth, 20);
 
     resetButton.setBounds(stage0BiasSlider.getX() + 35, stage0BiasSlider.getBottom() + verticalSpacing, 100, 30);
 
 
     stage1LPSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
-    stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15,
-                                        stage1LPSlider.getWidth(), 20);
+    stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
 
     stage1BypassSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage1BypassSlider.label.setBounds(stage1BypassSlider.getX(), stage1BypassSlider.getY() - 15,
-                                        stage1BypassSlider.getWidth(), 20);
+    stage1BypassSlider.label.setBounds(stage1BypassSlider.getX(), stage1BypassSlider.getY() - 15, sliderWidth, 20);
 
     stage1BiasSlider.setBounds(stage1BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage1BiasSlider.label.setBounds(stage1BiasSlider.getX(), stage1BiasSlider.getY() - 15,
-                                        stage1BiasSlider.getWidth(), 20);
+    stage1BiasSlider.label.setBounds(stage1BiasSlider.getX(), stage1BiasSlider.getY() - 15, sliderWidth, 20);
 
     stage1AttSlider.setBounds(stage1BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage1AttSlider.label.setBounds(stage1AttSlider.getX(), stage1AttSlider.getY() - 15,
-                                        stage1AttSlider.getWidth(), 20);
+    stage1AttSlider.label.setBounds(stage1AttSlider.getX(), stage1AttSlider.getY() - 15, sliderWidth, 20);
 
 
     stage2LPSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
-    stage2LPSlider.label.setBounds(stage2LPSlider.getX(), stage2LPSlider.getY() - 15,
-                                        stage2LPSlider.getWidth(), 20);
+    stage2LPSlider.label.setBounds(stage2LPSlider.getX(), stage2LPSlider.getY() - 15, sliderWidth, 20);
 
     stage2BypassSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage2BypassSlider.label.setBounds(stage2BypassSlider.getX(), stage2BypassSlider.getY() - 15,
-                                        stage2BypassSlider.getWidth(), 20);
+    stage2BypassSlider.label.setBounds(stage2BypassSlider.getX(), stage2BypassSlider.getY() - 15, sliderWidth, 20);
 
     stage2BiasSlider.setBounds(stage2BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage2BiasSlider.label.setBounds(stage2BiasSlider.getX(), stage2BiasSlider.getY() - 15,
-                                        stage2BiasSlider.getWidth(), 20);
+    stage2BiasSlider.label.setBounds(stage2BiasSlider.getX(), stage2BiasSlider.getY() - 15, sliderWidth, 20);
 
     stage2AttSlider.setBounds(stage2BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage2AttSlider.label.setBounds(stage2AttSlider.getX(), stage2AttSlider.getY() - 15,
-                                        stage2AttSlider.getWidth(), 20);
-
+    stage2AttSlider.label.setBounds(stage2AttSlider.getX(), stage2AttSlider.getY() - 15, sliderWidth, 20);
 
 
     stage3LPSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
-    stage3LPSlider.label.setBounds(stage3LPSlider.getX(), stage3LPSlider.getY() - 15,
-                                        stage3LPSlider.getWidth(), 20);
+    stage3LPSlider.label.setBounds(stage3LPSlider.getX(), stage3LPSlider.getY() - 15, sliderWidth, 20);
 
     stage3BypassSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage3BypassSlider.label.setBounds(stage3BypassSlider.getX(), stage3BypassSlider.getY() - 15,
-                                        stage3BypassSlider.getWidth(), 20);
+    stage3BypassSlider.label.setBounds(stage3BypassSlider.getX(), stage3BypassSlider.getY() - 15, sliderWidth, 20);
 
     stage3BiasSlider.setBounds(stage3BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage3BiasSlider.label.setBounds(stage3BiasSlider.getX(), stage3BiasSlider.getY() - 15,
-                                        stage3BiasSlider.getWidth(), 20);
+    stage3BiasSlider.label.setBounds(stage3BiasSlider.getX(), stage3BiasSlider.getY() - 15, sliderWidth, 20);
 
     stage3AttSlider.setBounds(stage3BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage3AttSlider.label.setBounds(stage3AttSlider.getX(), stage3AttSlider.getY() - 15,
-                                        stage3AttSlider.getWidth(), 20);
+    stage3AttSlider.label.setBounds(stage3AttSlider.getX(), stage3AttSlider.getY() - 15, sliderWidth, 20);
 
 
     stage4LPSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
-    stage4LPSlider.label.setBounds(stage4LPSlider.getX(), stage4LPSlider.getY() - 15,
-                                        stage4LPSlider.getWidth(), 20);
+    stage4LPSlider.label.setBounds(stage4LPSlider.getX(), stage4LPSlider.getY() - 15, sliderWidth, 20);
 
     stage4BypassSlider.setBounds(stage4LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage4BypassSlider.label.setBounds(stage4BypassSlider.getX(), stage4BypassSlider.getY() - 15,
-                                        stage4BypassSlider.getWidth(), 20);
+    stage4BypassSlider.label.setBounds(stage4BypassSlider.getX(), stage4BypassSlider.getY() - 15, sliderWidth, 20);
 
     stage4BiasSlider.setBounds(stage4BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
-    stage4BiasSlider.label.setBounds(stage4BiasSlider.getX(), stage4BiasSlider.getY() - 15,
-                                        stage4BiasSlider.getWidth(), 20);
-
+    stage4BiasSlider.label.setBounds(stage4BiasSlider.getX(), stage4BiasSlider.getY() - 15, sliderWidth, 20);
 }
 
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
@@ -450,7 +410,6 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     addAndMakeVisible(defaultIRButton);
 
-
     bypassToggle.setToggleState(audioProcessor.irLoader.active,
                                         juce::NotificationType::dontSendNotification);
     bypassToggle.onClick = [&audioProcessor, this]() {
@@ -458,7 +417,6 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
     };
 
     addAndMakeVisible(bypassToggle);
-
 }
 
 void IRLoaderPage::resized() {
@@ -469,11 +427,9 @@ void IRLoaderPage::resized() {
     irLoadButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 50);
 
     bypassToggle.setBounds(computeXcoord(1, width), computeYcoord(0, height) - 20, 120, 30);
-    defaultIRButton.setBounds(bypassToggle.getX(), bypassToggle.getY() + 40,
-                                      120, 30);
+    defaultIRButton.setBounds(bypassToggle.getX(), bypassToggle.getY() + 40, 120, 30);
 
-    irNameLabel.setBounds(irLoadButton.getX(),
-                          irLoadButton.getY() + irLoadButton.getHeight() + 5,
+    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 
                           400, 50);
 
     nextIRButton.setBounds(computeXcoord(0, width), computeYcoord(1, height), 120, 30);
@@ -497,7 +453,6 @@ EQPage::EQPage(Processor &p) :
     highShelfGainKnob("HIGH_SHELF_GAIN_KNOB_LABEL", "Gain",            this, paramInfos[HIGH_SHELF_GAIN].id.toString(), p.apvts, " dB"),
     highcutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, paramInfos[HIGH_CUT_FREQ].id.toString(),   p.apvts, " Hz")
 {
-
     resetButton.onClick = [&p, this]() {
     
         p.apvts.getParameter(paramInfos[LOW_SHELF_GAIN].id.toString())->setValueNotifyingHost(paramInfos[LOW_SHELF_GAIN].defaultValue);
@@ -518,8 +473,6 @@ EQPage::EQPage(Processor &p) :
 
 void EQPage::resized() {
 
-    // resetButton
-
     int width = getWidth();
     int height = getHeight();
 
@@ -528,57 +481,41 @@ void EQPage::resized() {
     resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 30);
     
     lowShelfFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    lowShelfFreqKnob.label.setBounds(lowShelfFreqKnob.getX(), lowShelfFreqKnob.getY() - 15,
-                             lowShelfFreqKnob.getWidth(), 20);
+    lowShelfFreqKnob.label.setBounds(lowShelfFreqKnob.getX(), lowShelfFreqKnob.getY() - 15, eqKnobSize, 20);
     lowShelfGainKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    lowShelfGainKnob.label.setBounds(lowShelfGainKnob.getX(), lowShelfGainKnob.getY() - 15,
-                             lowShelfGainKnob.getWidth(), 20);
+    lowShelfGainKnob.label.setBounds(lowShelfGainKnob.getX(), lowShelfGainKnob.getY() - 15, eqKnobSize, 20);
 
     lowcutFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    lowcutFreqKnob.label.setBounds(lowcutFreqKnob.getX(), lowcutFreqKnob.getY() - 15,
-                             lowcutFreqKnob.getWidth(), 20);
+    lowcutFreqKnob.label.setBounds(lowcutFreqKnob.getX(), lowcutFreqKnob.getY() - 15, eqKnobSize, 20);
 
     lowMidFreqKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    lowMidFreqKnob.label.setBounds(lowMidFreqKnob.getX(), lowMidFreqKnob.getY() - 15,
-                             lowMidFreqKnob.getWidth(), 20);
+    lowMidFreqKnob.label.setBounds(lowMidFreqKnob.getX(), lowMidFreqKnob.getY() - 15, eqKnobSize, 20);
     lowMidGainKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    lowMidGainKnob.label.setBounds(lowMidGainKnob.getX(), lowMidGainKnob.getY() - 15,
-                             lowMidGainKnob.getWidth(), 20);
+    lowMidGainKnob.label.setBounds(lowMidGainKnob.getX(), lowMidGainKnob.getY() - 15, eqKnobSize, 20);
     lowMidQKnob.setBounds(computeXcoord(2, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    lowMidQKnob.label.setBounds(lowMidQKnob.getX(), lowMidQKnob.getY() - 15,
-                             lowMidQKnob.getWidth(), 20);
+    lowMidQKnob.label.setBounds(lowMidQKnob.getX(), lowMidQKnob.getY() - 15, eqKnobSize, 20);
 
     midFreqKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    midFreqKnob.label.setBounds(midFreqKnob.getX(), midFreqKnob.getY() - 15,
-                             midFreqKnob.getWidth(), 20);
+    midFreqKnob.label.setBounds(midFreqKnob.getX(), midFreqKnob.getY() - 15, eqKnobSize, 20);
     midGainKnob.setBounds(computeXcoord(3, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    midGainKnob.label.setBounds(midGainKnob.getX(), midGainKnob.getY() - 15,
-                             midGainKnob.getWidth(), 20);
+    midGainKnob.label.setBounds(midGainKnob.getX(), midGainKnob.getY() - 15, eqKnobSize, 20);
     midQKnob.setBounds(computeXcoord(3, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    midQKnob.label.setBounds(midQKnob.getX(), midQKnob.getY() - 15,
-                             midQKnob.getWidth(), 20);
+    midQKnob.label.setBounds(midQKnob.getX(), midQKnob.getY() - 15, eqKnobSize, 20);
 
     highFreqKnob.setBounds(computeXcoord(4, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    highFreqKnob.label.setBounds(highFreqKnob.getX(), highFreqKnob.getY() - 15,
-                             highFreqKnob.getWidth(), 20);
+    highFreqKnob.label.setBounds(highFreqKnob.getX(), highFreqKnob.getY() - 15, eqKnobSize, 20);
     highGainKnob.setBounds(computeXcoord(4, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    highGainKnob.label.setBounds(highGainKnob.getX(), highGainKnob.getY() - 15,
-                             highGainKnob.getWidth(), 20);
+    highGainKnob.label.setBounds(highGainKnob.getX(), highGainKnob.getY() - 15, eqKnobSize, 20);
     highQKnob.setBounds(computeXcoord(4, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    highQKnob.label.setBounds(highQKnob.getX(), highQKnob.getY() - 15,
-                             highQKnob.getWidth(), 20);
+    highQKnob.label.setBounds(highQKnob.getX(), highQKnob.getY() - 15, eqKnobSize, 20);
 
     highShelfFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    highShelfFreqKnob.label.setBounds(highShelfFreqKnob.getX(), highShelfFreqKnob.getY() - 15,
-                             highShelfFreqKnob.getWidth(), 20);
+    highShelfFreqKnob.label.setBounds(highShelfFreqKnob.getX(), highShelfFreqKnob.getY() - 15, eqKnobSize, 20);
     highShelfGainKnob.setBounds(computeXcoord(5, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    highShelfGainKnob.label.setBounds(highShelfGainKnob.getX(), highShelfGainKnob.getY() - 15,
-                             highShelfGainKnob.getWidth(), 20);
+    highShelfGainKnob.label.setBounds(highShelfGainKnob.getX(), highShelfGainKnob.getY() - 15, eqKnobSize, 20);
 
     highcutFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    highcutFreqKnob.label.setBounds(highcutFreqKnob.getX(), highcutFreqKnob.getY() - 15,
-                             highcutFreqKnob.getWidth(), 20);
-
+    highcutFreqKnob.label.setBounds(highcutFreqKnob.getX(), highcutFreqKnob.getY() - 15, eqKnobSize, 20);
 }
 
 
@@ -615,8 +552,7 @@ Editor::Editor (Processor& p)
 }
 
 //==============================================================================
-void Editor::paint (juce::Graphics& g)
-{
+void Editor::paint (juce::Graphics& g) {
 	g.fillAll(juce::Colours::darkgrey);
     volumePanel.paint(g);
 }
