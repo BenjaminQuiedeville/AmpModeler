@@ -18,28 +18,28 @@ static int computeYcoord(float row, int height) {
 
 
 GateBoostPage::GateBoostPage(Processor &p) :
-    gateKnob("GATE_KNOB_LABEL",                "Gate Thresh",     this, ParamIDs[GATE_THRESH].toString(),     p.apvts, " dB"),
-    // gateAttackKnob("GATE_Attack_LABEL",        "Gate Attack",     this, ParamIDs[GATE_ATTACK].toString(),     p.apvts, " ms"),
-    // gateReleaseKnob("GATE_RELEASE_LABEL",      "Gate Release",    this, ParamIDs[GATE_RELEASE].toString(),    p.apvts, " ms"),
-    // gateReturnKnob("GATE_RETURN_LABEL",        "Gate Hysteresis", this, ParamIDs[GATE_RETURN].toString(),     p.apvts, " dB"),
+    gateKnob("GATE_KNOB_LABEL",                "Gate Thresh",     this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
+    // gateAttackKnob("GATE_Attack_LABEL",        "Gate Attack",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
+    // gateReleaseKnob("GATE_RELEASE_LABEL",      "Gate Release",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
+    // gateReturnKnob("GATE_RETURN_LABEL",        "Gate Hysteresis", this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
 
-    boostAttackKnob("BOOST_ATTACK_KNOB_LABEL", "Boost Top",       this, ParamIDs[SCREAMER_AMOUNT].toString(), p.apvts, " dB"),
-    boostFreqKnob("BOOST_FREQ_KNOB_LABEL",     "Boost Freq",      this, ParamIDs[SCREAMER_FREQ].toString(),   p.apvts, " Hz"),
-    boostTightKnob("BOOST_TIGHT_KNOB_LABEL",   "Boost Tight",     this, ParamIDs[TIGHT].toString(),           p.apvts, " Hz"),
-    inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, ParamIDs[INPUT_GAIN].toString(),      p.apvts, " dB")
+    boostAttackKnob("BOOST_ATTACK_KNOB_LABEL", "Boost Top",       this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
+    boostFreqKnob("BOOST_FREQ_KNOB_LABEL",     "Boost Freq",      this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
+    boostTightKnob("BOOST_TIGHT_KNOB_LABEL",   "Boost Tight",     this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
+    inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
 
 {
     gateToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, ParamIDs[GATE_ACTIVE].toString(), gateToggle
+        p.apvts, paramInfos[GATE_ACTIVE].id.toString(), gateToggle
     );
     preampToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, ParamIDs[PREAMP_ACTIVE].toString(), preampToggle
+        p.apvts, paramInfos[PREAMP_ACTIVE].id.toString(), preampToggle
     );
     tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, ParamIDs[TONESTACK_ACTIVE].toString(), tonestackToggle
+        p.apvts, paramInfos[TONESTACK_ACTIVE].id.toString(), tonestackToggle
     );
     EQToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, ParamIDs[EQ_ACTIVE].toString(), EQToggle
+        p.apvts, paramInfos[EQ_ACTIVE].id.toString(), EQToggle
     );
 
     addAndMakeVisible(gateToggle);
@@ -96,35 +96,35 @@ void GateBoostPage::resized() {
 
 
 AmplifierPage::AmplifierPage(Processor &p) :
-    gainKnob("GAIN_KNOB_LABEL",                  "Pre Gain",        this, ParamIDs[PREAMP_GAIN].toString(),       p.apvts, ""),
+    gainKnob("GAIN_KNOB_LABEL",                  "Pre Gain",        this, paramInfos[PREAMP_GAIN].id.toString(),       p.apvts, ""),
 
-    inputFilterKnob("INPUT_KNOB_FILTER_LABEL",   "Input Filter",    this, ParamIDs[INPUT_FILTER].toString(),      p.apvts, " Hz"),
+    inputFilterKnob("INPUT_KNOB_FILTER_LABEL",   "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
 
-    bassEQKnob("BASS_EQ_KNOB_LABEL",             "Bass",            this, ParamIDs[TONESTACK_BASS].toString(),    p.apvts, ""),
-    midEQKnob("MIDDLE_EQ_KNOB_LABEL",            "Mid",             this, ParamIDs[TONESTACK_MIDDLE].toString(),  p.apvts, ""),
-    trebbleEQKnob("TREBBLE_EQ_KNOB_LABEL",       "Trebble",         this, ParamIDs[TONESTACK_TREBBLE].toString(), p.apvts, ""),
+    bassEQKnob("BASS_EQ_KNOB_LABEL",             "Bass",            this, paramInfos[TONESTACK_BASS].id.toString(),    p.apvts, ""),
+    midEQKnob("MIDDLE_EQ_KNOB_LABEL",            "Mid",             this, paramInfos[TONESTACK_MIDDLE].id.toString(),  p.apvts, ""),
+    trebbleEQKnob("TREBBLE_EQ_KNOB_LABEL",       "Trebble",         this, paramInfos[TONESTACK_TREBBLE].id.toString(), p.apvts, ""),
 
-    preampVolumeKnob("PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, ParamIDs[PREAMP_VOLUME].toString(),     p.apvts, " dB"),
+    preampVolumeKnob("PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, paramInfos[PREAMP_VOLUME].id.toString(),     p.apvts, " dB"),
 
-    resonanceKnob("RESONANCE_KNOB_LABEL",        "Resonance",       this, ParamIDs[RESONANCE].toString(),         p.apvts, ""),
-    presenceKnob("PRESENCE_KNOB_LABEL",          "Presence",        this, ParamIDs[PRESENCE].toString(),          p.apvts, ""),
+    resonanceKnob("RESONANCE_KNOB_LABEL",        "Resonance",       this, paramInfos[RESONANCE].id.toString(),         p.apvts, ""),
+    presenceKnob("PRESENCE_KNOB_LABEL",          "Presence",        this, paramInfos[PRESENCE].id.toString(),          p.apvts, ""),
 
-    ampChannelBox("AMP_CHANNEL_BOX_LABEL",       "Amp Channel",     this, ParamIDs[CHANNEL].toString(),           p.apvts),
-    toneStackModelBox("TONE_MODEL_BOX_LABEL",    "Tonestack Model", this, ParamIDs[TONESTACK_MODEL].toString(),   p.apvts),
-    channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, ParamIDs[CHANNEL_CONFIG].toString(),    p.apvts)
+    ampChannelBox("AMP_CHANNEL_BOX_LABEL",       "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),           p.apvts),
+    toneStackModelBox("TONE_MODEL_BOX_LABEL",    "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
+    channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
 {
     gainKnob.setNumDecimalPlacesToDisplay(2);
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
-    ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL]),
+    ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
                                  juce::NotificationType::dontSendNotification);
 
     toneStackModelBox.addItemList({"Normal", "Scooped", "Mids!"}, 1);
-    toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[TONESTACK_MODEL]) + 1,
+    toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[TONESTACK_MODEL].id) + 1,
                                      juce::NotificationType::dontSendNotification);
 
     channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
-    channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(ParamIDs[CHANNEL_CONFIG]) + 1,
+    channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL_CONFIG].id) + 1,
                                     juce::NotificationType::dontSendNotification);
     
     // channelConfigBox.valueChanged = [&, this](juce::Value &value) {
@@ -134,7 +134,7 @@ AmplifierPage::AmplifierPage(Processor &p) :
     // };
 
     brightToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, ParamIDs[BRIGHT_CAP].toString(), brightToggle
+        p.apvts, paramInfos[BRIGHT_CAP].id.toString(), brightToggle
     );
     
     addAndMakeVisible(brightToggle);
@@ -198,43 +198,43 @@ void AmplifierPage::resized() {
 }
 
 GainStagesPage::GainStagesPage(Processor &p) :
-    stage0LPSlider("STAGE0_LP_SLIDER_LABEL",         "Stage 0 output filter",   this, ParamIDs[STAGE0_LP].toString(),     p.apvts, " Hz"),
-    stage0BypassSlider("STAGE0_BYPASS_SLIDER_LABEL", "Stage 0 cathode bypass",  this, ParamIDs[STAGE0_BYPASS].toString(), p.apvts, " dB"),
-    stage0BiasSlider("STAGE0_BIAS_SLIDER_LABEL",     "Stage 0 tube bias",       this, ParamIDs[STAGE0_BIAS].toString(),   p.apvts, ""),
+    stage0LPSlider("STAGE0_LP_SLIDER_LABEL",         "Stage 0 output filter",   this, paramInfos[STAGE0_LP].id.toString(),          p.apvts, " Hz"),
+    stage0BypassSlider("STAGE0_BYPASS_SLIDER_LABEL", "Stage 0 cathode bypass",  this, paramInfos[STAGE0_BYPASS].id.toString(),      p.apvts, " dB"),
+    stage0BiasSlider("STAGE0_BIAS_SLIDER_LABEL",     "Stage 0 tube bias",       this, paramInfos[STAGE0_BIAS].id.toString(),        p.apvts, ""),
 
-    stage1HPSlider("STAGE1_HP_SLIDER_LABEL",         "Stage 1 coupling filter", this, ParamIDs[STAGE1_HP].toString(),     p.apvts, " Hz"),
-    stage1LPSlider("STAGE1_LP_SLIDER_LABEL",         "Stage 1 output filter",   this, ParamIDs[STAGE1_LP].toString(),     p.apvts, " Hz"),
-    stage1BypassSlider("STAGE1_BYPASS_SLIDER_LABEL", "Stage 1 cathode bypass",  this, ParamIDs[STAGE1_BYPASS].toString(), p.apvts, " dB"),
-    stage1BiasSlider("STAGE1_BIAS_SLIDER_LABEL",     "Stage 1 tube bias",       this, ParamIDs[STAGE1_BIAS].toString(),   p.apvts, ""),
+    stage1LPSlider("STAGE1_LP_SLIDER_LABEL",         "Stage 1 output filter",   this, paramInfos[STAGE1_LP].id.toString(),          p.apvts, " Hz"),
+    stage1BypassSlider("STAGE1_BYPASS_SLIDER_LABEL", "Stage 1 cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(),      p.apvts, " dB"),
+    stage1BiasSlider("STAGE1_BIAS_SLIDER_LABEL",     "Stage 1 tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),        p.apvts, ""),
+    stage1AttSlider("STAGE1_ATTEN_SLIDER_LABEL",     "Stage 1 attenuation",     this, paramInfos[STAGE1_ATTENUATION].id.toString(), p.apvts, ""),
 
-    stage2HPSlider("STAGE2_HP_SLIDER_LABEL",         "Stage 2 coupling filter", this, ParamIDs[STAGE2_HP].toString(),     p.apvts, " Hz"),
-    stage2LPSlider("STAGE2_LP_SLIDER_LABEL",         "Stage 2 output filter",   this, ParamIDs[STAGE2_LP].toString(),     p.apvts, " Hz"),
-    stage2BypassSlider("STAGE2_BYPASS_SLIDER_LABEL", "Stage 2 cathode bypass",  this, ParamIDs[STAGE2_BYPASS].toString(), p.apvts, " dB"),
-    stage2BiasSlider("STAGE2_BIAS_SLIDER_LABEL",     "Stage 2 tube bias",       this, ParamIDs[STAGE2_BIAS].toString(),   p.apvts, ""),
+    stage2LPSlider("STAGE2_LP_SLIDER_LABEL",         "Stage 2 output filter",   this, paramInfos[STAGE2_LP].id.toString(),          p.apvts, " Hz"),
+    stage2BypassSlider("STAGE2_BYPASS_SLIDER_LABEL", "Stage 2 cathode bypass",  this, paramInfos[STAGE2_BYPASS].id.toString(),      p.apvts, " dB"),
+    stage2BiasSlider("STAGE2_BIAS_SLIDER_LABEL",     "Stage 2 tube bias",       this, paramInfos[STAGE2_BIAS].id.toString(),        p.apvts, ""),
+    stage2AttSlider("STAGE2_ATTEN_SLIDER_LABEL",     "Stage 2 attenuation",     this, paramInfos[STAGE2_ATTENUATION].id.toString(), p.apvts, ""),
 
-    stage3HPSlider("STAGE3_HP_SLIDER_LABEL",         "Stage 3 coupling filter", this, ParamIDs[STAGE3_HP].toString(),     p.apvts, " Hz"),
-    stage3LPSlider("STAGE3_LP_SLIDER_LABEL",         "Stage 3 output filter",   this, ParamIDs[STAGE3_LP].toString(),     p.apvts, " Hz"),
-    stage3BypassSlider("STAGE3_BYPASS_SLIDER_LABEL", "Stage 3 cathode bypass",  this, ParamIDs[STAGE3_BYPASS].toString(), p.apvts, " dB"),
-    stage3BiasSlider("STAGE3_BIAS_SLIDER_LABEL",     "Stage 3 tube bias",       this, ParamIDs[STAGE3_BIAS].toString(),   p.apvts, ""),
+    stage3LPSlider("STAGE3_LP_SLIDER_LABEL",         "Stage 3 output filter",   this, paramInfos[STAGE3_LP].id.toString(),          p.apvts, " Hz"),
+    stage3BypassSlider("STAGE3_BYPASS_SLIDER_LABEL", "Stage 3 cathode bypass",  this, paramInfos[STAGE3_BYPASS].id.toString(),      p.apvts, " dB"),
+    stage3BiasSlider("STAGE3_BIAS_SLIDER_LABEL",     "Stage 3 tube bias",       this, paramInfos[STAGE3_BIAS].id.toString(),        p.apvts, ""),
+    stage3AttSlider("STAGE3_ATTEN_SLIDER_LABEL",     "Stage 3 attenuation",     this, paramInfos[STAGE3_ATTENUATION].id.toString(), p.apvts, ""),
 
-    stage4HPSlider("STAGE4_HP_SLIDER_LABEL",         "Stage 4 coupling filter", this, ParamIDs[STAGE4_HP].toString(),     p.apvts, " Hz"),
-    stage4LPSlider("STAGE4_LP_SLIDER_LABEL",         "Stage 4 output filter",   this, ParamIDs[STAGE4_LP].toString(),     p.apvts, " Hz"),
-    stage4BypassSlider("STAGE4_BYPASS_SLIDER_LABEL", "Stage 4 cathode bypass",  this, ParamIDs[STAGE4_BYPASS].toString(), p.apvts, " dB"),
-    stage4BiasSlider("STAGE4_BIAS_SLIDER_LABEL",     "Stage 4 tube bias",       this, ParamIDs[STAGE4_BIAS].toString(),   p.apvts, "")
+    stage4LPSlider("STAGE4_LP_SLIDER_LABEL",         "Stage 4 output filter",   this, paramInfos[STAGE4_LP].id.toString(),          p.apvts, " Hz"),
+    stage4BypassSlider("STAGE4_BYPASS_SLIDER_LABEL", "Stage 4 cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(),      p.apvts, " dB"),
+    stage4BiasSlider("STAGE4_BIAS_SLIDER_LABEL",     "Stage 4 tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),        p.apvts, "")
 {
 
     resetButton.onClick = [&p, this]() {
     
-        HSlider* slider_refs[19] = { &stage0LPSlider, &stage0BypassSlider, &stage0BiasSlider, 
-                    &stage1HPSlider, &stage1LPSlider, &stage1BypassSlider, &stage1BiasSlider, 
-                    &stage2HPSlider, &stage2LPSlider, &stage2BypassSlider, &stage2BiasSlider, 
-                    &stage3HPSlider, &stage3LPSlider, &stage3BypassSlider, &stage3BiasSlider, 
-                    &stage4HPSlider, &stage4LPSlider, &stage4BypassSlider, &stage4BiasSlider
+        HSlider* slider_refs[19] = { 
+            &stage0LPSlider, &stage0BypassSlider, &stage0BiasSlider,
+            &stage1LPSlider, &stage1BypassSlider, &stage1BiasSlider, &stage1AttSlider,
+            &stage2LPSlider, &stage2BypassSlider, &stage2BiasSlider, &stage2AttSlider,
+            &stage3LPSlider, &stage3BypassSlider, &stage3BiasSlider, &stage3AttSlider,
+            &stage4LPSlider, &stage4BypassSlider, &stage4BiasSlider
         };
     
         for (int paramIndex = STAGE0_LP; paramIndex <= STAGE4_BIAS; paramIndex++) {
-            p.apvts.getParameter(ParamIDs[paramIndex].toString())->setValueNotifyingHost(defaultParamValues[paramIndex]);        
-            slider_refs[paramIndex - STAGE0_LP]->setValue(defaultParamValues[paramIndex]);
+            p.apvts.getParameter(paramInfos[paramIndex].id.toString())->setValueNotifyingHost(paramInfos[paramIndex].defaultValue);        
+            slider_refs[paramIndex - STAGE0_LP]->setValue(paramInfos[paramIndex].defaultValue);
         }
     };
     
@@ -243,97 +243,96 @@ GainStagesPage::GainStagesPage(Processor &p) :
 
 void GainStagesPage::resized() {
 
-    static const int verticalSpacing = 30;
-    static const int horizontalSpacing = 20;
+    static const int horizontalSpacing = 25;
+    static const int verticalSpacing = 40;
+    static const int sliderWidth = 150;
+    static const int sliderHeight = 50;
 
-    resetButton.setBounds(horizontalMargin, verticalMargin, 100, 30);
-
-    stage0LPSlider.setBounds(horizontalMargin, verticalMargin + 50 + verticalSpacing, 150, 50);
+    stage0LPSlider.setBounds(horizontalMargin, verticalMargin, sliderWidth, sliderHeight);
     stage0LPSlider.label.setBounds(stage0LPSlider.getX(), stage0LPSlider.getY() - 15,
                                         stage0LPSlider.getWidth(), 20);
 
-    stage0BypassSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(0, stage0LPSlider.getHeight() + verticalSpacing));
+    stage0BypassSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage0BypassSlider.label.setBounds(stage0BypassSlider.getX(), stage0BypassSlider.getY() - 15,
                                         stage0BypassSlider.getWidth(), 20);
 
-    stage0BiasSlider.setBounds(stage0BypassSlider.getBounds() + juce::Point(0, stage0BypassSlider.getHeight() + verticalSpacing));
+    stage0BiasSlider.setBounds(stage0BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage0BiasSlider.label.setBounds(stage0BiasSlider.getX(), stage0BiasSlider.getY() - 15,
                                         stage0BiasSlider.getWidth(), 20);
 
+    resetButton.setBounds(stage0BiasSlider.getX() + 35, stage0BiasSlider.getBottom() + verticalSpacing, 100, 30);
 
-    stage1HPSlider.setBounds(stage0LPSlider.getRight() + horizontalSpacing, verticalMargin, stage0LPSlider.getWidth(), stage0LPSlider.getHeight());
-    stage1HPSlider.label.setBounds(stage1HPSlider.getX(), stage1HPSlider.getY() - 15,
-                                        stage1HPSlider.getWidth(), 20);
 
-    stage1LPSlider.setBounds(stage1HPSlider.getBounds() + juce::Point(0, stage1HPSlider.getHeight() + verticalSpacing));
+    stage1LPSlider.setBounds(stage0LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
     stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15,
                                         stage1LPSlider.getWidth(), 20);
 
-    stage1BypassSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(0, stage1LPSlider.getHeight() + verticalSpacing));
+    stage1BypassSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage1BypassSlider.label.setBounds(stage1BypassSlider.getX(), stage1BypassSlider.getY() - 15,
                                         stage1BypassSlider.getWidth(), 20);
 
-    stage1BiasSlider.setBounds(stage1BypassSlider.getBounds() + juce::Point(0, stage1BypassSlider.getHeight() + verticalSpacing));
+    stage1BiasSlider.setBounds(stage1BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage1BiasSlider.label.setBounds(stage1BiasSlider.getX(), stage1BiasSlider.getY() - 15,
                                         stage1BiasSlider.getWidth(), 20);
 
+    stage1AttSlider.setBounds(stage1BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
+    stage1AttSlider.label.setBounds(stage1AttSlider.getX(), stage1AttSlider.getY() - 15,
+                                        stage1AttSlider.getWidth(), 20);
 
-    stage2HPSlider.setBounds(stage1LPSlider.getRight() + horizontalSpacing, verticalMargin, stage1LPSlider.getWidth(), stage1LPSlider.getHeight());
-    stage2HPSlider.label.setBounds(stage2HPSlider.getX(), stage2HPSlider.getY() - 15,
-                                        stage2HPSlider.getWidth(), 20);
 
-    stage2LPSlider.setBounds(stage2HPSlider.getBounds() + juce::Point(0, stage2HPSlider.getHeight() + verticalSpacing));
+    stage2LPSlider.setBounds(stage1LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
     stage2LPSlider.label.setBounds(stage2LPSlider.getX(), stage2LPSlider.getY() - 15,
                                         stage2LPSlider.getWidth(), 20);
 
-    stage2BypassSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(0, stage2LPSlider.getHeight() + verticalSpacing));
+    stage2BypassSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage2BypassSlider.label.setBounds(stage2BypassSlider.getX(), stage2BypassSlider.getY() - 15,
                                         stage2BypassSlider.getWidth(), 20);
 
-    stage2BiasSlider.setBounds(stage2BypassSlider.getBounds() + juce::Point(0, stage2BypassSlider.getHeight() + verticalSpacing));
+    stage2BiasSlider.setBounds(stage2BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage2BiasSlider.label.setBounds(stage2BiasSlider.getX(), stage2BiasSlider.getY() - 15,
                                         stage2BiasSlider.getWidth(), 20);
 
+    stage2AttSlider.setBounds(stage2BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
+    stage2AttSlider.label.setBounds(stage2AttSlider.getX(), stage2AttSlider.getY() - 15,
+                                        stage2AttSlider.getWidth(), 20);
 
 
-    stage3HPSlider.setBounds(stage2LPSlider.getRight() + horizontalSpacing, verticalMargin, stage2LPSlider.getWidth(), stage2LPSlider.getHeight());
-    stage3HPSlider.label.setBounds(stage3HPSlider.getX(), stage3HPSlider.getY() - 15,
-                                        stage3HPSlider.getWidth(), 20);
 
-    stage3LPSlider.setBounds(stage3HPSlider.getBounds() + juce::Point(0, stage3HPSlider.getHeight() + verticalSpacing));
+    stage3LPSlider.setBounds(stage2LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
     stage3LPSlider.label.setBounds(stage3LPSlider.getX(), stage3LPSlider.getY() - 15,
                                         stage3LPSlider.getWidth(), 20);
 
-    stage3BypassSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(0, stage3LPSlider.getHeight() + verticalSpacing));
+    stage3BypassSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage3BypassSlider.label.setBounds(stage3BypassSlider.getX(), stage3BypassSlider.getY() - 15,
                                         stage3BypassSlider.getWidth(), 20);
 
-    stage3BiasSlider.setBounds(stage3BypassSlider.getBounds() + juce::Point(0, stage3BypassSlider.getHeight() + verticalSpacing));
+    stage3BiasSlider.setBounds(stage3BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage3BiasSlider.label.setBounds(stage3BiasSlider.getX(), stage3BiasSlider.getY() - 15,
                                         stage3BiasSlider.getWidth(), 20);
 
+    stage3AttSlider.setBounds(stage3BiasSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
+    stage3AttSlider.label.setBounds(stage3AttSlider.getX(), stage3AttSlider.getY() - 15,
+                                        stage3AttSlider.getWidth(), 20);
 
-    stage4HPSlider.setBounds(stage3LPSlider.getRight() + horizontalSpacing, verticalMargin, stage3LPSlider.getWidth(), stage3LPSlider.getHeight());
-    stage4HPSlider.label.setBounds(stage4HPSlider.getX(), stage4HPSlider.getY() - 15,
-                                        stage4HPSlider.getWidth(), 20);
 
-    stage4LPSlider.setBounds(stage4HPSlider.getBounds() + juce::Point(0, stage4HPSlider.getHeight() + verticalSpacing));
+    stage4LPSlider.setBounds(stage3LPSlider.getBounds() + juce::Point(horizontalSpacing + sliderWidth, 0));
     stage4LPSlider.label.setBounds(stage4LPSlider.getX(), stage4LPSlider.getY() - 15,
                                         stage4LPSlider.getWidth(), 20);
 
-    stage4BypassSlider.setBounds(stage4LPSlider.getBounds() + juce::Point(0, stage4LPSlider.getHeight() + verticalSpacing));
+    stage4BypassSlider.setBounds(stage4LPSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage4BypassSlider.label.setBounds(stage4BypassSlider.getX(), stage4BypassSlider.getY() - 15,
                                         stage4BypassSlider.getWidth(), 20);
 
-    stage4BiasSlider.setBounds(stage4BypassSlider.getBounds() + juce::Point(0, stage4BypassSlider.getHeight() + verticalSpacing));
+    stage4BiasSlider.setBounds(stage4BypassSlider.getBounds() + juce::Point(0, sliderHeight + verticalSpacing));
     stage4BiasSlider.label.setBounds(stage4BiasSlider.getX(), stage4BiasSlider.getY() - 15,
                                         stage4BiasSlider.getWidth(), 20);
+
 }
 
 IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 
     bypassButtonAttachment = std::make_unique<ButtonAttachment>(
-        audioProcessor.apvts, ParamIDs[IR_ACTIVE].toString(), bypassToggle
+        audioProcessor.apvts, paramInfos[IR_ACTIVE].id.toString(), bypassToggle
     );
 
     irLoadButton.onClick = [&audioProcessor, this]() {
@@ -482,36 +481,36 @@ void IRLoaderPage::resized() {
 }
 
 EQPage::EQPage(Processor &p) :
-    lowcutFreqKnob("LOW_CUT_FREQ_KNOB_LABEL",       "Low cut",         this, ParamIDs[LOW_CUT_FREQ].toString(),    p.apvts, " Hz"),
-    lowShelfFreqKnob("LOW_SHELF_FREQ_KNOB_LABEL",   "Low Shelf Freq",  this, ParamIDs[LOW_SHELF_FREQ].toString(),  p.apvts, " Hz"),
-    lowShelfGainKnob("LOW_SHELF_GAIN_KNOB_LABEL",   "Gain",            this, ParamIDs[LOW_SHELF_GAIN].toString(),  p.apvts, " dB"),
-    lowMidFreqKnob("LOWMID_FREQ_KNOB_LABEL",        "Freq",            this, ParamIDs[LOWMID_FREQ].toString(),     p.apvts, " Hz"),
-    lowMidGainKnob("LOWMID_GAIN_KNOB_LABEL",        "Gain",            this, ParamIDs[LOWMID_GAIN].toString(),     p.apvts, " dB"),
-    lowMidQKnob("LOWMID_Q_KNOB_LABEL",              "Q",               this, ParamIDs[LOWMID_Q].toString(),        p.apvts, ""),
-    midFreqKnob("MID_FREQ_KNOB_LABEL",              "Freq",            this, ParamIDs[MID_FREQ].toString(),        p.apvts, " Hz"),
-    midGainKnob("MID_GAIN_KNOB_LABEL",              "Gain",            this, ParamIDs[MID_GAIN].toString(),        p.apvts, " dB"),
-    midQKnob("MID_Q_KNOB_LABEL",                    "Q",               this, ParamIDs[MID_Q].toString(),           p.apvts, ""),
-    highFreqKnob("HIGH_FREQ_KNOB_LABEL",            "Freq",            this, ParamIDs[HIGH_FREQ].toString(),       p.apvts, " Hz"),
-    highGainKnob("HIGH_GAIN_KNOB_LABEL",            "Gain",            this, ParamIDs[HIGH_GAIN].toString(),       p.apvts, " dB"),
-    highQKnob("HIGH_Q_KNOB_LABEL",                  "Q",               this, ParamIDs[HIGH_Q].toString(),          p.apvts, ""),
-    highShelfFreqKnob("HIGH_SHELF_FREQ_KNOB_LABEL", "High Shelf Freq", this, ParamIDs[HIGH_SHELF_FREQ].toString(), p.apvts, " Hz"),
-    highShelfGainKnob("HIGH_SHELF_GAIN_KNOB_LABEL", "Gain",            this, ParamIDs[HIGH_SHELF_GAIN].toString(), p.apvts, " dB"),
-    highcutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, ParamIDs[HIGH_CUT_FREQ].toString(),   p.apvts, " Hz")
+    lowcutFreqKnob("LOW_CUT_FREQ_KNOB_LABEL",       "Low cut",         this, paramInfos[LOW_CUT_FREQ].id.toString(),    p.apvts, " Hz"),
+    lowShelfFreqKnob("LOW_SHELF_FREQ_KNOB_LABEL",   "Low Shelf Freq",  this, paramInfos[LOW_SHELF_FREQ].id.toString(),  p.apvts, " Hz"),
+    lowShelfGainKnob("LOW_SHELF_GAIN_KNOB_LABEL",   "Gain",            this, paramInfos[LOW_SHELF_GAIN].id.toString(),  p.apvts, " dB"),
+    lowMidFreqKnob("LOWMID_FREQ_KNOB_LABEL",        "Freq",            this, paramInfos[LOWMID_FREQ].id.toString(),     p.apvts, " Hz"),
+    lowMidGainKnob("LOWMID_GAIN_KNOB_LABEL",        "Gain",            this, paramInfos[LOWMID_GAIN].id.toString(),     p.apvts, " dB"),
+    lowMidQKnob("LOWMID_Q_KNOB_LABEL",              "Q",               this, paramInfos[LOWMID_Q].id.toString(),        p.apvts, ""),
+    midFreqKnob("MID_FREQ_KNOB_LABEL",              "Freq",            this, paramInfos[MID_FREQ].id.toString(),        p.apvts, " Hz"),
+    midGainKnob("MID_GAIN_KNOB_LABEL",              "Gain",            this, paramInfos[MID_GAIN].id.toString(),        p.apvts, " dB"),
+    midQKnob("MID_Q_KNOB_LABEL",                    "Q",               this, paramInfos[MID_Q].id.toString(),           p.apvts, ""),
+    highFreqKnob("HIGH_FREQ_KNOB_LABEL",            "Freq",            this, paramInfos[HIGH_FREQ].id.toString(),       p.apvts, " Hz"),
+    highGainKnob("HIGH_GAIN_KNOB_LABEL",            "Gain",            this, paramInfos[HIGH_GAIN].id.toString(),       p.apvts, " dB"),
+    highQKnob("HIGH_Q_KNOB_LABEL",                  "Q",               this, paramInfos[HIGH_Q].id.toString(),          p.apvts, ""),
+    highShelfFreqKnob("HIGH_SHELF_FREQ_KNOB_LABEL", "High Shelf Freq", this, paramInfos[HIGH_SHELF_FREQ].id.toString(), p.apvts, " Hz"),
+    highShelfGainKnob("HIGH_SHELF_GAIN_KNOB_LABEL", "Gain",            this, paramInfos[HIGH_SHELF_GAIN].id.toString(), p.apvts, " dB"),
+    highcutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, paramInfos[HIGH_CUT_FREQ].id.toString(),   p.apvts, " Hz")
 {
 
     resetButton.onClick = [&p, this]() {
     
-        p.apvts.getParameter(ParamIDs[LOW_SHELF_GAIN].toString())->setValueNotifyingHost(defaultParamValues[LOW_SHELF_GAIN]);
-        p.apvts.getParameter(ParamIDs[LOWMID_GAIN].toString())->setValueNotifyingHost(defaultParamValues[LOWMID_GAIN]);
-        p.apvts.getParameter(ParamIDs[MID_GAIN].toString())->setValueNotifyingHost(defaultParamValues[MID_GAIN]);
-        p.apvts.getParameter(ParamIDs[HIGH_GAIN].toString())->setValueNotifyingHost(defaultParamValues[HIGH_GAIN]);
-        p.apvts.getParameter(ParamIDs[HIGH_SHELF_GAIN].toString())->setValueNotifyingHost(defaultParamValues[HIGH_SHELF_GAIN]);
+        p.apvts.getParameter(paramInfos[LOW_SHELF_GAIN].id.toString())->setValueNotifyingHost(paramInfos[LOW_SHELF_GAIN].defaultValue);
+        p.apvts.getParameter(paramInfos[LOWMID_GAIN].id.toString())->setValueNotifyingHost(paramInfos[LOWMID_GAIN].defaultValue);
+        p.apvts.getParameter(paramInfos[MID_GAIN].id.toString())->setValueNotifyingHost(paramInfos[MID_GAIN].defaultValue);
+        p.apvts.getParameter(paramInfos[HIGH_GAIN].id.toString())->setValueNotifyingHost(paramInfos[HIGH_GAIN].defaultValue);
+        p.apvts.getParameter(paramInfos[HIGH_SHELF_GAIN].id.toString())->setValueNotifyingHost(paramInfos[HIGH_SHELF_GAIN].defaultValue);
     
-        lowShelfGainKnob.setValue(defaultParamValues[LOW_SHELF_GAIN]);
-        lowMidGainKnob.setValue(defaultParamValues[LOWMID_GAIN]);
-        midGainKnob.setValue(defaultParamValues[MID_GAIN]);
-        highGainKnob.setValue(defaultParamValues[HIGH_GAIN]);
-        highShelfGainKnob.setValue(defaultParamValues[HIGH_SHELF_GAIN]);
+        lowShelfGainKnob.setValue(paramInfos[LOW_SHELF_GAIN].defaultValue);
+        lowMidGainKnob.setValue(paramInfos[LOWMID_GAIN].defaultValue);
+        midGainKnob.setValue(paramInfos[MID_GAIN].defaultValue);
+        highGainKnob.setValue(paramInfos[HIGH_GAIN].defaultValue);
+        highShelfGainKnob.setValue(paramInfos[HIGH_SHELF_GAIN].defaultValue);
     };
 
     addAndMakeVisible(resetButton);

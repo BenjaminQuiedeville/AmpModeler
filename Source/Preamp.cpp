@@ -7,12 +7,8 @@
 #include "Preamp.h"
 // #include "data/waveshape_table.inc"
 
-Preamp::Preamp() {
-}
-
 Preamp::~Preamp() {
-
-    if (upBufferL) { free(upBufferL); }
+    free(upSampledBufferL);
 }
 
 void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
@@ -21,7 +17,12 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     u32 upBlockSize = blockSize * PREAMP_UP_SAMPLE_FACTOR;
 
     preGain.init(0.0);
-    postGain.init(dbtoa(-12.0));
+    postGain.init(dbtoa(-60.0));
+
+    stage1Gain.init(0.0);
+    stage2Gain.init(0.0);
+    stage3Gain.init(0.0);
+
 
     inputMudFilter.prepareToPlay();
     inputMudFilter.setCoefficients(400.0, upSamplerate);
@@ -30,16 +31,22 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     midBoost.setCoefficients(1000.0, 0.2, 3.0, upSamplerate);
 
     inputFilter.prepareToPlay();
+    inputFilter.setCoefficients(100.0f, upSamplerate);
+    
     couplingFilter1.prepareToPlay();
     couplingFilter2.prepareToPlay();
     couplingFilter3.prepareToPlay();
     couplingFilter4.prepareToPlay();
+    couplingFilter1.setCoefficients(15.0, upSamplerate);
+    couplingFilter2.setCoefficients(15.0, upSamplerate);
+    couplingFilter3.setCoefficients(15.0, upSamplerate);
+    couplingFilter4.setCoefficients(15.0, upSamplerate);
 
-    stageOutputFilter0.prepareToPlay();
-    stageOutputFilter1.prepareToPlay();
-    stageOutputFilter2.prepareToPlay();
-    stageOutputFilter3.prepareToPlay();
-    stageOutputFilter4.prepareToPlay();
+    stage0LP.prepareToPlay();
+    stage1LP.prepareToPlay();
+    stage2LP.prepareToPlay();
+    stage3LP.prepareToPlay();
+    stage4LP.prepareToPlay();
 
     cathodeBypassFilter0.prepareToPlay();
     cathodeBypassFilter1.prepareToPlay();
@@ -58,12 +65,12 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
     overSampler.downSampleFilter1.setCoefficients(samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
     overSampler.downSampleFilter2.setCoefficients(samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
 
-    if (upBufferL) {
-        upBufferL = (float *)realloc(upBufferL, upBlockSize * sizeof(float) * 2);
-        upBufferR = upBufferL + upBlockSize;
+    if (upSampledBufferL) {
+        upSampledBufferL = (float *)realloc(upSampledBufferL, upBlockSize * sizeof(float) * 2);
+        upSampledBufferR = upSampledBufferL + upBlockSize;
     } else {
-        upBufferL = (float *)calloc(upBlockSize * 2,  sizeof(float));
-        upBufferR = upBufferL + upBlockSize;
+        upSampledBufferL = (float *)calloc(upBlockSize * 2,  sizeof(float));
+        upSampledBufferR = upSampledBufferL + upBlockSize;
     }
 }
 
@@ -81,9 +88,9 @@ void Preamp::setBias(float bias, int tube_index) {
 
     static const float pos_clip_point = 0.2f;
     static const float neg_clip_point = 3.0f;
-    static const float bias_multiplier = 1.5f;
-
-    bias *= bias_multiplier;
+    
+    // static const float bias_multiplier = 1.5f;
+    // bias *= bias_multiplier;
 
     selected_stage_bias[0] = bias;
 
@@ -102,10 +109,8 @@ void Preamp::setBias(float bias, int tube_index) {
 
 // auto cubicClip = [](float x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
 
-static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
+static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
     ZoneScoped;
-    
-    if (!buffer) { return; }
 
     static const float gridCondThresh = 1.0f;
     static const float gridCondRatio  = 2.0f;
@@ -114,10 +119,9 @@ static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
 
     // @TODO: pour le bias, puis utiliser un Onepole pour smooth l'offset calculé sur ~10ms
     // refaire une fonction de calcul d'un seul echantillon pour les onepole
-    // toujours trouver si le cathode bypass doit se faire avant ou apres le tube cutoff
 
     for (u32 index = 0; index < nSamples; index++) {
-        float sample = buffer[index];
+        float sample = bufferL[index];
 
         if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
             sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
@@ -128,15 +132,41 @@ static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
             sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
                         /(2.0f * gridCondKnee);
         }
+        bufferL[index] = sample;
+    }
+    
+    if (bufferR) {
+        for (u32 index = 0; index < nSamples; index++) {
+            float sample = bufferR[index];
+    
+            if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
+                sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
+                        // sample = thresh + sample/ratio - thresh/ratio
+                        // sample = thresh*ratio + sample - thresh
+                        // sample = sample + thresh*ratio - thresh
+            } else if (2.0f * abs(sample - gridCondThresh) <= gridCondKnee) {
+                sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
+                            /(2.0f * gridCondKnee);
+            }
+            bufferR[index] = sample;
+        }
+    }
+}
 
+static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float *bias) {
+    ZoneScoped;
+        
+    for (u32 index = 0; index < nSamples; index++) {
+        float sample = bufferL[index];
+        
         sample *= -1.0f;
         sample += bias[0];
 
-        static const float pos_clip_point = 0.2f;
+        static const float linear_range = 0.2f;
         static const float neg_clip_point = 3.0f;
 
-        if (sample > pos_clip_point) {
-            sample = tanh(sample - pos_clip_point) + pos_clip_point;
+        if (sample > linear_range) {
+            sample = tanh(sample - linear_range) + linear_range;
         }
         // else if (sample < neg_clip_point) {
         //     sample = neg_clip_point;
@@ -147,8 +177,33 @@ static void tube_sim(float *buffer, u32 nSamples, float gain, float *bias) {
             sample *= neg_clip_point * 1.5f;
         }
 
-
-        buffer[index] = (sample - bias[1]) * gain;
+        bufferL[index] = (sample - bias[1]);
+    }
+ 
+    if (bufferR) {
+        for (u32 index = 0; index < nSamples; index++) {
+            float sample = bufferR[index];
+            
+            sample *= -1.0f;
+            sample += bias[0];
+    
+            static const float linear_range = 0.2f;
+            static const float neg_clip_point = 3.0f;
+    
+            if (sample > linear_range) {
+                sample = tanh(sample - linear_range) + linear_range;
+            }
+            // else if (sample < neg_clip_point) {
+            //     sample = neg_clip_point;
+            // }
+            else if (sample < 0.0f) {
+                sample *= 2.0f/(3.0f*neg_clip_point);
+                sample = sample < -1.0f ? -2.0f/3.0f : sample - 1.0f/3.0f * sample*sample*sample;
+                sample *= neg_clip_point * 1.5f;
+            }
+    
+            bufferR[index] = (sample - bias[1]);
+        }
     }
 }
 
@@ -211,6 +266,12 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
     
     u32 upNumSamples = nSamples*PREAMP_UP_SAMPLE_FACTOR;
 
+    float* upBufferL = upSampledBufferL;
+    float* upBufferR = nullptr;
+    if (bufferR) {
+        upBufferR = upSampledBufferR;
+    }
+
     // upsampling
     memset(upBufferL, 0, upNumSamples * sizeof(float));
     for (u32 i = 0; i < nSamples; i++) {
@@ -231,33 +292,19 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
     {
         ZoneScopedN("GainsStages");
         
-        static const float INPUT_GAIN   = (float)dbtoa(0.0);
-        static const float STAGE_0_GAIN = (float)dbtoa(40.0);
-        static const float STAGE_1_GAIN = (float)dbtoa(40.0) * 0.9f;
-        static const float STAGE_2_GAIN = (float)dbtoa(40.0) * 0.6f;
-        static const float STAGE_3_GAIN = (float)dbtoa(40.0) * 0.6f;
-        static const float STAGE_4_GAIN = 1.0f;
-
-        static const float STAGE1_COMPENSATION = (float)dbtoa(-10.0);
-        static const float STAGE2_COMPENSATION = (float)dbtoa(-21.0);
-        static const float STAGE3_COMPENSATION = (float)dbtoa(-30.0);
-        static const float STAGE4_COMPENSATION = (float)dbtoa(6.0);
-
         // Input Gain
+        // static const float INPUT_GAIN = (float)dbtoa(0.0);
         // applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
 
-        // Stage 0
-        tube_sim(upBufferL, upNumSamples, STAGE_0_GAIN, stage0_bias);
-        tube_sim(upBufferR, upNumSamples, STAGE_0_GAIN, stage0_bias);
-        cathodeBypassFilter0.process(upBufferL, upBufferR, upNumSamples);
+        // ------------ Stage 0 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples);        
+        cathodeBypassFilter0.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage0_bias);
 
         inputFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
-        stageOutputFilter0.processLowpass(upBufferL, upBufferR, upNumSamples);
+        stage0LP.processLowpass(upBufferL, upBufferR, upNumSamples);
 
-
-        // Stage 1
         preGain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
-
         inputMudFilter.processHighpass(upBufferL, upBufferR, upNumSamples);
         midBoost.process(upBufferL, upBufferR, upNumSamples);
 
@@ -265,54 +312,61 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
             brightCapFilter.process(upBufferL, upBufferR, upNumSamples);
         }
 
-        tube_sim(upBufferL, upNumSamples, STAGE_1_GAIN, stage1_bias);
-        tube_sim(upBufferR, upNumSamples, STAGE_1_GAIN, stage1_bias);
-        couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
 
+        // ------------ Stage 1 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples);        
+        cathodeBypassFilter1.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage1_bias);
+        
+        couplingFilter1.processHighpass(upBufferL, upBufferR, upNumSamples);
+        stage1LP.processLowpass(upBufferL, upBufferR, upNumSamples);
+    
         if (channel == 1) {
-            applyGainLinear(STAGE1_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
 
+        stage1Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
 
-        // Stage 2
-        tube_sim(upBufferL, upNumSamples, STAGE_2_GAIN, stage2_bias);
-        tube_sim(upBufferR, upNumSamples, STAGE_2_GAIN, stage2_bias);
-        cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples);
+
+        // ------------ Stage 2 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples);        
+        cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage2_bias);
+        
         couplingFilter2.processHighpass(upBufferL, upBufferR, upNumSamples);
+        stage2LP.processLowpass(upBufferL, upBufferR, upNumSamples);
 
         if (channel == 2) {
-            applyGainLinear(-STAGE2_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
 
-        stageOutputFilter2.processLowpass(upBufferL, upBufferR, upNumSamples);
+        stage2Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
 
 
-        // Stage 3
-        tube_sim(upBufferL, upNumSamples, STAGE_3_GAIN, stage3_bias);
-        tube_sim(upBufferR, upNumSamples, STAGE_3_GAIN, stage3_bias);
-        cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples);
+        // ------------ Stage 3 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples);        
+        cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage3_bias);
+        
         couplingFilter3.processHighpass(upBufferL, upBufferR, upNumSamples);
+        stage3LP.processLowpass(upBufferL, upBufferR, upNumSamples);
 
         if (channel == 3) {
-            applyGainLinear(STAGE3_COMPENSATION, upBufferL, upBufferR, upNumSamples);
             goto gain_stages_end_of_scope;
         }
 
-        stageOutputFilter3.processLowpass(upBufferL, upBufferR, upNumSamples);
+        stage3Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
 
 
-        // Stage 4
-        tube_sim(upBufferL, upNumSamples, STAGE_4_GAIN, stage4_bias);
-        tube_sim(upBufferR, upNumSamples, STAGE_4_GAIN, stage4_bias);
-        cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);
+        // ------------ Stage 4 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples);        
+        cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage4_bias);
+        
         couplingFilter4.processHighpass(upBufferL, upBufferR, upNumSamples);
-        stageOutputFilter4.processLowpass(upBufferL, upBufferR, upNumSamples);
+        stage4LP.processLowpass(upBufferL, upBufferR, upNumSamples);
 
-        applyGainLinear(-STAGE4_COMPENSATION, upBufferL, upBufferR, upNumSamples);
-
-        gain_stages_end_of_scope:;
+        gain_stages_end_of_scope: {}
     }
 
 

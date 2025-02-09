@@ -15,10 +15,10 @@
 #include <memory>
 #include "FirstOrderShelf.h"
 
-constexpr u8 PREAMP_UP_SAMPLE_FACTOR = 8;
+static const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
+static const float tube_gain = 100.0f;
 
 struct Preamp {
-    Preamp();
     ~Preamp();
     
     void prepareToPlay(double samplerate, u32 blockSize);
@@ -27,6 +27,10 @@ struct Preamp {
 
     SmoothParamLinear preGain;
     SmoothParamLinear postGain;
+
+    SmoothParamLinear stage1Gain;
+    SmoothParamLinear stage2Gain;
+    SmoothParamLinear stage3Gain;
 
     OnepoleFilter inputFilter;
     OnepoleFilter inputMudFilter;
@@ -39,11 +43,11 @@ struct Preamp {
     OnepoleFilter couplingFilter3;
     OnepoleFilter couplingFilter4;
 
-    OnepoleFilter stageOutputFilter0;
-    OnepoleFilter stageOutputFilter1;
-    OnepoleFilter stageOutputFilter2;
-    OnepoleFilter stageOutputFilter3;
-    OnepoleFilter stageOutputFilter4;
+    OnepoleFilter stage0LP;
+    OnepoleFilter stage1LP;
+    OnepoleFilter stage2LP;
+    OnepoleFilter stage3LP;
+    OnepoleFilter stage4LP;
 
     FirstOrderShelfFilter cathodeBypassFilter0 {lowshelf};
     FirstOrderShelfFilter cathodeBypassFilter1 {lowshelf};
@@ -59,8 +63,8 @@ struct Preamp {
         Biquad downSampleFilter2 {BIQUAD_LOWPASS};
     } overSampler;
     
-    float *upBufferL = nullptr;
-    float *upBufferR = nullptr;
+    float *upSampledBufferL = nullptr;
+    float *upSampledBufferR = nullptr;
 
     float stage0_bias[2] = {0};
     float stage1_bias[2] = {0};

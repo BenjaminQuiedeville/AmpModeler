@@ -25,10 +25,9 @@
     #define JucePlugin_Name "AmpModeler"
 #endif
 
-const float BOOST_BITE_Q        = 0.25f;
-
-const float RESONANCE_FREQUENCY = 120.0f;
-const float PRESENCE_FREQUENCY  = 500.0f;
+static const float BOOST_BITE_Q        = 0.25f;
+static const float RESONANCE_FREQUENCY = 120.0f;
+static const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
@@ -76,22 +75,21 @@ enum Params {
     STAGE0_BYPASS,
     STAGE0_BIAS,
     
-    STAGE1_HP,
     STAGE1_LP,
     STAGE1_BYPASS,
     STAGE1_BIAS,
+    STAGE1_ATTENUATION,
     
-    STAGE2_HP,
     STAGE2_LP,
     STAGE2_BYPASS,
     STAGE2_BIAS,
+    STAGE2_ATTENUATION,
     
-    STAGE3_HP,
     STAGE3_LP,
     STAGE3_BYPASS,
     STAGE3_BIAS,
+    STAGE3_ATTENUATION,
     
-    STAGE4_HP,
     STAGE4_LP,
     STAGE4_BYPASS,
     STAGE4_BIAS,
@@ -126,155 +124,85 @@ enum Params {
     N_PARAMS
 };
 
-
-static std::vector<juce::Identifier> ParamIDs = {
-    "INPUT_GAIN",
-
-    "GATE_THRESH",
-    "GATE_ATTACK",
-    "GATE_RELEASE",
-    "GATE_RETURN",
-    
-    "SCREAMER_AMOUNT",
-    "SCEAMER_FREQ",
-    "TIGHT",
-
-    "GATE_ACTIVE",
-    "PREAMP_ACTIVE",
-    "TONESTACK_ACTIVE",
-    "EQ_ACTIVE",
-    "IR_ACTIVE",
-
-    "PREAMP_GAIN",
-    "BRIGHT_CAP",
-    "CHANNEL",
-    "INPUT_FILTER",
-    "PREAMP_VOLUME",
-    
-    "STAGE0_LP",
-    "STAGE0_BYPASS",
-    "STAGE0_BIAS",
-    
-    "STAGE1_HP",
-    "STAGE1_LP",
-    "STAGE1_BYPASS",
-    "STAGE1_BIAS",
-    
-    "STAGE2_HP",
-    "STAGE2_LP",
-    "STAGE2_BYPASS",
-    "STAGE2_BIAS",
-    
-    "STAGE3_HP",
-    "STAGE3_LP",
-    "STAGE3_BYPASS",
-    "STAGE3_BIAS",
-    
-    "STAGE4_HP",
-    "STAGE4_LP",
-    "STAGE4_BYPASS",
-    "STAGE4_BIAS",
-    
-    "TONE_MODEL",
-    "TONE_BASS",
-    "TONE_MID",
-    "TONE_TREB",
-    
-    "RESONANCE",
-    "PRESENCE",
-    
-    "LOW_CUT_FREQ",
-    "LOW_SHELF_FREQ",
-    "LOW_SHELF_GAIN",
-    "LOWMID_FREQ",
-    "LOWMID_GAIN",
-    "LOWMID_Q",
-    "MID_FREQ",
-    "MID_GAIN",
-    "MID_Q",
-    "HIGH_FREQ",
-    "HIGH_GAIN",
-    "HIGH_Q",
-    "HIGH_SHELF_FREQ",
-    "HIGH_SHELF_GAIN",
-    "HIGH_CUT_FREQ",
-    
-    "MASTER_VOLUME",
-    "CHANNEL_CONFIG"
+struct ParameterInfo {
+    juce::Identifier id;
+    float defaultValue = 0.0f;
 };
 
-static const float defaultParamValues[N_PARAMS] = {
-    0.0f,               // INPUT_GAIN
+static const ParameterInfo paramInfos[N_PARAMS] {
+    { "INPUT_GAIN",           0.0f },
     
-    -75.0f,             // GATE_THRESH
-    1.0f,               // GATE_ATTACK
-    15.0f,              // GATE_RELEASE
-    0.0f,               // GATE_RETURN
+    { "GATE_THRESH",          -75.0f },
+    { "GATE_ATTACK",          1.0f },
+    { "GATE_RELEASE",         15.0f },
+    { "GATE_RETURN",          0.0f },
     
-    0.0f,               // SCREAMER_AMOUNT
-    1300.0f,            // SCEAMER_FREQ
-    10.0f,              // TIGHT
-
-    1.0f,               // GATE_ACTIVE
-    1.0f,               // PREAMP_ACTIVE
-    1.0f,               // TONESTACK_ACTIVE
-    1.0f,               // EQ_ACTIVE
-    1.0f,               // IR_ACTIVE
+    { "SCREAMER_AMOUNT",      0.0f },
+    { "SCEAMER_FREQ",         1300.0f },
+    { "TIGHT",                10.0f },
     
-    5.0f,               // PREAMP_GAIN
-    1.0f,               // BRIGHT_CAP
-    3.0f,               // CHANNEL 
-    100.0f,             // INPUT_FILTER
-    0.0f,               // PREAMP_VOLUME
+    { "GATE_ACTIVE",          1.0f },
+    { "PREAMP_ACTIVE",        1.0f },
+    { "TONESTACK_ACTIVE",     1.0f },
+    { "EQ_ACTIVE",            1.0f },
+    { "IR_ACTIVE",            1.0f },
     
-    10000.0f,           // STAGE0_LP
-    -5.0f,              // STAGE0_BYPASS
-    0.0f,               // STAGE0_BIAS
-    10.0f,              // STAGE1_HP
-    18000.0f,           // STAGE1_LP
-    -4.0f,               // STAGE1_BYPASS
-    0.0f,               // STAGE1_BIAS
-    10.0f,              // STAGE2_HP
-    16000.0f,           // STAGE2_LP
-    0.0f,               // STAGE2_BYPASS
-    0.7f,               // STAGE2_BIAS
-    10.0f,              // STAGE3_HP
-    16000.0f,           // STAGE3_LP
-    -6.0f,              // STAGE3_BYPASS
-    0.0f,               // STAGE3_BIAS
-    10.0f,              // STAGE4_HP
-    16000.0f,           // STAGE4_LP
-    -6.0f,              // STAGE4_BYPASS
-    0.0f,               // STAGE4_BIAS
+    { "PREAMP_GAIN",          5.0f },
+    { "BRIGHT_CAP",           1.0f },
+    { "CHANNEL",              3.0f },
+    { "INPUT_FILTER",         100.0f },
+    { "PREAMP_VOLUME",        0.0f },
     
-    0.0f,               // TONE_MODEL
-    5.0f,               // TONE_BASS
-    5.0f,               // TONE_MID
-    5.0f,               // TONE_TREB
-
-    5.0f,               // RESONANCE
-    5.0f,               // PRESENCE
-
-    0.0f,               // LOW_CUT_FREQ
-    0.0f,               // LOW_SHELF_FREQ
-    0.0f,               // LOW_SHELF_GAIN
-    200.0f,             // LOWMID_FREQ
-    0.0f,               // LOWMID_GAIN
-    0.5f,               // LOWMID_Q
-    700.0f,             // MID_FREQ
-    0.0f,               // MID_GAIN
-    0.5f,               // MID_Q
-    2000.0f,            // HIGH_FREQ
-    0.0f,               // HIGH_GAIN
-    0.5f,               // HIGH_Q
-    20000.0f,           // HIGH_SHELF_FREQ
-    0.0f,               // HIGH_SHELF_GAIN
-    20000.0f,           // HIGH_CUT_FREQ
-
-    -3.0f,              // MASTER_VOLUME
-    0.0f                // CHANNEL_CONFIG
+    { "STAGE0_LP",            10000.0f },
+    { "STAGE0_BYPASS",        -5.0f },
+    { "STAGE0_BIAS",          0.0f },
+    
+    { "STAGE1_LP",            18000.0f },
+    { "STAGE1_BYPASS",        -4.0f },
+    { "STAGE1_BIAS",          0.0f },
+    { "STAGE1_ATTENUATION",   0.9f },
+    
+    { "STAGE2_LP",            16000.0f },
+    { "STAGE2_BYPASS",        0.0f },
+    { "STAGE2_BIAS",          0.7f },
+    { "STAGE2_ATTENUATION",   0.6f },
+    
+    { "STAGE3_LP",            16000.0f },
+    { "STAGE3_BYPASS",        -6.0f },
+    { "STAGE3_BIAS",          0.0f },
+    { "STAGE3_ATTENUATION",   0.6f },
+    
+    { "STAGE4_LP",            16000.0f },
+    { "STAGE4_BYPASS",        -6.0f },
+    { "STAGE4_BIAS",          0.0f },
+    
+    { "TONE_MODEL",           0.0f },
+    { "TONE_BASS",            5.0f },
+    { "TONE_MID",             5.0f },
+    { "TONE_TREB",            5.0f },
+    
+    { "RESONANCE",            5.0f },
+    { "PRESENCE",             5.0f },
+    
+    { "LOW_CUT_FREQ",         0.0f },
+    { "LOW_SHELF_FREQ",       0.0f },
+    { "LOW_SHELF_GAIN",       0.0f },
+    { "LOWMID_FREQ",          200.0f },
+    { "LOWMID_GAIN",          0.0f },
+    { "LOWMID_Q",             0.5f },
+    { "MID_FREQ",             700.0f },
+    { "MID_GAIN",             0.0f },
+    { "MID_Q",                0.5f },
+    { "HIGH_FREQ",            2000.0f },
+    { "HIGH_GAIN",            0.0f },
+    { "HIGH_Q",               0.5f },
+    { "HIGH_SHELF_FREQ",      20000.0f },
+    { "HIGH_SHELF_GAIN",      0.0f },
+    { "HIGH_CUT_FREQ",        20000.0f },
+    
+    { "MASTER_VOLUME",        -3.0f },
+    { "CHANNEL_CONFIG",       0.0f }
 };
-
 
 enum ChannelConfig {
     Mono, 

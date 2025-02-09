@@ -10,16 +10,16 @@
 
 #include "PluginProcessor.h"
 
-const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
+static const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
 
-const int knobSize = 100;
-const int horizontalMargin = 25;
-const int verticalMargin = 30;
-const int nRows = 3;
-const int nCols = 6;
+static const int knobSize = 100;
+static const int horizontalMargin = 25;
+static const int verticalMargin = 30;
+static const int nRows = 3;
+static const int nCols = 6;
 
-const int windoWidth = 1000;
-const int windowHeight = 450;
+static const int windoWidth = 1000;
+static const int windowHeight = 450;
 
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
@@ -119,22 +119,21 @@ struct GainStagesPage : public juce::Component {
     HSlider stage0BypassSlider;
     HSlider stage0BiasSlider;
 
-    HSlider stage1HPSlider;
     HSlider stage1LPSlider;
     HSlider stage1BypassSlider;
     HSlider stage1BiasSlider;
+    HSlider stage1AttSlider;
 
-    HSlider stage2HPSlider;
     HSlider stage2LPSlider;
     HSlider stage2BypassSlider;
     HSlider stage2BiasSlider;
+    HSlider stage2AttSlider;
 
-    HSlider stage3HPSlider;
     HSlider stage3LPSlider;
     HSlider stage3BypassSlider;
     HSlider stage3BiasSlider;
+    HSlider stage3AttSlider;
 
-    HSlider stage4HPSlider;
     HSlider stage4LPSlider;
     HSlider stage4BypassSlider;
     HSlider stage4BiasSlider;
@@ -191,7 +190,7 @@ struct EQPage : public juce::Component {
 struct MasterVolPanel : public juce::Component {
 
     MasterVolPanel(Processor &p) :
-        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this, ParamIDs[MASTER_VOLUME].toString(), p.apvts, " dB")
+        volumeSlider("MASTER_VOLUME_SLIDER_LABEL", "Master Vol", this, paramInfos[MASTER_VOLUME].id.toString(), p.apvts, " dB")
     {
     }
 
