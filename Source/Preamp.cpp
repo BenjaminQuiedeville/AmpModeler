@@ -108,6 +108,7 @@ void Preamp::setBias(float bias, int tube_index) {
 }
 
 // auto cubicClip = [](float x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
+
 static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
     ZoneScoped;
 
@@ -119,12 +120,24 @@ static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
     // @TODO: pour le bias, puis utiliser un Onepole pour smooth l'offset calculé sur ~10ms
     // refaire une fonction de calcul d'un seul echantillon pour les onepole
 
-    float *buffers[2] = { bufferL, bufferR };    
-    u32 nChannels = bufferR ? 2 : 1;
+    for (u32 index = 0; index < nSamples; index++) {
+        float sample = bufferL[index];
+
+        if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
+            sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
+                    // sample = thresh + sample/ratio - thresh/ratio
+                    // sample = thresh*ratio + sample - thresh
+                    // sample = sample + thresh*ratio - thresh
+        } else if (2.0f * abs(sample - gridCondThresh) <= gridCondKnee) {
+            sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
+                        /(2.0f * gridCondKnee);
+        }
+        bufferL[index] = sample;
+    }
     
-    for (u32 channel_index = 0; channel_index < nChannels; channel_index++) {
+    if (bufferR) {
         for (u32 index = 0; index < nSamples; index++) {
-            float sample = buffers[channel_index][index];
+            float sample = bufferR[index];
     
             if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
                 sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
@@ -135,31 +148,50 @@ static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
                 sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
                             /(2.0f * gridCondKnee);
             }
-            buffers[channel_index][index] = sample;
+            bufferR[index] = sample;
         }
     }
 }
 
-
 static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float *bias) {
     ZoneScoped;
+        
+    for (u32 index = 0; index < nSamples; index++) {
+        float sample = bufferL[index];
+        
+        sample *= -1.0f;
+        sample += bias[0];
 
-    static const float linear_range = 0.2f;
-    static const float neg_clip_point = 3.0f;
+        static const float linear_range = 0.2f;
+        static const float neg_clip_point = 3.0f;
 
-    float *buffers[2] = { bufferL, bufferR };    
-    u32 nChannels = bufferR ? 2 : 1;
+        if (sample > linear_range) {
+            sample = tanh(sample - linear_range) + linear_range;
+        }
+        // else if (sample < neg_clip_point) {
+        //     sample = neg_clip_point;
+        // }
+        else if (sample < 0.0f) {
+            sample *= 2.0f/(3.0f*neg_clip_point);
+            sample = sample < -1.0f ? -2.0f/3.0f : sample - 1.0f/3.0f * sample*sample*sample;
+            sample *= neg_clip_point * 1.5f;
+        }
 
-
-    for (u32 channel_index = 0; channel_index < nChannels; channel_index++) {
+        bufferL[index] = (sample - bias[1]);
+    }
+ 
+    if (bufferR) {
         for (u32 index = 0; index < nSamples; index++) {
-            float sample = buffers[channel_index][index];
+            float sample = bufferR[index];
             
             sample *= -1.0f;
             sample += bias[0];
     
+            static const float linear_range = 0.2f;
+            static const float neg_clip_point = 3.0f;
+    
             if (sample > linear_range) {
-                sample = M_2_PI * atanf((sample - linear_range)*M_PI_2) + linear_range;
+                sample = tanh(sample - linear_range) + linear_range;
             }
             // else if (sample < neg_clip_point) {
             //     sample = neg_clip_point;
@@ -170,7 +202,7 @@ static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float *bias) {
                 sample *= neg_clip_point * 1.5f;
             }
     
-            buffers[channel_index][index] = (sample - bias[1]);
+            bufferR[index] = (sample - bias[1]);
         }
     }
 }
