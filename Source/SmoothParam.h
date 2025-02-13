@@ -26,6 +26,7 @@ struct SmoothParamLinear {
     }
 
     void newTarget(double newTarget, double rampTimeMs, double samplerate) {
+        ZoneScoped;
         prevTarget = target;
         target = newTarget;
         stepHeight = 1.0 / (rampTimeMs * 0.001 * samplerate);
@@ -34,7 +35,7 @@ struct SmoothParamLinear {
     }
 
     inline double nextValue() {
-
+        ZoneScoped;
         if (!isSmoothing) { return target; }
 
         normValue += stepHeight;
@@ -105,12 +106,14 @@ struct SmoothParamIIR {
     }
 
     void newTarget(double newTarget, double tauMs, double samplerate) {
+        ZoneScoped;
         b0 = std::sin(M_PI / (samplerate * tauMs * 0.001));
         a1 = b0 - 1.0;
         target = newTarget;
     }
 
     double nextValue() {
+        ZoneScoped;
         currentValue = target * b0 - y1 * a1;
         y1 = currentValue;
 

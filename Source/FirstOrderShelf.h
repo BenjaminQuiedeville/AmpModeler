@@ -20,7 +20,7 @@ struct FirstOrderShelfFilter {
     }
     
     void setCoefficients(float freq, float gain_db, double samplerate) {
-
+        ZoneScoped;
         float gainLinear = 1.0f;
 
         if (filterType == ShelfType::lowshelf) {

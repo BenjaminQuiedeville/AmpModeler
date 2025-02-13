@@ -6,6 +6,7 @@ argc = len(sys.argv)
 
 def Print(message: str): print(message, file = sys.stdout, flush = True)
 
+work_dir = os.getcwd()
 release = False
 debug = False
 juce_only = False
@@ -42,11 +43,12 @@ else:
 
 plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
-optim_flags = " /Ox /Ob2 /GL /Gy"
+optim_flags = " /Ox /Ob2 /GL /Gy /arch:AVX2"
 debugging_flags = " /Zi /fsanitize=address"
 
 link_flags = "/OPT:REF"
 if release: link_flags += " /LTCG"
+if debug: link_flags += " /DEBUG"
 
 defines = " ".join([
     "/D _USE_MATH_DEFINES",
@@ -145,16 +147,17 @@ def build_juce(sources: str, out_path: str, flags: str) -> None:
     os.makedirs(out_path)
 
     command = f"cl {flags} /c /Fo:{out_path}/ /Fd:{out_path}/ {defines} {includes} {juce_sources}"
-    # Print(command)
+    Print(command)
     return_code = os.system(command)
     
     assert(not return_code)
     return    
 
 if use_tracy_profiler:
+    Print("Compiling with Tracy Profiler")
     plugin_sources += f" {tracy_dir}/public/TracyClient.cpp"
     includes += f" /I{tracy_dir}/public"
-    defines += " /D TRACY_ENABLE"    
+    defines += " /D TRACY_ENABLE"
 
 juce_build_dir: str = f"juce_build/{config}"
 
@@ -170,9 +173,9 @@ if (not path.isdir(juce_build_dir) and not juce_only):
 elif juce_only:
     os.system("rm -r juce_build")    
     
-    build_juce(juce_sources, "juce_build/debug",        command_flags)    
-    build_juce(juce_sources, "juce_build/release",      command_flags)
-    build_juce(juce_sources, "juce_build/relwithdebug", command_flags)        
+    build_juce(juce_sources, "juce_build/debug",        compile_flags + debugging_flags)
+    build_juce(juce_sources, "juce_build/release",      compile_flags + optim_flags)
+    build_juce(juce_sources, "juce_build/relwithdebug", compile_flags + optim_flags + debugging_flags )
     exit(0)
 
 juce_objects = " ".join([f"{juce_build_dir}/{file}" for file in filter(lambda string : ".obj" in string, os.listdir(juce_build_dir))])

@@ -114,8 +114,9 @@ void Processor::changeProgramName (int index, const juce::String& newName)
 }
 
 //==============================================================================
-void Processor::prepareToPlay (double sampleRate, int samplesPerBlock)
-{
+void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
+    ZoneScoped;
+    
     samplerate = sampleRate;
     bufferSize = samplesPerBlock;
     preampSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
@@ -282,7 +283,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
             audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
         }
     }
-    FrameMark;
+    // FrameMark;
 }
 
 //==============================================================================
@@ -350,7 +351,7 @@ void Processor::initParameters() {
 }
 
 void Processor::parameterChanged(const juce::String &parameterId, float newValue) {
-
+    ZoneScoped;
 
     const auto id = juce::Identifier(parameterId);
 

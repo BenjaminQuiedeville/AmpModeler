@@ -217,7 +217,7 @@ struct Tonestack {
 
 
     void updateCoefficients(float t, float m, float l) {
-    
+        ZoneScoped;    
         l = scale_linear(l, 0.0f, 1.0f, 0.0f, 1.0f);
         // m = scale_linear(m, 0.0f, 1.0f, 0.0f, 1.5f);
         // t = scale_linear(t, 0.0f, 1.0f, 0.0f, 1.0f);

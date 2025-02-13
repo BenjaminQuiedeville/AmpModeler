@@ -50,6 +50,7 @@ GateBoostPage::GateBoostPage(Processor &p) :
 
 
 void GateBoostPage::resized() {
+    ZoneScoped;
 
     int width = getWidth();
     int height = getHeight();
@@ -135,6 +136,7 @@ AmplifierPage::AmplifierPage(Processor &p) :
 
 
 void AmplifierPage::resized() {
+    ZoneScoped;
 
     int width = getWidth();
     int height = getHeight();
@@ -222,6 +224,7 @@ GainStagesPage::GainStagesPage(Processor &p) :
 }
 
 void GainStagesPage::resized() {
+    ZoneScoped;
 
     static const int horizontalSpacing = 25;
     static const int verticalSpacing = 40;
@@ -420,6 +423,7 @@ IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
 }
 
 void IRLoaderPage::resized() {
+    ZoneScoped;
 
     int width = getWidth();
     int height = getHeight();
@@ -472,6 +476,7 @@ EQPage::EQPage(Processor &p) :
 }
 
 void EQPage::resized() {
+    ZoneScoped;
 
     int width = getWidth();
     int height = getHeight();
@@ -553,11 +558,13 @@ Editor::Editor (Processor& p)
 
 //==============================================================================
 void Editor::paint (juce::Graphics& g) {
+    ZoneScoped;
 	g.fillAll(juce::Colours::darkgrey);
     volumePanel.paint(g);
 }
 
 void Editor::resized() {
+    ZoneScoped;
 
     juce::Rectangle<int> bounds = getLocalBounds();
 

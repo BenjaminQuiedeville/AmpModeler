@@ -10,7 +10,7 @@ set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
 add_subdirectory(${JUCE_SOURCE_DIR})
 
 if (MSVC)
-    add_compile_options(/W3)
+    add_compile_options(/W3 /arch:AVX2)
 else()
     add_compile_options(-Wall -Wextra)
 endif()

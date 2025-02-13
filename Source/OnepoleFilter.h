@@ -20,6 +20,7 @@ struct OnepoleFilter {
     }
 
     void setCoefficients(double frequency, double samplerate) {
+        ZoneScoped;
         b0 = sin(M_PI / samplerate * frequency);
         a1 = b0 - 1.0;
     }

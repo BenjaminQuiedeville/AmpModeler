@@ -75,6 +75,7 @@ void Preamp::prepareToPlay(double samplerate, u32 blockSize) {
 }
 
 void Preamp::setBias(float bias, int tube_index) {
+    ZoneScoped;
     // @TODO: add smoothing to avoid clicks
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
@@ -165,6 +166,7 @@ static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float *bias) {
         static const float linear_range = 0.2f;
         static const float neg_clip_point = 3.0f;
 
+        // fonction à essayer : 1 - exp(-x)
         if (sample > linear_range) {
             sample = tanh(sample - linear_range) + linear_range;
         }
