@@ -134,7 +134,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
-    toneStack.prepareToPlay();
+    toneStack.prepareToPlay(bufferSize);
+    
     irLoader.init(samplerate, bufferSize);
 
     if (!sideChainBuffer) {
