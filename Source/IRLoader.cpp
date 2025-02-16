@@ -53,9 +53,7 @@ void IRLoader::prepareConvolution(float *irPtr, size_t irSize) {
     numIRParts = (u32)(irSize / blockSize);
     if (irSize % blockSize != 0) { numIRParts += 1; }
 
-    assert(nextPowTwo(blockSize) == blockSize && "IRLoader, blockSize must be a power of 2!");
-
-    fftSize = 2*blockSize;
+    fftSize = 2*nextPowTwo(blockSize);;
     dftSize = fftSize + 2;
     deallocateFFTEngine();
 

@@ -44,7 +44,7 @@ else:
 plugin_name = f"AmpSimp_{config}"
 compile_flags = "/MP /std:c++20 /EHsc /nologo /LD /bigobj /MTd /W4 /Zc:wchar_t /Zc:forScope /Zc:inline"
 optim_flags = " /Ox /Ob2 /GL /Gy /arch:AVX2"
-debugging_flags = " /Zi /fsanitize=address"
+debugging_flags = " /Zi"
 
 link_flags = "/OPT:REF"
 if release: link_flags += " /LTCG"
@@ -84,8 +84,8 @@ defines = " ".join([
     
     "/D JucePlugin_ManufacturerCode=0x48524d53",
     "/D \"JucePlugin_Manufacturer=\\\"Hermes140\\\"\"",
-    "/D JucePlugin_PluginCode=0x414d504d",
-    "/D JucePlugin_Version=0.2.0",
+    "/D JucePlugin_PluginCode=0x41707370",
+    "/D JucePlugin_Version=0.3.0",
     f"/D \"JucePlugin_Name=\\\"{plugin_name}\\\"\"",
     f"/D \"JucePlugin_Desc=\\\"{plugin_name}\\\"\"",
     "/D \"JucePlugin_VersionString=\\\"0.2.0\\\"\"",

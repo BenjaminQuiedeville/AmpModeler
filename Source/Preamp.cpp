@@ -87,25 +87,16 @@ void Preamp::setBias(float bias, int tube_index) {
         default: { assert(false && "setBias: wrong tube_index"); }
     }
 
-    static const float pos_clip_point = 0.2f;
-    static const float neg_clip_point = 3.0f;
-    
-    // static const float bias_multiplier = 1.5f;
-    // bias *= bias_multiplier;
+    static const float positiveLinRange = 0.2f;
 
     selected_stage_bias[0] = bias;
 
-    float result = 0.0f;
-
-    if (bias > pos_clip_point) {
-        result = tanh(bias - pos_clip_point) + pos_clip_point;
-    } else if (bias < neg_clip_point) {
-        result = neg_clip_point;
+    if (bias > positiveLinRange) {
+        // selected_stage_bias[1] = tanh(bias - positiveLinRange) + positiveLinRange;
+        selected_stage_bias[1] = 1.0f - expf(positiveLinRange - bias) + positiveLinRange;
     } else {
-        result = bias;
+        selected_stage_bias[1] = bias;
     }
-
-    selected_stage_bias[1] = result;
 }
 
 // auto cubicClip = [](float x) { return x < -1.0f ? -2.0f/3.0f : x - 1.0f/3.0f * x*x*x; };
@@ -121,24 +112,13 @@ static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
     // @TODO: pour le bias, puis utiliser un Onepole pour smooth l'offset calculé sur ~10ms
     // refaire une fonction de calcul d'un seul echantillon pour les onepole
 
-    for (u32 index = 0; index < nSamples; index++) {
-        float sample = bufferL[index];
+    float *buffers[2] = {bufferL, bufferR};    
+    u32 nChannels = bufferR ? 2 : 1;
 
-        if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
-            sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
-                    // sample = thresh + sample/ratio - thresh/ratio
-                    // sample = thresh*ratio + sample - thresh
-                    // sample = sample + thresh*ratio - thresh
-        } else if (2.0f * abs(sample - gridCondThresh) <= gridCondKnee) {
-            sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
-                        /(2.0f * gridCondKnee);
-        }
-        bufferL[index] = sample;
-    }
-    
-    if (bufferR) {
+    for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {
+
         for (u32 index = 0; index < nSamples; index++) {
-            float sample = bufferR[index];
+            float sample = buffers[channelIndex][index];
     
             if (2.0f * (sample - gridCondThresh) > gridCondKnee) {
                 sample = gridCondThresh + (sample - gridCondThresh)/gridCondRatio;
@@ -149,62 +129,42 @@ static void gridConduction(float *bufferL, float *bufferR, u32 nSamples) {
                 sample += ((1.0f/gridCondRatio - 1.0f) * powf(sample - gridCondThresh + gridCondKnee * 0.5f, 2))
                             /(2.0f * gridCondKnee);
             }
-            bufferR[index] = sample;
+            buffers[channelIndex][index] = sample;
         }
     }
 }
 
 static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float *bias) {
     ZoneScoped;
-        
-    for (u32 index = 0; index < nSamples; index++) {
-        float sample = bufferL[index];
-        
-        sample *= -1.0f;
-        sample += bias[0];
-
-        static const float linear_range = 0.2f;
-        static const float neg_clip_point = 3.0f;
-
-        // fonction à essayer : 1 - exp(-x)
-        if (sample > linear_range) {
-            sample = tanh(sample - linear_range) + linear_range;
-        }
-        // else if (sample < neg_clip_point) {
-        //     sample = neg_clip_point;
-        // }
-        else if (sample < 0.0f) {
-            sample *= 2.0f/(3.0f*neg_clip_point);
-            sample = sample < -1.0f ? -2.0f/3.0f : sample - 1.0f/3.0f * sample*sample*sample;
-            sample *= neg_clip_point * 1.5f;
-        }
-
-        bufferL[index] = (sample - bias[1]);
-    }
- 
-    if (bufferR) {
+    
+    float *buffers[2] = {bufferL, bufferR};    
+    u32 nChannels = bufferR ? 2 : 1;
+    
+    for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {
         for (u32 index = 0; index < nSamples; index++) {
-            float sample = bufferR[index];
+            float sample = buffers[channelIndex][index];
             
             sample *= -1.0f;
             sample += bias[0];
     
-            static const float linear_range = 0.2f;
-            static const float neg_clip_point = 3.0f;
+            static const float positiveLinRange = 0.2f;
+            static const float negClipPoint = 3.0f;
     
-            if (sample > linear_range) {
-                sample = tanh(sample - linear_range) + linear_range;
+            // fonction à essayer : 1 - exp(-x)
+            if (sample > positiveLinRange) {
+                // sample = tanh(sample - positiveLinRange) + positiveLinRange;
+                sample = 1.0f - expf(positiveLinRange - sample) + positiveLinRange;
             }
-            // else if (sample < neg_clip_point) {
-            //     sample = neg_clip_point;
+            // else if (sample < negClipPoint) {
+            //     sample = negClipPoint;
             // }
             else if (sample < 0.0f) {
-                sample *= 2.0f/(3.0f*neg_clip_point);
+                sample *= 2.0f/(3.0f*negClipPoint);
                 sample = sample < -1.0f ? -2.0f/3.0f : sample - 1.0f/3.0f * sample*sample*sample;
-                sample *= neg_clip_point * 1.5f;
+                sample *= negClipPoint * 1.5f;
             }
     
-            bufferR[index] = (sample - bias[1]);
+            buffers[channelIndex][index] = (sample - bias[1]);
         }
     }
 }

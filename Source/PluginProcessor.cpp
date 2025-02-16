@@ -134,7 +134,7 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
-    toneStack.prepareToPlay(bufferSize);
+    toneStack.prepareToPlay();
     irLoader.init(samplerate, bufferSize);
 
     if (!sideChainBuffer) {
@@ -263,17 +263,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
     }
 
-    if (currentChannelConfig == Mono) {
-        // copy left channel into right channel if processing is in mono
-        buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
-    }
-
-    if (currentChannelConfig == FakeStereo) {
-        for (u32 i = 0; i < numSamples; i++) {
-            audioPtrR[i] *= -1.0f;
-        }
-    }
-    
     for (u32 index = 0; index < numSamples; index++) {
         audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
     }
@@ -283,6 +272,18 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
             audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
         }
     }
+
+    if (currentChannelConfig == FakeStereo) {
+        for (u32 i = 0; i < numSamples; i++) {
+            audioPtrR[i] *= -1.0f;
+        }
+    }
+
+    if (currentChannelConfig == Mono) {
+        // copy left channel into right channel if processing is in mono
+        buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
+    }
+    
     // FrameMark;
 }
 
