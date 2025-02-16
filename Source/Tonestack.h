@@ -20,45 +20,30 @@ enum TonestackModel {
 
 struct Tonestack {
 
-    Tonestack() {    
-        setModel(EnglSavage);
-    }
+    void prepareToPlay() {
+        setModel(Soldano);
 
-    ~Tonestack() {
-        if (dummyBuffer) { free(dummyBuffer); }    
-    }
-
-    void prepareToPlay(int blockSize) {
-    
-        bassParam.init(0.5);
-        midParam.init(0.5);
         trebbleParam.init(0.5);
+        midParam.init(0.5);
+        bassParam.init(0.5);
     
         updateCoefficients((float)trebbleParam.currentValue,
                             (float)midParam.currentValue, 
                             (float)bassParam.currentValue);
         
-        x1L = 0.0f;
-        x2L = 0.0f;
-        x3L = 0.0f;
-        y1L = 0.0f;
-        y2L = 0.0f;
-        y3L = 0.0f;
+        states[0].x1 = 0.0f;
+        states[0].x2 = 0.0f;
+        states[0].x3 = 0.0f;
+        states[0].y1 = 0.0f;
+        states[0].y2 = 0.0f;
+        states[0].y3 = 0.0f;
         
-        x1R = 0.0f;
-        x2R = 0.0f;
-        x3R = 0.0f;
-        y1R = 0.0f;
-        y2R = 0.0f;
-        y3R = 0.0f;
-        
-        if (dummyBuffer) {
-            dummyBuffer = (float*)realloc(dummyBuffer, blockSize * sizeof(float));
-            memset(dummyBuffer, 0, blockSize * sizeof(float));
-        } else {
-            dummyBuffer = (float*)calloc(blockSize, sizeof(float));
-        }
-    
+        states[1].x1 = 0.0f;
+        states[1].x2 = 0.0f;
+        states[1].x3 = 0.0f;
+        states[1].y1 = 0.0f;
+        states[1].y2 = 0.0f;
+        states[1].y3 = 0.0f;
     }
 
 
@@ -73,53 +58,35 @@ struct Tonestack {
             update = true;
         }
         
-        if (!bufferR) { bufferR = dummyBuffer; }
+        float *buffers[2] = {bufferL, bufferR};
+        u32 nChannels = bufferR ? 2 : 1;
         
         for (size_t i = 0; i < nSamples; i++) {
-        
             if (update) {
                 updateCoefficients((float)trebbleParam.nextValue(),
                                     (float)midParam.nextValue(),
                                     (float)bassParam.nextValue());
-        
             }
+            
+            for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {        
+                float outputSample = (float)(buffers[channelIndex][i] * b0
+                                   + states[channelIndex].x1 * b1
+                                   + states[channelIndex].x2 * b2
+                                   + states[channelIndex].x3 * b3
+                                   - states[channelIndex].y1 * a1
+                                   - states[channelIndex].y2 * a2
+                                   - states[channelIndex].y3 * a3);
         
-            float outputSample = (float)(bufferL[i] * b0
-                                + x1L * b1
-                                + x2L * b2
-                                + x3L * b3
-                                - y1L * a1
-                                - y2L * a2
-                                - y3L * a3);
-    
-            x3L = x2L; 
-            x2L = x1L;
-            x1L = bufferL[i];
-            
-            y3L = y2L; 
-            y2L = y1L;
-            y1L = outputSample;
-    
-            bufferL[i] = outputSample;
-            
+                states[channelIndex].x3 = states[channelIndex].x2; 
+                states[channelIndex].x2 = states[channelIndex].x1;
+                states[channelIndex].x1 = buffers[channelIndex][i];
                 
-            outputSample = (float)(bufferR[i] * b0
-                                + x1R * b1
-                                + x2R * b2
-                                + x3R * b3
-                                - y1R * a1
-                                - y2R * a2
-                                - y3R * a3);
-    
-            x3R = x2R; 
-            x2R = x1R;
-            x1R = bufferR[i];
-            
-            y3R = y2R; 
-            y2R = y1R;
-            y1R = outputSample;
-    
-            bufferR[i] = outputSample;
+                states[channelIndex].y3 = states[channelIndex].y2; 
+                states[channelIndex].y2 = states[channelIndex].y1;
+                states[channelIndex].y1 = outputSample;
+        
+                buffers[channelIndex][i] = outputSample;
+            }
         }
     }
 
@@ -272,7 +239,6 @@ struct Tonestack {
     }
 
 
-
     SmoothParamLinear bassParam;
     SmoothParamLinear midParam;
     SmoothParamLinear trebbleParam;
@@ -286,23 +252,16 @@ struct Tonestack {
     double a2 = 0.0;
     double a3 = 0.0;
 
-    float x1L = 0.0f;
-    float x2L = 0.0f;
-    float x3L = 0.0f;
-
-    float y1L = 0.0f;
-    float y2L = 0.0f;
-    float y3L = 0.0f;
-
-    float x1R = 0.0f;
-    float x2R = 0.0f;
-    float x3R = 0.0f;
-
-    float y1R = 0.0f;
-    float y2R = 0.0f;
-    float y3R = 0.0f;
+    struct State {
+        float x1 = 0.0f;
+        float x2 = 0.0f;
+        float x3 = 0.0f;
     
-    float *dummyBuffer = nullptr;
+        float y1 = 0.0f;
+        float y2 = 0.0f;
+        float y3 = 0.0f;
+    } states[2];
+    
     double samplerate = 0.0;
     TonestackModel model;
     
