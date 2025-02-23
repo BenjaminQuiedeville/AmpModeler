@@ -61,6 +61,13 @@ build_working_dir:      %PROJECT_CONFIG_DIR%
 error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 key_binding:            F6
 
+[DebugRelease Build Python]   # <- command name. Can be arbitrary
+build_command:          python build.py relwithdebug  # should be an executable or a script
+build_working_dir:      %PROJECT_CONFIG_DIR%
+# timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
+error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
+key_binding:            Ctrl-F6
+
 
 [Run]                   # <- You could have commands that don't build anything and just run something
 run_command:            W:/VSTHost/vsthost.exe build\AmpModeler_artefacts\Debug\VST3\AmpModeler.vst3\Contents\x86_64-win\AmpModeler.vst3
