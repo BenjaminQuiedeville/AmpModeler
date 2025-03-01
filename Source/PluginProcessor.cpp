@@ -228,6 +228,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     
     /******PROCESS********/
     if (gateActive) {
+        noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
         tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
         biteFilter.process(audioPtrL, audioPtrR, numSamples);
     }
@@ -260,10 +261,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     masterVolume.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
         
-    if (gateActive) {
-        noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
-    }
-
     for (u32 index = 0; index < numSamples; index++) {
         audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
     }
@@ -285,7 +282,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
     }
     
-    // FrameMark;
+    FrameMark;
 }
 
 //==============================================================================
