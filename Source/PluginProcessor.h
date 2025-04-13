@@ -153,26 +153,26 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "INPUT_FILTER",         100.0f },
     { "PREAMP_VOLUME",        0.0f },
     
-    { "STAGE0_LP",            10000.0f },
+    { "STAGE0_LP",            12000.0f },
     { "STAGE0_BYPASS",        -5.0f },
     { "STAGE0_BIAS",          0.0f },
     
-    { "STAGE1_LP",            18000.0f },
+    { "STAGE1_LP",            12000.0f },
     { "STAGE1_BYPASS",        -4.0f },
-    { "STAGE1_BIAS",          0.0f },
+    { "STAGE1_BIAS",          0.2f },
     { "STAGE1_ATTENUATION",   0.9f },
     
-    { "STAGE2_LP",            16000.0f },
+    { "STAGE2_LP",            12000.0f },
     { "STAGE2_BYPASS",        0.0f },
-    { "STAGE2_BIAS",          0.7f },
+    { "STAGE2_BIAS",          0.3f },
     { "STAGE2_ATTENUATION",   0.6f },
     
-    { "STAGE3_LP",            16000.0f },
+    { "STAGE3_LP",            12000.0f },
     { "STAGE3_BYPASS",        -6.0f },
     { "STAGE3_BIAS",          0.0f },
     { "STAGE3_ATTENUATION",   0.6f },
     
-    { "STAGE4_LP",            16000.0f },
+    { "STAGE4_LP",            12000.0f },
     { "STAGE4_BYPASS",        -6.0f },
     { "STAGE4_BIAS",          0.0f },
     
@@ -200,7 +200,7 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "HIGH_SHELF_GAIN",      0.0f },
     { "HIGH_CUT_FREQ",        20000.0f },
     
-    { "MASTER_VOLUME",        -3.0f },
+    { "MASTER_VOLUME",        0.0f },
     { "CHANNEL_CONFIG",       0.0f }
 };
 

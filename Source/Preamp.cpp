@@ -249,6 +249,8 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
     overSampler.upSampleFilter1.process(upBufferL, upBufferR, upNumSamples);
     overSampler.upSampleFilter2.process(upBufferL, upBufferR, upNumSamples);
+    applyGainLinear(PREAMP_UP_SAMPLE_FACTOR, upBufferL, upBufferR, upNumSamples);
+
 
     //processing the gain stages
     {

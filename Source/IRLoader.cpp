@@ -198,7 +198,8 @@ IRLoaderError IRLoader::loadIR() {
             error = IRLoaderError::Error;
             goto wav_opening_scope_end;
         }
-
+        
+        free(irBuffer);
         irBuffer = (float*)calloc(wav.totalPCMFrameCount, sizeof(float));
         numFramesRead = drwav_read_pcm_frames_f32(&wav, wav.totalPCMFrameCount, irBuffer);
 

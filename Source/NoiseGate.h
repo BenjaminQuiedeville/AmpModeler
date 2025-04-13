@@ -21,27 +21,35 @@ struct NoiseGate {
 
     void prepareToPlay(double _samplerate) {
 
+        bool reallocBuffer = _samplerate != samplerate;
+
         samplerate = _samplerate;
-        gateBufferLength = (size_t)(samplerate * GATE_BUFFER_LENGTH_SECONDS);
+        gateBufferLength = (u32)(samplerate * GATE_BUFFER_LENGTH_SECONDS);
         gateBufferIndex = 0;
         absoluteSum = 0.0;
-        threshold = dbtoa(-70.0);
+        threshold = dbtoa(-75.0);
         returnGain = threshold;
+        isOpen = false;
 
         if (gateBuffer == nullptr) {
             gateBuffer = (float *)calloc(gateBufferLength, sizeof(float));
 
         } else {
-            memset(gateBuffer, 0, gateBufferLength * sizeof(float));
+            
+            if (reallocBuffer) {
+                free(gateBuffer);
+                gateBuffer = (float*)malloc(gateBufferLength * sizeof(float));
+            }
+            memset(gateBuffer, 0, gateBufferLength * sizeof(float));            
         }
         
         gateGain.init(0.0);
     }
 
-    void process(float *bufferL, float *bufferR, float *sidechain, size_t nSamples) {
+    void process(float *bufferL, float *bufferR, float *sidechain, u32 nSamples) {
         ZoneScoped;
         
-        for (size_t i = 0; i < nSamples; i++) {
+        for (u32 i = 0; i < nSamples; i++) {
             
             absoluteSum -= std::abs(gateBuffer[gateBufferIndex]);
             
@@ -56,25 +64,29 @@ struct NoiseGate {
             // if open && > thresh - hyst -> open 
             // if open && < thresh -hyst -> close
             
-            bool isOpen = false;
+            bool shouldOpen = false;
             double amplitude = absoluteSum / gateBufferLength;
             
             if (amplitude > threshold) { 
-                isOpen = true;  
+                shouldOpen = true;  
             }
             
             if (isOpen && amplitude > returnGain) { 
-                isOpen = true;  
+                shouldOpen = true;  
             }
             
             if (amplitude < returnGain) { 
-                isOpen = false; 
+                shouldOpen = false; 
             }
             
-            
-            gateGain.newTarget(isOpen ? 1.0 : 0.0, 
-                               isOpen ? attackTimeMs : releaseTimeMs,
-                               samplerate);
+            if (shouldOpen && !isOpen) {
+                gateGain.newTarget(1.0, attackTimeMs, samplerate);
+                isOpen = true;
+                
+            } else if (!shouldOpen && isOpen) {
+                gateGain.newTarget(0.0, releaseTimeMs, samplerate);
+                isOpen = false;
+            }
             
             float gateGainValue = (float)gateGain.nextValue(); 
             
@@ -90,8 +102,8 @@ struct NoiseGate {
     double threshold = 0.0;
     
     float *gateBuffer = nullptr;
-    size_t gateBufferLength = 0;
-    s32 gateBufferIndex = 0;
+    u32 gateBufferLength = 0;
+    u32 gateBufferIndex = 0;
     
     double absoluteSum = 0.0;
     
@@ -101,4 +113,5 @@ struct NoiseGate {
     double releaseTimeMs = 15.0;
     double hysteresis = 0.0;
     double returnGain = 0.0;
+    bool   isOpen = false;
 };
