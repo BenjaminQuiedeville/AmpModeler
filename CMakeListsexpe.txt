@@ -1,0 +1,132 @@
+cmake_minimum_required(VERSION 3.22)
+
+project(AmpModeler VERSION 0.3.0)
+enable_language(CXX)
+
+# set(CMAKE_CXX_COMPILER clang-cl)
+
+set(CMAKE_CXX_STANDARD 17)
+
+set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
+set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
+
+add_compile_options(-Wall -Wextra -mavx2 -ffast-math -fno-math-errno -fveclib=libmvec)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -gcodeview -gcolumn-info")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -gcodeview -gcolumn-info")
+set(CMAKE_CXX_FLAGS_RELEASE "")
+
+set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "-fuse-ld=lld -Wl,--pdb=${PROJECT_NAME}.pdb")
+# set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO "-fuse-ld=lld -Wl,--pdb=${PROJECT_NAME}.pdb -Wl,–allow-shlib-undefined")
+
+set(USE_TRACY FALSE)
+
+add_library(${PROJECT_NAME} SHARED)
+
+set_target_properties(
+    ${PROJECT_NAME} 
+    PROPERTIES 
+        PREFIX ""
+        LIBRARY_OUTPUT_NAME "AmpModeler"
+        SUFFIX ".vst3"
+)
+
+target_sources(${PROJECT_NAME} PUBLIC
+    Source/main.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_basics/juce_audio_basics.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_devices/juce_audio_devices.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_formats/juce_audio_formats.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_processors/juce_audio_processors.cpp
+    ${LIB_DIR}/juce/modules/juce_audio_utils/juce_audio_utils.cpp
+    ${LIB_DIR}/juce/modules/juce_core/juce_core.cpp
+    ${LIB_DIR}/juce/modules/juce_data_structures/juce_data_structures.cpp
+    ${LIB_DIR}/juce/modules/juce_graphics/juce_graphics.cpp
+    ${LIB_DIR}/juce/modules/juce_gui_basics/juce_gui_basics.cpp
+    ${LIB_DIR}/juce/modules/juce_gui_extra/juce_gui_extra.cpp
+    ${LIB_DIR}/juce/modules/juce_events/juce_events.cpp
+    ${LIB_DIR}/pffft/pffft.c
+)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    _USE_MATH_DEFINES
+
+    JUCE_MODAL_LOOPS_PERMITTED=1
+    JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+    JUCE_MODULE_AVAILABLE_juce_core=1
+    JUCE_MODULE_AVAILABLE_juce_audio_plugin_client=1
+    JUCE_MODULE_AVAILABLE_juce_audio_processors=1
+    JUCE_MODULE_AVAILABLE_juce_gui_extra=1
+    JUCE_MODULE_AVAILABLE_juce_gui_basics=1
+    JUCE_MODULE_AVAILABLE_juce_graphics=1
+    JUCE_MODULE_AVAILABLE_juce_events=1
+    JUCE_MODULE_AVAILABLE_juce_data_structures=1
+    JUCE_MODULE_AVAILABLE_juce_audio_basics=1
+    JUCE_MODULE_AVAILABLE_juce_audio_utils=1
+    JUCE_MODULE_AVAILABLE_juce_audio_formats=1
+    JUCE_MODULE_AVAILABLE_juce_audio_devices=1
+    
+    JUCE_WINDOWS
+    
+    DEBUG=1
+    _DEBUG=1
+    _MT=1
+    
+    WIN32
+    _WINDOWS
+    JucePlugin_Build_VST3=1
+    JucePlugin_IsSynth=0
+    
+    JucePlugin_ProducesMidiOutput=0
+    JucePlugin_IsMidiEffect=0
+    JucePlugin_WantsMidiInput=0
+    JucePlugin_EditorRequiresKeyboardFocus=0
+    
+    JucePlugin_ManufacturerCode=0x48524d53
+    JucePlugin_Manufacturer="Hermes140"
+    JucePlugin_PluginCode=0x41707370
+    JucePlugin_Version=0.3.0
+    JucePlugin_Name="${PROJECT_NAME}"
+    JucePlugin_Desc="${PROJECT_NAME}"
+    JucePlugin_VersionString="0.2.0"
+    JucePlugin_Vst3Category="Fx"
+    JucePlugin_ManufacturerWebsite=""
+    JucePlugin_ManufacturerEmail=""
+
+    JucePlugin_VersionCode=0x200
+    JucePlugin_VSTUniqueID=JucePlugin_PluginCode
+    JucePlugin_VSTCategory=kPlugCategEffect
+    
+    JUCE_VST3_CAN_REPLACE_VST2=0
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${LIB_DIR}/juce/modules
+    ${LIB_DIR}/juce/modules/juce_audio_processors/format_types/VST3_SDK
+    ${LIB_DIR}
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    kernel32.lib
+    user32.lib
+    gdi32.lib
+    shell32.lib
+    ole32.lib
+    oleaut32.lib
+    uuid.lib
+    comdlg32.lib
+    Winmm.lib
+    Ws2_32.lib
+    Imm32.lib
+    Wininet.lib
+    Shlwapi.lib
+    Version.lib
+    DXGI.lib
+)
+
+if(USE_TRACY)
+    set(TRACY_DIR W://Tracy-Profiler/tracy-0.11.1)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${TRACY_DIR}/public)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_ENABLE)
+    target_sources(${PROJECT_NAME} PUBLIC ${TRACY_DIR}/public/TracyClient.cpp)
+endif()
+

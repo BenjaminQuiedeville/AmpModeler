@@ -30,15 +30,18 @@ typedef int32_t  s32;
 typedef uint64_t u64;
 typedef int64_t  s64;
 
-inline double dbtoa(double value) {
-    return std::pow(10, value/20.0);
+inline float dbtoa(float value) {
+    return std::pow(10.0f, value/20.0f);
 }
 
-inline double atodb(double value) {
-    return 20.0 * std::log10(value);
+inline float atodb(float value) {
+    return 20.0f * std::log10(value);
 }
 
 #define CLIP(x, min, max) (x > max ? max : x < min ? min : x)
+
+#define FLOAT_COPY(dest, source, nsamples) memcpy(dest, source, nsamples * sizeof(float))
+#define FLOAT_CLEAR(ptr, nsamples)         memset(ptr, 0, nsamples * sizeof(float))
 
 
 static inline float scale(float x, float min, float max, float newmin, float newmax, float curve) {

@@ -33,7 +33,7 @@ struct IRLoader {
 
     ~IRLoader();
 
-    void init(double samplerate, size_t blockSize);
+    void init(float samplerate, size_t blockSize);
 
     void deallocateFFTEngine();
     // void reallocFFTEngine(u64 newSize);
@@ -63,7 +63,7 @@ struct IRLoader {
     bool defaultIR = true;
     float *irBuffer = nullptr;
     u32 irBufferSize = 0;
-    double samplerate = 0.0;
+    float samplerate = 0.0;
     
     juce::File irFile;
     juce::Array<juce::File> directoryWavFiles;

@@ -4,15 +4,29 @@ project(AmpModeler VERSION 0.3.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(USE_TRACY TRUE)
+
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
 
+if(USE_TRACY)
+    set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
+endif()
+ 
 add_subdirectory(${JUCE_SOURCE_DIR})
 
 if (MSVC)
     add_compile_options(/W3 /arch:AVX2)
+    
+    set(OPTI_FLAGS "/Qpar /fp:fast")
+    set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${OPTI_FLAGS})
 else()
-    add_compile_options(-Wall -Wextra)
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -gcodeview -gcolumn-info")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -gcodeview -gcolumn-info")
+    set(CMAKE_CXX_FLAGS_RELEASE "")
+    
+    add_link_options(-fuse-ld=lld -fno-emulated-tls -Wl,--pdb=${PROJECT_NAME}.pdb)
 endif()
 
 juce_add_plugin(${PROJECT_NAME}
@@ -25,7 +39,7 @@ juce_add_plugin(${PROJECT_NAME}
     FORMATS                     VST3 Standalone
     PRODUCT_NAME                "AmpModeler"
     
-    VST3_AUTO_MANIFEST          TRUE
+    VST3_AUTO_MANIFEST          FALSE
     COPY_PLUGIN_AFTER_BUILD     TRUE
 )
 
@@ -37,14 +51,14 @@ target_sources(${PROJECT_NAME}
         # Source/Preamp.cpp 
         Source/main.cpp
         libs/pffft/pffft.c
-        # W:/Tracy-Profiler/tracy-0.11.1/public/TracyClient.cpp
+        W:/Tracy-Profiler/tracy-0.11.1/public/TracyClient.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${LIB_DIR}
         ${JUCE_SOURCE_DIR}/modules
-        # W:/Tracy-Profiler/tracy-0.11.1/public
+        W:/Tracy-Profiler/tracy-0.11.1/public
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -55,7 +69,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_MODAL_LOOPS_PERMITTED=1
         JUCE_ASIO=0
         _USE_MATH_DEFINES
-        # TRACY_ENABLE
+        TRACY_ENABLE
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -67,3 +81,10 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+if(USE_TRACY)
+    target_sources(${PROJECT_NAME} PUBLIC ${TRACY_DIR}/public/TracyClient.cpp)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${TRACY_DIR}/public)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TRACY_ENABLE)    
+    target_link_libraries(${PROJECT_NAME} PUBLIC Dbghelp.lib)
+endif()

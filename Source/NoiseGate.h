@@ -19,7 +19,7 @@ struct NoiseGate {
     }
 
 
-    void prepareToPlay(double _samplerate) {
+    void prepareToPlay(float _samplerate) {
 
         bool reallocBuffer = _samplerate != samplerate;
 
@@ -27,7 +27,7 @@ struct NoiseGate {
         gateBufferLength = (u32)(samplerate * GATE_BUFFER_LENGTH_SECONDS);
         gateBufferIndex = 0;
         absoluteSum = 0.0;
-        threshold = dbtoa(-75.0);
+        threshold = (float)dbtoa(-75.0);
         returnGain = threshold;
         isOpen = false;
 
@@ -38,9 +38,9 @@ struct NoiseGate {
             
             if (reallocBuffer) {
                 free(gateBuffer);
-                gateBuffer = (float*)malloc(gateBufferLength * sizeof(float));
+                gateBuffer = (float*)calloc(gateBufferLength, sizeof(float));
             }
-            memset(gateBuffer, 0, gateBufferLength * sizeof(float));            
+            FLOAT_CLEAR(gateBuffer, gateBufferLength);            
         }
         
         gateGain.init(0.0);
@@ -65,7 +65,7 @@ struct NoiseGate {
             // if open && < thresh -hyst -> close
             
             bool shouldOpen = false;
-            double amplitude = absoluteSum / gateBufferLength;
+            float amplitude = absoluteSum / gateBufferLength;
             
             if (amplitude > threshold) { 
                 shouldOpen = true;  
@@ -80,15 +80,15 @@ struct NoiseGate {
             }
             
             if (shouldOpen && !isOpen) {
-                gateGain.newTarget(1.0, attackTimeMs, samplerate);
+                gateGain.newTarget(1.0f, attackTimeMs, samplerate);
                 isOpen = true;
                 
             } else if (!shouldOpen && isOpen) {
-                gateGain.newTarget(0.0, releaseTimeMs, samplerate);
+                gateGain.newTarget(0.0f, releaseTimeMs, samplerate);
                 isOpen = false;
             }
             
-            float gateGainValue = (float)gateGain.nextValue(); 
+            float gateGainValue = gateGain.nextValue(); 
             
             bufferL[i] *= gateGainValue;
             
@@ -98,20 +98,20 @@ struct NoiseGate {
         }
     }
 
-    double samplerate = 0.0;
-    double threshold = 0.0;
+    float samplerate = 0.0;
+    float threshold = 0.0;
     
     float *gateBuffer = nullptr;
     u32 gateBufferLength = 0;
     u32 gateBufferIndex = 0;
     
-    double absoluteSum = 0.0;
+    float absoluteSum = 0.0;
     
     SmoothParamIIR gateGain;
     
-    double attackTimeMs = 1.0;
-    double releaseTimeMs = 15.0;
-    double hysteresis = 0.0;
-    double returnGain = 0.0;
+    float attackTimeMs = 1.0;
+    float releaseTimeMs = 15.0;
+    float hysteresis = 0.0;
+    float returnGain = 0.0;
     bool   isOpen = false;
 };

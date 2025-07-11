@@ -21,8 +21,8 @@ struct OnepoleFilter {
 
     void setCoefficients(double frequency, double samplerate) {
         ZoneScoped;
-        b0 = sin(M_PI / samplerate * frequency);
-        a1 = b0 - 1.0;
+        b0 = (float)sin(M_PI / samplerate * frequency);
+        a1 = b0 - 1.0f;
     }
 
     void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
@@ -44,26 +44,37 @@ struct OnepoleFilter {
 
     void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
         ZoneScoped;
+        
+        float lb0 = b0;
+        float la1 = a1;
+
         if (bufferL) {
+            float ly1L = y1L;
+            
             for (u64 index = 0; index < numSamples; index++) {
-                float lpSample = (float)(bufferL[index] * b0 - a1 * y1L);
-                y1L = lpSample;
+                float lpSample = (float)(bufferL[index] * lb0 - la1 * ly1L);
+                ly1L = lpSample;
                 bufferL[index] -= lpSample;
             }
+            
+            y1L = ly1L;
         }    
         
         if (bufferR){
+            float ly1R = y1R;
+            
             for (u64 index = 0; index < numSamples; index++) {
-                float lpSample = (float)(bufferR[index] * b0 - a1 * y1R);
-                y1R = lpSample;
+                float lpSample = (float)(bufferR[index] * lb0 - la1 * ly1R);
+                ly1R = lpSample;
                 bufferR[index] -= lpSample;
             }
+            y1R = ly1R;
         }    
     }
     
     
-    double b0 = 1.0;
-    double a1 = 0.0;
+    float b0 = 1.0;
+    float a1 = 0.0;
     float y1L = 0.0f;
     float y1R = 0.0f;
 };

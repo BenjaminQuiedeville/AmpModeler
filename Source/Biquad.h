@@ -123,26 +123,52 @@ struct Biquad {
 
     void process(float *bufferL, float *bufferR, size_t nSamples) {
         ZoneScoped;
+    
+        float lb0 = b0;
+        float lb1 = b1;
+        float lb2 = b2;
+        float la1 = a1;
+        float la2 = a2;
+
+
         if (bufferL) {
+            float lw1L = w1L;
+            float lw2L = w2L;
+
             for (size_t index = 0; index < nSamples; index++) {
-        
-                float w = bufferL[index] - a1*w1L - a2*w2L;
-                bufferL[index] = b0*w + b1*w1L + b2*w2L;
+
+                float input_sample = bufferL[index];        
+                float w = input_sample - la1*lw1L - la2*lw2L;
+                input_sample = lb0*w + lb1*lw1L + lb2*lw2L;
                 
-                w2L = w1L;
-                w1L = w;        
+                lw2L = lw1L;
+                lw1L = w;
+                
+                bufferL[index] = input_sample;    
             }
+            
+            w1L = lw1L;
+            w2L = lw2L;
         }
         
         if (bufferR) {
+            float lw1R = w1R;
+            float lw2R = w2R;
+
             for (size_t index = 0; index < nSamples; index++) {
-    
-                float w = bufferR[index] - a1*w1R - a2*w2R;
-                bufferR[index] = b0*w + b1*w1R + b2*w2R;
+
+                float input_sample = bufferR[index];        
+                float w = input_sample - la1*lw1R - la2*lw2R;
+                input_sample = lb0*w + lb1*lw1R + lb2*lw2R;
                 
-                w2R = w1R;
-                w1R = w;        
+                lw2R = lw1R;
+                lw1R = w;
+                
+                bufferR[index] = input_sample;    
             }
+            
+            w1R = lw1R;
+            w2R = lw2R;            
         }
     }
 

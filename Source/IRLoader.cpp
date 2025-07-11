@@ -41,7 +41,7 @@ IRLoader::~IRLoader() {
 }
 
 
-void IRLoader::init(double _samplerate, size_t _blockSize) {
+void IRLoader::init(float _samplerate, size_t _blockSize) {
     samplerate = _samplerate;
     blockSize = _blockSize;
 
@@ -230,14 +230,16 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
     float** FDLs[2] =           {FDLLeft, FDLRight};
 
     for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {
+    
+        // for (u32 index = 0; index < fftSize-nSamples; index++) {
+        //     fftInputBuffers[channelIndex][index] = fftInputBuffers[channelIndex][index + nSamples];
+        // }
+        FLOAT_COPY(fftInputBuffers[channelIndex], fftInputBuffers[channelIndex]+nSamples, (fftSize-nSamples));
 
-        for (u32 index = 0; index < fftSize-nSamples; index++) {
-            fftInputBuffers[channelIndex][index] = fftInputBuffers[channelIndex][index + nSamples];
-        }
-
-        for (u32 index = 0; index < nSamples; index++) {
-            fftInputBuffers[channelIndex][fftSize-nSamples + index] = inputBuffers[channelIndex][index];
-        }
+        // for (u32 index = 0; index < nSamples; index++) {
+        //     fftInputBuffers[channelIndex][fftSize-nSamples + index] = inputBuffers[channelIndex][index];
+        // }
+        FLOAT_COPY(fftInputBuffers[channelIndex]+fftSize-nSamples, inputBuffers[channelIndex], nSamples);
 
 
         //shift the FDL
@@ -250,7 +252,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
 
         pffft_transform(fftSetup, fftInputBuffers[channelIndex], FDLs[channelIndex][0], nullptr, PFFFT_FORWARD);
 
-        memset(convolutionDftResult, 0, dftSize * sizeof(float));
+        FLOAT_CLEAR(convolutionDftResult, dftSize);
 
         for (u32 part_index = 0; part_index < numIRParts; part_index++) {
             pffft_zconvolve_accumulate(fftSetup,

@@ -10,7 +10,7 @@ work_dir = os.getcwd()
 release = False
 debug = False
 juce_only = False
-use_tracy_profiler = False
+use_tracy_profiler = True
 tracy_dir = "W:/Tracy-Profiler/tracy-0.11.1"
 config: str = ""
 

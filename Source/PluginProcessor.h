@@ -286,8 +286,8 @@ struct Processor  : public juce::AudioProcessor,
     SmoothParamLinear inputGain;
     SmoothParamLinear masterVolume;
 
-    double samplerate = 44100.0;
-    double preampSamplerate = 44100.0f;
+    float samplerate = 48000.0f;
+    float preampSamplerate = 48000.0f;
     int bufferSize = 64;
 
     float *sideChainBuffer = nullptr;

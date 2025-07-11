@@ -23,9 +23,9 @@ struct Tonestack {
     void prepareToPlay() {
         setModel(Soldano);
 
-        trebbleParam.init(0.5);
-        midParam.init(0.5);
-        bassParam.init(0.5);
+        trebbleParam.init(0.5f, 0);
+        midParam.init(0.5f, 0);
+        bassParam.init(0.5f, 0);
     
         updateCoefficients((float)trebbleParam.currentValue,
                             (float)midParam.currentValue, 
@@ -63,9 +63,9 @@ struct Tonestack {
         
         for (size_t i = 0; i < nSamples; i++) {
             if (update) {
-                updateCoefficients((float)trebbleParam.nextValue(),
-                                    (float)midParam.nextValue(),
-                                    (float)bassParam.nextValue());
+                updateCoefficients(trebbleParam.nextValue(),
+                                    midParam.nextValue(),
+                                    bassParam.nextValue());
             }
             
             for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {        

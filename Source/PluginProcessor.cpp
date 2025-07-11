@@ -117,7 +117,7 @@ void Processor::changeProgramName (int index, const juce::String& newName)
 void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     ZoneScoped;
     
-    samplerate = sampleRate;
+    samplerate = (float)sampleRate;
     bufferSize = samplesPerBlock;
     preampSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
     inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, samplerate);
@@ -129,8 +129,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
 
     preamp.prepareToPlay(samplerate, bufferSize);
     
-    inputGain.init(0.0);
-    masterVolume.init(0.0);
+    inputGain.init(0.0f, bufferSize);
+    masterVolume.init(0.0f, bufferSize);
     
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
@@ -210,7 +210,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
 
 
-    inputGain.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
+    inputGain.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
     
     // if (gateActive) {
     //     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
@@ -259,7 +259,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
     }
 
-    masterVolume.applySmoothGainDeciBels(audioPtrL, audioPtrR, numSamples);
+    masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
         
     // for (u32 index = 0; index < numSamples; index++) {
     //     audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
@@ -360,7 +360,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         float thresh     = *apvts.getRawParameterValue(paramInfos[GATE_THRESH].id);
         float hysteresis = *apvts.getRawParameterValue(paramInfos[GATE_RETURN].id);
     
-        noiseGate.threshold  = dbtoa(thresh);
+        noiseGate.threshold  = (float)dbtoa(thresh);
         noiseGate.hysteresis = newValue;
         noiseGate.returnGain = dbtoa(thresh - hysteresis); 
             
@@ -368,7 +368,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[INPUT_GAIN].id) {
-        inputGain.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
+        inputGain.newTarget(dbtoa(newValue), SMOOTH_PARAM_TIME, samplerate);
         return;
     }
 
@@ -641,7 +641,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
 
     if (id == paramInfos[MASTER_VOLUME].id) {
-        masterVolume.newTarget(newValue, SMOOTH_PARAM_TIME, samplerate);
+        masterVolume.newTarget(dbtoa(newValue), SMOOTH_PARAM_TIME, samplerate);
         return;
     }
     

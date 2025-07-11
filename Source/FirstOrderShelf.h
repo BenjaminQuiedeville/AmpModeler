@@ -54,29 +54,49 @@ struct FirstOrderShelfFilter {
 
     inline void process(float *bufferL, float *bufferR, u32 nSamples) {
         ZoneScoped;
+        
+        float lb0 = b0;
+        float lb1 = b1;
+        float la1 = a1;
+        
+
+
         if (bufferL) {
+            float lx1L = x1L;
+            float ly1L = x1L;
+
             for (u32 i = 0; i < nSamples; i++) {
-                float outSample = b0 * bufferL[i] 
-                                 + b1 * x1L 
-                                 - a1 * y1L;
+                float input_sample = bufferL[i];
+                float outSample = lb0 * input_sample
+                                 + lb1 * lx1L 
+                                 - la1 * ly1L;
     
-                x1L = bufferL[i];
-                y1L = outSample;
+                lx1L = input_sample;
+                ly1L = outSample;
                 bufferL[i] = outSample * outGain; 
-    
             }
+            
+            x1L = lx1L;
+            y1L = ly1L;
         }
         
         if (bufferR) {
+            float lx1R = x1R;
+            float ly1R = x1R;
+
             for (u32 i = 0; i < nSamples; i++) {
-                float outSample = b0 * bufferR[i] 
-                          + b1 * x1R 
-                          - a1 * y1R;
+                float input_sample = bufferR[i];
+                float outSample = lb0 * input_sample
+                                 + lb1 * lx1R 
+                                 - la1 * ly1R;
     
-                x1R = bufferR[i];
-                y1R = outSample;
+                lx1R = input_sample;
+                ly1R = outSample;
                 bufferR[i] = outSample * outGain; 
-            }    
+            }
+            
+            x1R = lx1R;
+            y1R = ly1R;
         }
     }
 

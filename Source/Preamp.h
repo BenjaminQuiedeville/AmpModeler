@@ -21,7 +21,7 @@ static const float tube_gain = 100.0f;
 struct Preamp {
     ~Preamp();
     
-    void prepareToPlay(double samplerate, u32 blockSize);
+    void prepareToPlay(float samplerate, u32 blockSize);
     void setBias(float value, int tube_index);  
     void process(float *bufferL, float *bufferR, u32 nSamples);
 
