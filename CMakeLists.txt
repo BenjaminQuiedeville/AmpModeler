@@ -10,7 +10,8 @@ set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
 
 if(USE_TRACY)
-    set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
+    # set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
+    set(TRACY_DIR D:/Dev/tracy)
 endif()
  
 add_subdirectory(${JUCE_SOURCE_DIR})
@@ -22,11 +23,15 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${OPTI_FLAGS})
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -gcodeview -gcolumn-info")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -gcodeview -gcolumn-info")
-    set(CMAKE_CXX_FLAGS_RELEASE "")
+    add_compile_options(-Wall -Wextra -mavx2 -ffast-math -fno-math-errno)
     
-    add_link_options(-fuse-ld=lld -fno-emulated-tls -Wl,--pdb=${PROJECT_NAME}.pdb)
+    set(OPTI_FLAGS "")
+    set(DEBUG_FLAGS "-g -gcodeview")
+    set(CMAKE_CXX_FLAGS_DEBUG ${DEBUG_FLAGS})
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${DEBUG_FLAGS} ${OPTI_FLAGS})
+    set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
+    
+    add_link_options(-ffast-math -fno-math-errno -fuse-ld=lld)
 endif()
 
 juce_add_plugin(${PROJECT_NAME}
@@ -51,14 +56,12 @@ target_sources(${PROJECT_NAME}
         # Source/Preamp.cpp 
         Source/main.cpp
         libs/pffft/pffft.c
-        W:/Tracy-Profiler/tracy-0.11.1/public/TracyClient.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${LIB_DIR}
         ${JUCE_SOURCE_DIR}/modules
-        W:/Tracy-Profiler/tracy-0.11.1/public
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -69,7 +72,6 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_MODAL_LOOPS_PERMITTED=1
         JUCE_ASIO=0
         _USE_MATH_DEFINES
-        TRACY_ENABLE
 )
 
 target_link_libraries(${PROJECT_NAME}
