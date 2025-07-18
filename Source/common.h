@@ -21,6 +21,8 @@
     #define ZoneScopedN(text)
 #endif
 
+#define noinline __attribute__ ((noinline))
+
 typedef uint8_t  u8;
 typedef int8_t   s8;
 typedef uint16_t u16;

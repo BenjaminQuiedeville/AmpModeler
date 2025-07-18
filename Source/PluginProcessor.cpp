@@ -127,19 +127,19 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     
     noiseGate.prepareToPlay(samplerate);
 
-    preamp.prepareToPlay(samplerate, bufferSize);
+    preamp.prepareToPlay(samplerate, (u32)bufferSize);
     
-    inputGain.init(0.0f, bufferSize);
-    masterVolume.init(0.0f, bufferSize);
+    inputGain.init(0.0f, (u32)bufferSize);
+    masterVolume.init(0.0f, (u32)bufferSize);
     
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
     toneStack.prepareToPlay();
     
-    irLoader.init(samplerate, bufferSize);
+    irLoader.init(samplerate, (u32)bufferSize);
 
     if (!sideChainBuffer) {
-        sideChainBuffer = (float *)calloc(bufferSize,  sizeof(float));
+        sideChainBuffer = (float *)calloc((u32)bufferSize,  sizeof(float));
     }
 
     initParameters();
@@ -449,7 +449,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[PREAMP_VOLUME].id) {
-        preamp.postGain.newTarget(newValue + preamp.outputAttenuationdB, SMOOTH_PARAM_TIME, preampSamplerate);
+        preamp.postGain.newTarget(dbtoa(newValue + preamp.outputAttenuationdB), SMOOTH_PARAM_TIME, preampSamplerate);
         return;
     }
     

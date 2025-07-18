@@ -4,15 +4,15 @@ project(AmpModeler VERSION 0.3.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(USE_TRACY TRUE)
+set(USE_TRACY FALSE)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
 
-if(USE_TRACY)
-    # set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
-    set(TRACY_DIR D:/Dev/tracy)
-endif()
+# if(USE_TRACY)
+#     set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
+#     # set(TRACY_DIR D:/Dev/tracy)
+# endif()
  
 add_subdirectory(${JUCE_SOURCE_DIR})
 
@@ -25,10 +25,10 @@ if (MSVC)
 else()
     add_compile_options(-Wall -Wextra -mavx2 -ffast-math -fno-math-errno)
     
-    set(OPTI_FLAGS "")
+    set(OPTI_FLAGS "-O3 ")
     set(DEBUG_FLAGS "-g -gcodeview")
     set(CMAKE_CXX_FLAGS_DEBUG ${DEBUG_FLAGS})
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${DEBUG_FLAGS} ${OPTI_FLAGS})
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${DEBUG_FLAGS} ${OPTI_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
     
     add_link_options(-ffast-math -fno-math-errno -fuse-ld=lld)

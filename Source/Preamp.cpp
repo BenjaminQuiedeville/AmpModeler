@@ -79,6 +79,7 @@ void Preamp::setBias(float bias, int tube_index) {
     // @TODO: add smoothing to avoid clicks
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
+    
         case 0: { selected_stage_bias = stage0_bias; break; }
         case 1: { selected_stage_bias = stage1_bias; break; }
         case 2: { selected_stage_bias = stage2_bias; break; }
@@ -154,7 +155,9 @@ static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float pre_bias
             // fonction à essayer : 1 - exp(-x)
             if (sample > positiveLinRange) {
                 // sample = tanh(sample - positiveLinRange) + positiveLinRange;
-                sample = 1.0f - expf(positiveLinRange - sample) + positiveLinRange;
+                // sample = 1.0f - expf(positiveLinRange - sample) + positiveLinRange;
+                float temp = (sample-positiveLinRange) * 0.5f + 1.0f;
+                sample = 1.0f - 1.0f/(temp*temp) + positiveLinRange;
             }
             // else if (sample < negClipPoint) {
             //     sample = negClipPoint;

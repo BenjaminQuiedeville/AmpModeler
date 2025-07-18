@@ -65,7 +65,7 @@ struct NoiseGate {
             // if open && < thresh -hyst -> close
             
             bool shouldOpen = false;
-            float amplitude = absoluteSum / gateBufferLength;
+            float amplitude = absoluteSum / (float)gateBufferLength;
             
             if (amplitude > threshold) { 
                 shouldOpen = true;  

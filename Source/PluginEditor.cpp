@@ -7,13 +7,13 @@
 #include "PluginEditor.h"
 
 
-static int computeXcoord(float col, int width) {
+static inline int computeXcoord(float col, int width) {
     int usableWidth = width - 2*horizontalMargin - knobSize;
-    return horizontalMargin + int(usableWidth/nCols * col);
+    return horizontalMargin + int(usableWidth/nCols * (int)col);
 }
 
-static int computeYcoord(float row, int height) {
-    return verticalMargin + int((height - 2*verticalMargin)/nRows * row);
+static inline int computeYcoord(float row, int height) {
+    return verticalMargin + int((height - 2*verticalMargin)/nRows * (int)row);
 }
 
 

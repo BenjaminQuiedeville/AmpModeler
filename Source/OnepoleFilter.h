@@ -22,27 +22,36 @@ struct OnepoleFilter {
     void setCoefficients(double frequency, double samplerate) {
         ZoneScoped;
         b0 = (float)sin(M_PI / samplerate * frequency);
-        a1 = b0 - 1.0f;
+        a1 = 1.0f - b0;
     }
 
-    void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
+    noinline void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
         ZoneScoped;
+
+        float lb0 = b0;
+        float la1 = a1;
+        
         if (bufferL) {
+            float ly1L = y1L;
+    
             for (u64 index = 0; index < numSamples; index++) {
-                bufferL[index] = (float)(bufferL[index] * b0 - a1 * y1L);
-                y1L = bufferL[index];                    
+                bufferL[index] = (float)(bufferL[index] * lb0 + la1 * ly1L);
+                ly1L = bufferL[index];                    
             }
+            y1L = ly1L;
         }
         
         if (bufferR) {
+            float ly1R = y1R;
             for (u64 index = 0; index < numSamples; index++) {
-                bufferR[index] = (float)(bufferR[index] * b0 - a1 * y1R);
-                y1R = bufferR[index];                    
+                bufferR[index] = (float)(bufferR[index] * lb0 + la1 * ly1R);
+                ly1R = bufferR[index];                    
             }
+            y1R = ly1R;
         }                
     }
 
-    void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
+    noinline void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
         ZoneScoped;
         
         float lb0 = b0;
@@ -52,11 +61,10 @@ struct OnepoleFilter {
             float ly1L = y1L;
             
             for (u64 index = 0; index < numSamples; index++) {
-                float lpSample = (float)(bufferL[index] * lb0 - la1 * ly1L);
+                float lpSample = (float)(bufferL[index] * lb0 + la1 * ly1L);
                 ly1L = lpSample;
                 bufferL[index] -= lpSample;
             }
-            
             y1L = ly1L;
         }    
         
@@ -64,7 +72,7 @@ struct OnepoleFilter {
             float ly1R = y1R;
             
             for (u64 index = 0; index < numSamples; index++) {
-                float lpSample = (float)(bufferR[index] * lb0 - la1 * ly1R);
+                float lpSample = (float)(bufferR[index] * lb0 + la1 * ly1R);
                 ly1R = lpSample;
                 bufferR[index] -= lpSample;
             }

@@ -36,12 +36,13 @@ build_working_dir:      %PROJECT_CONFIG_DIR%
 open_panel_on_build:    true  #  <- any settings specified here will apply to all commands unless overridden
 close_panel_on_success: true
 auto_jump_to_error:     true
+# error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
+error_regex:            ^(?P<file>.*):(?P<line>\d+):(?P<col>\d+): (?P<type>error): (?P<msg>.*)$
 
 [Debug Build]   # <- command name. Can be arbitrary
 build_command:          cmake --build build --config Debug  # should be an executable or a script
 build_working_dir:      %PROJECT_CONFIG_DIR%
 # timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
-error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 key_binding:            F5
 
 [Debug Build & Run]   # <- command name. Can be arbitrary
@@ -49,7 +50,6 @@ build_command:          cmake --build build --config Debug  # should be an execu
 build_working_dir:      %PROJECT_CONFIG_DIR%
 # timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
 run_command:            raddbg.exe --auto_run "C:\Program Files\Cycling '74\Max 8\Max.exe"     # will be run if build succeeds
-error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 run_working_dir:        %PROJECT_CONFIG_DIR%      # working dir for the run command
 key_binding:            Ctrl-F5
 
@@ -65,7 +65,6 @@ key_binding:            F6
 build_command:          python build.py relwithdebug  # should be an executable or a script
 build_working_dir:      %PROJECT_CONFIG_DIR%
 # timeout_in_seconds:     5             # if you don't want a timeout, don't specify it
-error_regex:            ^(?P<file>.*)\((?P<line>\d+),?(?P<col>\d+)?\)[ ]?: (?P<type>error|warning) (?P<msg>.*)$
 key_binding:            Ctrl-F6
 
 
