@@ -177,7 +177,7 @@ IRLoaderError IRLoader::loadIR() {
     {
         drwav wav;
         drwav_uint64 numFramesRead = 0;
-        bool result = drwav_init_file(&wav, irPath.data(), NULL);
+        bool result = drwav_init_file(&wav, irPath.data(), nullptr);
 
         if (!result) {
             juce::AlertWindow::showMessageBox(

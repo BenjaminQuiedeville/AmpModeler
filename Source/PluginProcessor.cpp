@@ -138,9 +138,8 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     
     irLoader.init(samplerate, (u32)bufferSize);
 
-    if (!sideChainBuffer) {
-        sideChainBuffer = (float *)calloc((u32)bufferSize,  sizeof(float));
-    }
+    if (sideChainBuffer) { free(sideChainBuffer); }
+    sideChainBuffer = (float *)calloc((u32)bufferSize, sizeof(float));
 
     initParameters();
 }

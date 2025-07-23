@@ -126,7 +126,7 @@ struct Biquad {
         }
     }
 
-    noinline void process(float *bufferL, float *bufferR, size_t nSamples) {
+    void process(float *bufferL, float *bufferR, size_t nSamples) {
         ZoneScoped;
     
         float lb0 = b0;
@@ -135,103 +135,61 @@ struct Biquad {
         float la1 = a1;
         float la2 = a2;
 
-
-        // if (bufferL) {
-        //     float lw1L = w1L;
-        //     float lw2L = w2L;
-
-        //     for (size_t index = 0; index < nSamples; index++) {
-
-        //         float input_sample = bufferL[index];
-        //         float w = input_sample + la1*lw1L + la2*lw2L;
-        //         input_sample = lb0*w + lb1*lw1L + lb2*lw2L;
-                
-        //         lw2L = lw1L;
-        //         lw1L = w;
-                
-        //         bufferL[index] = input_sample;    
-        //     }
-            
-        //     w1L = lw1L;
-        //     w2L = lw2L;
-        // }
         
-        // if (bufferR) {
-        //     float lw1R = w1R;
-        //     float lw2R = w2R;
+        float x1 = x1L;
+        float x2 = x2L;
+        float y1 = y1L;
+        float y2 = y2L;
 
-        //     for (size_t index = 0; index < nSamples; index++) {
+        for (size_t index = 0; index < nSamples; index++) {
 
-        //         float input_sample = bufferR[index];        
-        //         float w = input_sample + la1*lw1R + la2*lw2R;
-        //         input_sample = lb0*w + lb1*lw1R + lb2*lw2R;
-                
-        //         lw2R = lw1R;
-        //         lw1R = w;
-                
-        //         bufferR[index] = input_sample;    
-        //     }
+            float input_sample = bufferL[index];
+            float result = input_sample * lb0 
+                         + x1 * lb1
+                         + x2 * lb2
+                         + y1 * la1
+                         + y2 * la2;
             
-        //     w1R = lw1R;
-        //     w2R = lw2R;            
-        // }
-        
-        if (bufferL) {
-            float lx1L = x1L;
-            float lx2L = x2L;
-            float ly1L = y1L;
-            float ly2L = y2L;
-
-            for (size_t index = 0; index < nSamples; index++) {
-
-                float input_sample = bufferL[index];
-                float result = input_sample * lb0 
-                             + lx1L * lb1
-                             + lx2L * lb2
-                             + ly1L * la1
-                             + ly2L * la2;
-                
-                lx2L = lx1L;
-                lx1L = input_sample;
-                ly2L = ly1L;
-                ly1L = result;
-                
-                bufferL[index] = result;    
-            }
+            x2 = x1;
+            x1 = input_sample;
+            y2 = y1;
+            y1 = result;
             
-            x1L = lx1L;
-            x2L = lx2L;
-            y1L = ly1L;    
-            y2L = ly2L;
+            bufferL[index] = result;    
         }
         
+        x1L = x1;
+        x2L = x2;
+        y1L = y1;    
+        y2L = y2;
+        
         if (bufferR) {
-            float lx1R = x1R;
-            float lx2R = x2R;
-            float ly1R = y1R;
-            float ly2R = y2R;
+            x1 = x1R;
+            x2 = x2R;
+            y1 = y1R;
+            y2 = y2R;
 
             for (size_t index = 0; index < nSamples; index++) {
 
                 float input_sample = bufferR[index];
                 float result = input_sample * lb0 
-                             + lx1R * lb1
-                             + lx2R * lb2
-                             + ly1R * la1
-                             + ly2R * la2;
+                             + x1 * lb1
+                             + x2 * lb2
+                             + y1 * la1
+                             + y2 * la2;
                 
-                lx2R = lx1R;
-                lx1R = input_sample;
-                ly2R = ly1R;
-                ly1R = result;
+                x2 = x1;
+                x1 = input_sample;
+                y2 = y1;
+                y1 = result;
                 
                 bufferR[index] = result;    
             }
             
-            x1R = lx1R;
-            x2R = lx2R;
-            y1R = ly1R;    
-            y2R = ly2R;
+            x1R = x1;
+            x2R = x2;
+            y1R = y1;    
+            y2R = y2;
         }
     }
 
@@ -242,10 +200,6 @@ struct Biquad {
     float a1 = 0.0f;
     float a2 = 0.0f;
 
-    // float w1L = 0.0f;
-    // float w2L = 0.0f;
-    // float w1R = 0.0f;
-    // float w2R = 0.0f;
     float x1L = 0.0f;
     float x2L = 0.0f;
     float y1L = 0.0f;
@@ -257,7 +211,6 @@ struct Biquad {
     float y2R = 0.0f;
     
     FilterType filterType;
-
 };
 
 

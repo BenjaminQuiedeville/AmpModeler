@@ -25,7 +25,7 @@ struct OnepoleFilter {
         a1 = 1.0f - b0;
     }
 
-    noinline void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
+    void processLowpass(float *bufferL, float *bufferR, u64 numSamples) {
         ZoneScoped;
 
         float lb0 = b0;
@@ -51,7 +51,7 @@ struct OnepoleFilter {
         }                
     }
 
-    noinline void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
+    void processHighpass(float *bufferL, float *bufferR, u64 numSamples) {
         ZoneScoped;
         
         float lb0 = b0;

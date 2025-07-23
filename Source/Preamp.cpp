@@ -94,7 +94,9 @@ void Preamp::setBias(float bias, int tube_index) {
 
     if (bias > positiveLinRange) {
         // selected_stage_bias[1] = tanh(bias - positiveLinRange) + positiveLinRange;
-        selected_stage_bias[1] = 1.0f - expf(positiveLinRange - bias) + positiveLinRange;
+        // selected_stage_bias[1] = 1.0f - expf(positiveLinRange - bias) + positiveLinRange;
+        float temp = (bias-positiveLinRange) * 0.5f + 1.0f;
+        selected_stage_bias[1] = 1.0f - 1.0f/(temp*temp) + positiveLinRange;
     } else {
         selected_stage_bias[1] = bias;
     }
@@ -152,7 +154,6 @@ static void tubeSim(float *bufferL, float *bufferR, u32 nSamples, float pre_bias
             constexpr float positiveLinRange = 0.2f;
             constexpr float negClipPoint = 3.0f;
                 
-            // fonction à essayer : 1 - exp(-x)
             if (sample > positiveLinRange) {
                 // sample = tanh(sample - positiveLinRange) + positiveLinRange;
                 // sample = 1.0f - expf(positiveLinRange - sample) + positiveLinRange;
@@ -259,7 +260,6 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
     }
 
 
-    //processing the gain stages
     {
         ZoneScopedN("GainsStages");
         
