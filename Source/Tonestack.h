@@ -112,7 +112,7 @@ struct Tonestack {
                 comps.R4 = 33e3;
                 comps.C1 = 0.47e-9;
                 comps.C2 = 22e-9;
-                comps.C3 = 22e-9;    
+                comps.C3 = 22e-9;
                 break; 
             }
         
@@ -123,7 +123,7 @@ struct Tonestack {
                 comps.R4 = 47e3;
                 comps.C1 = 0.47e-9;
                 comps.C2 = 20e-9;
-                comps.C3 = 20e-9;    
+                comps.C3 = 20e-9;
                 break; 
             }
         }

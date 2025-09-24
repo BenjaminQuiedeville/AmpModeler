@@ -36,7 +36,8 @@ struct SmoothParamLinear {
         prevTarget = target;
         target = newTarget;
         stepHeight = 1.0f / (rampTimeMs * 0.001f * samplerate);
-
+        
+        normValue = 0.0f;
         isSmoothing = true;
     }
 

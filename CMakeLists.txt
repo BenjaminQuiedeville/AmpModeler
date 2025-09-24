@@ -16,12 +16,30 @@ set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
  
 add_subdirectory(${JUCE_SOURCE_DIR})
 
+juce_add_plugin(${PROJECT_NAME}
+    COMPANY_NAME                Hermes140
+    IS_SYNTH                    FALSE
+    NEEDS_MIDI_INPUT            FALSE 
+    NEEDS_MIDI_OUTPUT           FALSE 
+    PLUGIN_MANUFACTURER_CODE    HRMS 
+    PLUGIN_CODE                 AMPM 
+    FORMATS                     VST3 Standalone
+    PRODUCT_NAME                "AmpModeler"
+    
+    VST3_AUTO_MANIFEST          TRUE
+    COPY_PLUGIN_AFTER_BUILD     TRUE
+)
+
 if (MSVC)
     add_compile_options(/W3 /arch:AVX2)
     
     set(OPTI_FLAGS "/Qpar /fp:fast")
-    set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${OPTI_FLAGS})
+
+    # target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:SHELL:/MTd>")
+    target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:SHELL:${OPTI_FLAGS}>") # /MT
+    target_compile_options(${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELWITHDEBINFO>:SHELL:${OPTI_FLAGS}>") # /MTd
+    
+    # add_link_options(/NODEFAULTLIB:LIBCMTD)
 else()
     add_compile_options(-Wall -Wextra -mavx2 -ffast-math -fno-math-errno)
     
@@ -33,20 +51,6 @@ else()
     
     add_link_options(-ffast-math -fno-math-errno -fuse-ld=lld)
 endif()
-
-juce_add_plugin(${PROJECT_NAME}
-    COMPANY_NAME                Hermes140
-    IS_SYNTH                    FALSE
-    NEEDS_MIDI_INPUT            FALSE 
-    NEEDS_MIDI_OUTPUT           FALSE 
-    PLUGIN_MANUFACTURER_CODE    HRMS 
-    PLUGIN_CODE                 AMPM 
-    FORMATS                     VST3 Standalone
-    PRODUCT_NAME                "AmpModeler"
-    
-    VST3_AUTO_MANIFEST          FALSE
-    COPY_PLUGIN_AFTER_BUILD     TRUE
-)
 
 target_sources(${PROJECT_NAME}
     PRIVATE 
