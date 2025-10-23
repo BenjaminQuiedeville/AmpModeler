@@ -8,20 +8,19 @@
 #define PREAMP_H
 
 #include "common.h"
-#include "OnepoleFilter.h"
+#include "FirstOrderFilter.h"
 #include "Biquad.h"
 #include "SmoothParam.h"
 #include <assert.h>
 #include <memory>
-#include "FirstOrderShelf.h"
 
 static const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
-static const float tube_gain = 100.0f;
+static const float tube_gain = 70.0f;
 
 struct Preamp {
     ~Preamp();
     
-    void prepareToPlay(float samplerate, u32 blockSize);
+    void prepareToPlay(float samplerate, u32 blockSize); 
     void setBias(float value, int tube_index);  
     void process(float *bufferL, float *bufferR, u32 nSamples);
 
@@ -32,35 +31,35 @@ struct Preamp {
     SmoothParamLinear stage2Gain;
     SmoothParamLinear stage3Gain;
 
-    OnepoleFilter inputFilter;
-    OnepoleFilter inputMudFilter;
-    Biquad midBoost {BIQUAD_PEAK};
+    FirstOrderFilter inputFilter;
+    FirstOrderFilter inputMudFilter;
+    Biquad midBoost;
     
-    FirstOrderShelfFilter brightCapFilter {lowshelf};
+    FirstOrderFilter brightCapFilter;
     
-    OnepoleFilter couplingFilter1;
-    OnepoleFilter couplingFilter2;
-    OnepoleFilter couplingFilter3;
-    OnepoleFilter couplingFilter4;
+    FirstOrderFilter couplingFilter1;
+    FirstOrderFilter couplingFilter2;
+    FirstOrderFilter couplingFilter3;
+    FirstOrderFilter couplingFilter4;
 
-    OnepoleFilter stage0LP;
-    OnepoleFilter stage1LP;
-    OnepoleFilter stage2LP;
-    OnepoleFilter stage3LP;
-    OnepoleFilter stage4LP;
+    FirstOrderFilter stage0LP;
+    FirstOrderFilter stage1LP;
+    FirstOrderFilter stage2LP;
+    FirstOrderFilter stage3LP;
+    FirstOrderFilter stage4LP;
 
-    FirstOrderShelfFilter cathodeBypassFilter0 {lowshelf};
-    FirstOrderShelfFilter cathodeBypassFilter1 {lowshelf};
-    FirstOrderShelfFilter cathodeBypassFilter2 {lowshelf};
-    FirstOrderShelfFilter cathodeBypassFilter3 {lowshelf};
-    FirstOrderShelfFilter cathodeBypassFilter4 {lowshelf};
+    FirstOrderFilter cathodeBypassFilter0;
+    FirstOrderFilter cathodeBypassFilter1;
+    FirstOrderFilter cathodeBypassFilter2;
+    FirstOrderFilter cathodeBypassFilter3;
+    FirstOrderFilter cathodeBypassFilter4;
 
     struct {
-        Biquad upSampleFilter1 {BIQUAD_LOWPASS};
-        Biquad upSampleFilter2 {BIQUAD_LOWPASS};
+        Biquad upSampleFilter1;
+        Biquad upSampleFilter2;
         
-        Biquad downSampleFilter1 {BIQUAD_LOWPASS};
-        Biquad downSampleFilter2 {BIQUAD_LOWPASS};
+        Biquad downSampleFilter1;
+        Biquad downSampleFilter2;
     } overSampler;
     
     float *upSampledBufferL = nullptr;

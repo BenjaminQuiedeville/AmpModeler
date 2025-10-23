@@ -21,31 +21,24 @@ enum FilterType : u8 {
 //@TODO refactor to be thread safe
 struct Biquad {
 
-    Biquad(FilterType type) { filterType = type; }
-
-    void prepareToPlay() {
-
+    void reset() {
         b0 = 1.0;
         b1 = 0.0;
         b2 = 0.0;
         a1 = 0.0;
         a2 = 0.0;
-        reset();
-    }
 
-    void reset() {
         x1L = 0.0f;
         x2L = 0.0f;
         y1L = 0.0f;
-        y2L = 0.0f;
-        
+        y2L = 0.0f;        
         x1R = 0.0f;
         x2R = 0.0f;
         y1R = 0.0f;
         y2R = 0.0f;
     }
-
-    void setCoefficients(double frequency, double Q, double gaindB, double samplerate) {
+    
+    void setCoefficients(FilterType filterType, double frequency, double Q, double gaindB, double samplerate) {
         ZoneScoped;
             
         double w0 = 2 * M_PI / samplerate * frequency;
@@ -209,8 +202,6 @@ struct Biquad {
     float x2R = 0.0f;
     float y1R = 0.0f;
     float y2R = 0.0f;
-    
-    FilterType filterType;
 };
 
 

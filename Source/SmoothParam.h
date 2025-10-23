@@ -9,7 +9,7 @@
 
 #include <math.h>
 #include <cstdint>
-#include "OnepoleFilter.h"
+#include "FirstOrderFilter.h"
 
 #define SMOOTH_PARAM_TIME 0.02f
 

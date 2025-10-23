@@ -15,7 +15,6 @@
 #include "Preamp.h"
 #include "Tonestack.h"
 #include "IRLoader.h"
-#include "FirstOrderShelf.h"
 
 #include "Biquad.h"
 
@@ -260,27 +259,27 @@ struct Processor  : public juce::AudioProcessor,
     juce::ValueTree valueTree;
     juce::AudioProcessorValueTreeState apvts;
 
-    Biquad inputNoiseFilter {BIQUAD_LOWPASS};
+    Biquad inputNoiseFilter;
 
-    OnepoleFilter tightFilter;
-    Biquad biteFilter {BIQUAD_PEAK};
+    FirstOrderFilter tightFilter;
+    Biquad biteFilter;
 
     NoiseGate noiseGate;
     Preamp preamp;
     Tonestack toneStack;
     IRLoader irLoader;
 
-    FirstOrderShelfFilter resonanceFilter {lowshelf};
-    FirstOrderShelfFilter presenceFilter {highshelf};
+    FirstOrderFilter resonanceFilter;
+    FirstOrderFilter presenceFilter;
 
     struct {
-        Biquad lowCut    {BIQUAD_HIGHPASS};
-        Biquad lowShelf  {BIQUAD_LOWSHELF};
-        Biquad lowMid    {BIQUAD_PEAK};
-        Biquad mid       {BIQUAD_PEAK};
-        Biquad high      {BIQUAD_PEAK};
-        Biquad highShelf {BIQUAD_HIGHSHELF};
-        Biquad highCut   {BIQUAD_LOWPASS};
+        Biquad lowCut;
+        Biquad lowShelf;
+        Biquad lowMid;
+        Biquad mid;
+        Biquad high;
+        Biquad highShelf;
+        Biquad highCut;
     } EQ;
 
     SmoothParamLinear inputGain;

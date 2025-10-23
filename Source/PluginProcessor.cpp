@@ -120,10 +120,10 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     samplerate = (float)sampleRate;
     bufferSize = samplesPerBlock;
     preampSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
-    inputNoiseFilter.setCoefficients(3000.0, 0.7, 0.0, samplerate);
+    inputNoiseFilter.setCoefficients(BIQUAD_LOWPASS, 3000.0, 0.7, 0.0, samplerate);
 
-    tightFilter.prepareToPlay();
-    biteFilter.prepareToPlay();
+    tightFilter.reset();
+    biteFilter.reset();
     
     noiseGate.prepareToPlay(samplerate);
 
@@ -211,10 +211,6 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     inputGain.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
     
-    // if (gateActive) {
-    //     inputNoiseFilter.process(audioPtrL, audioPtrR, numSamples);
-    // }
-    
     if (currentChannelConfig == Stereo) {
         for (u32 i = 0; i < numSamples; i++) {
             sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
@@ -228,7 +224,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     /******PROCESS********/
     if (gateActive) {
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
-        tightFilter.processHighpass(audioPtrL, audioPtrR, numSamples);
+        tightFilter.process(audioPtrL, audioPtrR, numSamples);
         biteFilter.process(audioPtrL, audioPtrR, numSamples);
     }
     
@@ -259,16 +255,19 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
 
     masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
-        
-    // for (u32 index = 0; index < numSamples; index++) {
-    //     audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
-    // }
+
+
+    #if 0 // safety clip        
+    for (u32 index = 0; index < numSamples; index++) {
+        audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
+    }
     
-    // if (audioPtrR) {
-    //     for (u32 index = 0; index < numSamples; index++) {
-    //         audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
-    //     }
-    // }
+    if (audioPtrR) {
+        for (u32 index = 0; index < numSamples; index++) {
+            audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
+        }
+    }
+    #endif
 
     if (currentChannelConfig == FakeStereo) {
         for (u32 i = 0; i < numSamples; i++) {
@@ -388,18 +387,20 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         float amount = *apvts.getRawParameterValue(paramInfos[SCREAMER_AMOUNT].id);        
         float freq = *apvts.getRawParameterValue(paramInfos[SCREAMER_FREQ].id);
     
-        biteFilter.setCoefficients(freq, BOOST_BITE_Q, amount, samplerate);
+        biteFilter.setCoefficients(BIQUAD_PEAK, freq, BOOST_BITE_Q, amount, samplerate);
 
         return;
     }
 
     if (id == paramInfos[TIGHT].id) {
-        tightFilter.setCoefficients(newValue, samplerate);
+        // tightFilter.setCoefficients(newValue, samplerate);
+        tightFilter.makeHighpass(newValue, samplerate);
+        
         return;
     }
 
     if (id == paramInfos[INPUT_FILTER].id) {
-        preamp.inputFilter.setCoefficients(newValue, preampSamplerate);
+        preamp.inputFilter.makeHighpass(newValue, preampSamplerate);
         return;
     }
 
@@ -429,7 +430,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.preGain.newTarget(tube_gain * scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                   SMOOTH_PARAM_TIME, 
                                   preampSamplerate);
-        preamp.brightCapFilter.setCoefficients(
+        preamp.brightCapFilter.makeLowShelf(
             550.0, 
             scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
             preampSamplerate
@@ -456,11 +457,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[STAGE0_BYPASS].id
         || id == paramInfos[STAGE0_BIAS].id)
     {
-        preamp.stage0LP.setCoefficients(
+        // preamp.stage0LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id), 
+        //     preampSamplerate);
+        
+        preamp.stage0LP.makeLowpass(
             *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id), 
             preampSamplerate);
         
-        preamp.cathodeBypassFilter0.setCoefficients(280.0, 
+        preamp.cathodeBypassFilter0.makeLowShelf(280.0, 
             *apvts.getRawParameterValue(paramInfos[STAGE0_BYPASS].id), 
             preampSamplerate);
 
@@ -474,11 +479,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[STAGE1_BIAS].id
         || id == paramInfos[STAGE1_ATTENUATION].id)
     {
-        preamp.stage1LP.setCoefficients(
+        // preamp.stage1LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id), 
+        //     preampSamplerate);
+        
+        preamp.stage1LP.makeLowpass(
             *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id), 
             preampSamplerate);
         
-        preamp.cathodeBypassFilter1.setCoefficients(280.0, 
+        preamp.cathodeBypassFilter1.makeLowShelf(280.0, 
             *apvts.getRawParameterValue(paramInfos[STAGE1_BYPASS].id), 
             preampSamplerate);
 
@@ -495,11 +504,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[STAGE2_BIAS].id
         || id == paramInfos[STAGE2_ATTENUATION].id)
     {
-        preamp.stage2LP.setCoefficients(
+        // preamp.stage2LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id), 
+        //     preampSamplerate);
+        
+        preamp.stage2LP.makeLowpass(
             *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id), 
             preampSamplerate);
         
-        preamp.cathodeBypassFilter2.setCoefficients(280.0, 
+        preamp.cathodeBypassFilter2.makeLowShelf(280.0, 
             *apvts.getRawParameterValue(paramInfos[STAGE2_BYPASS].id), 
             preampSamplerate);
 
@@ -516,11 +529,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[STAGE3_BIAS].id
         || id == paramInfos[STAGE3_ATTENUATION].id)
     {
-        preamp.stage3LP.setCoefficients(
+        // preamp.stage3LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id), 
+        //     preampSamplerate);
+        
+        preamp.stage3LP.makeLowpass(
             *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id), 
             preampSamplerate);
         
-        preamp.cathodeBypassFilter3.setCoefficients(280.0, 
+        preamp.cathodeBypassFilter3.makeLowShelf(280.0, 
             *apvts.getRawParameterValue(paramInfos[STAGE3_BYPASS].id), 
             preampSamplerate);
 
@@ -536,11 +553,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[STAGE4_BYPASS].id
         || id == paramInfos[STAGE4_BIAS].id)
     {
-        preamp.stage4LP.setCoefficients(
+        // preamp.stage4LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id), 
+        //     preampSamplerate);
+        
+        preamp.stage4LP.makeLowpass(
             *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id), 
             preampSamplerate);
         
-        preamp.cathodeBypassFilter4.setCoefficients(280.0, 
+        preamp.cathodeBypassFilter4.makeLowShelf(280.0, 
             *apvts.getRawParameterValue(paramInfos[STAGE4_BYPASS].id), 
             preampSamplerate);
 
@@ -570,18 +591,18 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[RESONANCE].id) {
-        resonanceFilter.setCoefficients(RESONANCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 24.0f), samplerate);
+        resonanceFilter.makeLowShelf(RESONANCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 24.0f), samplerate);
         return;
     }
 
     if (id == paramInfos[PRESENCE].id) {
-        presenceFilter.setCoefficients(PRESENCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 18.0f), samplerate);
+        presenceFilter.makeHighShelf(PRESENCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 18.0f), samplerate);
         return;
     }
     
     if (id == paramInfos[LOW_CUT_FREQ].id) {
         
-        EQ.lowCut.setCoefficients(newValue, 0.7, 0.0, samplerate);
+        EQ.lowCut.setCoefficients(BIQUAD_HIGHPASS, newValue, 0.7, 0.0, samplerate);
         return;
     }
     
@@ -589,7 +610,8 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[LOW_SHELF_GAIN].id)
     {
         
-        EQ.lowShelf.setCoefficients(*apvts.getRawParameterValue(paramInfos[LOW_SHELF_FREQ].id), 0.7,
+        EQ.lowShelf.setCoefficients(BIQUAD_LOWSHELF, 
+                                    *apvts.getRawParameterValue(paramInfos[LOW_SHELF_FREQ].id), 0.7,
                                     *apvts.getRawParameterValue(paramInfos[LOW_SHELF_GAIN].id), samplerate);
         return;
     }
@@ -599,7 +621,8 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[LOWMID_Q].id)
     {
     
-        EQ.lowMid.setCoefficients(*apvts.getRawParameterValue(paramInfos[LOWMID_FREQ].id),
+        EQ.lowMid.setCoefficients(BIQUAD_PEAK, 
+                                  *apvts.getRawParameterValue(paramInfos[LOWMID_FREQ].id),
                                   *apvts.getRawParameterValue(paramInfos[LOWMID_Q].id),
                                   *apvts.getRawParameterValue(paramInfos[LOWMID_GAIN].id), samplerate);
         return;
@@ -609,7 +632,8 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[MID_GAIN].id
         || id == paramInfos[MID_Q].id)
     {
-        EQ.mid.setCoefficients(*apvts.getRawParameterValue(paramInfos[MID_FREQ].id),
+        EQ.mid.setCoefficients(BIQUAD_PEAK,
+                               *apvts.getRawParameterValue(paramInfos[MID_FREQ].id),
                                *apvts.getRawParameterValue(paramInfos[MID_Q].id),
                                *apvts.getRawParameterValue(paramInfos[MID_GAIN].id), samplerate);
         return;
@@ -619,7 +643,8 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         || id == paramInfos[HIGH_GAIN].id
         || id == paramInfos[HIGH_Q].id)
     {
-        EQ.high.setCoefficients(*apvts.getRawParameterValue(paramInfos[HIGH_FREQ].id),
+        EQ.high.setCoefficients(BIQUAD_PEAK, 
+                                *apvts.getRawParameterValue(paramInfos[HIGH_FREQ].id),
                                 *apvts.getRawParameterValue(paramInfos[HIGH_Q].id),
                                 *apvts.getRawParameterValue(paramInfos[HIGH_GAIN].id), samplerate);
         return;
@@ -628,13 +653,14 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == paramInfos[HIGH_SHELF_FREQ].id
         || id == paramInfos[HIGH_SHELF_GAIN].id)
     {
-        EQ.highShelf.setCoefficients(*apvts.getRawParameterValue(paramInfos[HIGH_SHELF_FREQ].id), 0.7,
+        EQ.highShelf.setCoefficients(BIQUAD_HIGHSHELF, 
+                                     *apvts.getRawParameterValue(paramInfos[HIGH_SHELF_FREQ].id), 0.7,
                                      *apvts.getRawParameterValue(paramInfos[HIGH_SHELF_GAIN].id), samplerate);
         return;
     }
     
     if (id == paramInfos[HIGH_CUT_FREQ].id) {        
-        EQ.highCut.setCoefficients(*apvts.getRawParameterValue(paramInfos[HIGH_CUT_FREQ].id), 0.7, 0.0, samplerate);
+        EQ.highCut.setCoefficients(BIQUAD_LOWPASS, *apvts.getRawParameterValue(paramInfos[HIGH_CUT_FREQ].id), 0.7, 0.0, samplerate);
         return;
     }
 
