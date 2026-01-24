@@ -24,14 +24,14 @@ Processor::Processor()
 valueTree(irPathTree),
 apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
 {
-    
+
     for (u8 i = 0; i < N_PARAMS; i++) {
         apvts.addParameterListener(paramInfos[i].id, this);
     }
-    
+
     valueTree.setProperty(irPath1, "", nullptr);
     valueTree.setProperty(irPath2, "", nullptr);
-    
+
     apvts.state.appendChild(valueTree, nullptr);
 }
 
@@ -43,7 +43,7 @@ Processor::~Processor() {
 
     if (sideChainBuffer) {
         free(sideChainBuffer);
-    }    
+    }
 }
 
 //==============================================================================
@@ -116,7 +116,7 @@ void Processor::changeProgramName (int index, const juce::String& newName)
 //==============================================================================
 void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     ZoneScoped;
-    
+
     samplerate = (float)sampleRate;
     bufferSize = samplesPerBlock;
     preampSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
@@ -124,18 +124,18 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
 
     tightFilter.reset();
     biteFilter.reset();
-    
+
     noiseGate.prepareToPlay(samplerate);
 
     preamp.prepareToPlay(samplerate, (u32)bufferSize);
-    
+
     inputGain.init(0.0f, (u32)bufferSize);
     masterVolume.init(0.0f, (u32)bufferSize);
-    
+
     toneStack.samplerate = samplerate;
     toneStack.setModel(EnglSavage); // change to current selected model
     toneStack.prepareToPlay();
-    
+
     irLoader.init(samplerate, (u32)bufferSize);
 
     if (sideChainBuffer) { free(sideChainBuffer); }
@@ -176,9 +176,9 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 }
 #endif
 
-void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {   
+void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     ZoneScoped;
-    
+
     midiMessages;
 
     juce::ScopedNoDenormals noDenormals;
@@ -198,7 +198,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     u8 currentChannelConfig = channelConfig;
 
-    if (currentChannelConfig == Mono) { 
+    if (currentChannelConfig == Mono) {
         audioPtrR = nullptr;
     }
 
@@ -210,7 +210,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
 
     inputGain.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
-    
+
     if (currentChannelConfig == Stereo) {
         for (u32 i = 0; i < numSamples; i++) {
             sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
@@ -220,27 +220,27 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
             sideChainBuffer[i] = audioPtrL[i];
         }
     }
-    
+
     /******PROCESS********/
     if (gateActive) {
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
         tightFilter.process(audioPtrL, audioPtrR, numSamples);
         biteFilter.process(audioPtrL, audioPtrR, numSamples);
     }
-    
+
     if (preampActive) {
         preamp.process(audioPtrL, audioPtrR, numSamples);
     }
-    
+
     if (tonestackActive) {
         toneStack.process(audioPtrL, audioPtrR, numSamples);
     }
-    
+
     if (preampActive) {
         resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
         presenceFilter.process(audioPtrL, audioPtrR, numSamples);
     }
-        
+
     if (irLoader.active) {
         irLoader.process(audioPtrL, audioPtrR, numSamples);
     }
@@ -257,11 +257,11 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
 
 
-    #if 0 // safety clip        
+    #if 0 // safety clip
     for (u32 index = 0; index < numSamples; index++) {
         audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
     }
-    
+
     if (audioPtrR) {
         for (u32 index = 0; index < numSamples; index++) {
             audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
@@ -279,7 +279,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         // copy left channel into right channel if processing is in mono
         buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
     }
-    
+
     FrameMark;
 }
 
@@ -290,20 +290,20 @@ bool Processor::hasEditor() const
 }
 
 juce::AudioProcessorEditor* Processor::createEditor()
-{       
+{
     return new Editor (*this);
 }
 
-// @TODO utiliser juce::File, juce::FileOutputStream, juce::FileInputStream pour 
+// @TODO utiliser juce::File, juce::FileOutputStream, juce::FileInputStream pour
 // stocker des preset dans %LOCALAPPDATA%/AmpModeler/presets
 //==============================================================================
 void Processor::getStateInformation (juce::MemoryBlock& destData) {
     // save params
-    apvts.state.appendChild(valueTree, nullptr); 
-    
+    apvts.state.appendChild(valueTree, nullptr);
+
     juce::MemoryOutputStream stream(destData, false);
     apvts.state.writeToStream(stream);
-}   
+}
 
 void Processor::setStateInformation (const void* data, int sizeInBytes) {
     // Recall params
@@ -312,25 +312,25 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
     if (importedTree.isValid()) {
         apvts.state = importedTree;
         valueTree = apvts.state.getChildWithName(irPathTree);
-                
+
         initParameters();
-        
+
         juce::String irPath = valueTree.getProperty(irPath1);
-        
+
         if (irPath.endsWith(".wav")){
             juce::File openedFile(irPath);
             irLoader.irFile = openedFile;
-            
+
             // get the list of files in the same directory
             juce::File parentFolder = openedFile.getParentDirectory();
             irLoader.directoryWavFiles = parentFolder.findChildFiles(
                 juce::File::TypesOfFileToFind::findFiles,
-                false, 
+                false,
                 "*.wav",
                 juce::File::FollowSymlinks::no
             );
 
-            irLoader.indexOfCurrentFile = irLoader.directoryWavFiles.indexOf(openedFile);            
+            irLoader.indexOfCurrentFile = irLoader.directoryWavFiles.indexOf(openedFile);
             DBG("ir file properly loaded from saved state");
 
         } else {
@@ -342,7 +342,7 @@ void Processor::setStateInformation (const void* data, int sizeInBytes) {
 
 void Processor::initParameters() {
     for (size_t i = 0; i < N_PARAMS; i++) {
-        parameterChanged(paramInfos[i].id.toString(), 
+        parameterChanged(paramInfos[i].id.toString(),
                          *apvts.getRawParameterValue(paramInfos[i].id));
     }
 }
@@ -352,16 +352,16 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     const auto id = juce::Identifier(parameterId);
 
-    if (id == paramInfos[GATE_THRESH].id 
-        || id == paramInfos[GATE_RETURN].id) 
+    if (id == paramInfos[GATE_THRESH].id
+        || id == paramInfos[GATE_RETURN].id)
     {
         float thresh     = *apvts.getRawParameterValue(paramInfos[GATE_THRESH].id);
         float hysteresis = *apvts.getRawParameterValue(paramInfos[GATE_RETURN].id);
-    
+
         noiseGate.threshold  = (float)dbtoa(thresh);
         noiseGate.hysteresis = newValue;
-        noiseGate.returnGain = dbtoa(thresh - hysteresis); 
-            
+        noiseGate.returnGain = dbtoa(thresh - hysteresis);
+
         return;
     }
 
@@ -370,23 +370,23 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
-    
+
     if (id == paramInfos[GATE_ATTACK].id) {
         noiseGate.attackTimeMs = newValue;
         return;
     }
-    
+
     if (id == paramInfos[GATE_RELEASE].id) {
         noiseGate.releaseTimeMs = newValue;
         return;
     }
-    
+
 
     if (id == paramInfos[SCREAMER_AMOUNT].id || id == paramInfos[SCREAMER_FREQ].id) {
 
-        float amount = *apvts.getRawParameterValue(paramInfos[SCREAMER_AMOUNT].id);        
+        float amount = *apvts.getRawParameterValue(paramInfos[SCREAMER_AMOUNT].id);
         float freq = *apvts.getRawParameterValue(paramInfos[SCREAMER_FREQ].id);
-    
+
         biteFilter.setCoefficients(BIQUAD_PEAK, freq, BOOST_BITE_Q, amount, samplerate);
 
         return;
@@ -395,7 +395,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == paramInfos[TIGHT].id) {
         // tightFilter.setCoefficients(newValue, samplerate);
         tightFilter.makeHighpass(newValue, samplerate);
-        
+
         return;
     }
 
@@ -407,35 +407,35 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == paramInfos[GATE_ACTIVE].id) {
         gateActive = (bool)newValue;
     }
-    
+
     if (id == paramInfos[PREAMP_ACTIVE].id) {
         preampActive = (bool)newValue;
     }
-    
+
     if (id == paramInfos[TONESTACK_ACTIVE].id) {
         tonestackActive = (bool)newValue;
     }
-    
+
     if (id == paramInfos[EQ_ACTIVE].id) {
         EQActive = (bool)newValue;
     }
-        
+
     if (id == paramInfos[IR_ACTIVE].id) {
         irLoader.active = (bool)newValue;
     }
-    
+
     if (id == paramInfos[PREAMP_GAIN].id) {
         auto paramRange = apvts.getParameter(id)->getNormalisableRange();
 
         preamp.preGain.newTarget(tube_gain * scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
-                                  SMOOTH_PARAM_TIME, 
+                                  SMOOTH_PARAM_TIME,
                                   preampSamplerate);
         preamp.brightCapFilter.makeLowShelf(
-            550.0, 
+            550.0,
             scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
             preampSamplerate
         );
-        
+
         return;
     }
 
@@ -452,138 +452,138 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.postGain.newTarget(dbtoa(newValue + preamp.outputAttenuationdB), SMOOTH_PARAM_TIME, preampSamplerate);
         return;
     }
-    
+
     if (id == paramInfos[STAGE0_LP].id
         || id == paramInfos[STAGE0_BYPASS].id
         || id == paramInfos[STAGE0_BIAS].id)
     {
         // preamp.stage0LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id), 
+        //     *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id),
         //     preampSamplerate);
-        
+
         preamp.stage0LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id), 
+            *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id),
             preampSamplerate);
-        
-        preamp.cathodeBypassFilter0.makeLowShelf(280.0, 
-            *apvts.getRawParameterValue(paramInfos[STAGE0_BYPASS].id), 
+
+        preamp.cathodeBypassFilter0.makeLowShelf(280.0,
+            *apvts.getRawParameterValue(paramInfos[STAGE0_BYPASS].id),
             preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE0_BIAS].id), 0);
-        
+
         return;
     }
-    
+
     if (id == paramInfos[STAGE1_LP].id
         || id == paramInfos[STAGE1_BYPASS].id
         || id == paramInfos[STAGE1_BIAS].id
         || id == paramInfos[STAGE1_ATTENUATION].id)
     {
         // preamp.stage1LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id), 
+        //     *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id),
         //     preampSamplerate);
-        
+
         preamp.stage1LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id), 
+            *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id),
             preampSamplerate);
-        
-        preamp.cathodeBypassFilter1.makeLowShelf(280.0, 
-            *apvts.getRawParameterValue(paramInfos[STAGE1_BYPASS].id), 
+
+        preamp.cathodeBypassFilter1.makeLowShelf(280.0,
+            *apvts.getRawParameterValue(paramInfos[STAGE1_BYPASS].id),
             preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE1_BIAS].id), 1);
 
-        preamp.stage1Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE1_ATTENUATION].id)), 
+        preamp.stage1Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE1_ATTENUATION].id)),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
     }
-    
+
     if (id == paramInfos[STAGE2_LP].id
         || id == paramInfos[STAGE2_BYPASS].id
         || id == paramInfos[STAGE2_BIAS].id
         || id == paramInfos[STAGE2_ATTENUATION].id)
     {
         // preamp.stage2LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id), 
+        //     *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id),
         //     preampSamplerate);
-        
+
         preamp.stage2LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id), 
+            *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id),
             preampSamplerate);
-        
-        preamp.cathodeBypassFilter2.makeLowShelf(280.0, 
-            *apvts.getRawParameterValue(paramInfos[STAGE2_BYPASS].id), 
+
+        preamp.cathodeBypassFilter2.makeLowShelf(280.0,
+            *apvts.getRawParameterValue(paramInfos[STAGE2_BYPASS].id),
             preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE2_BIAS].id), 2);
 
-        preamp.stage2Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE2_ATTENUATION].id)), 
+        preamp.stage2Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE2_ATTENUATION].id)),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
     }
-    
+
     if (id == paramInfos[STAGE3_LP].id
         || id == paramInfos[STAGE3_BYPASS].id
         || id == paramInfos[STAGE3_BIAS].id
         || id == paramInfos[STAGE3_ATTENUATION].id)
     {
         // preamp.stage3LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id), 
+        //     *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id),
         //     preampSamplerate);
-        
+
         preamp.stage3LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id), 
+            *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id),
             preampSamplerate);
-        
-        preamp.cathodeBypassFilter3.makeLowShelf(280.0, 
-            *apvts.getRawParameterValue(paramInfos[STAGE3_BYPASS].id), 
+
+        preamp.cathodeBypassFilter3.makeLowShelf(280.0,
+            *apvts.getRawParameterValue(paramInfos[STAGE3_BYPASS].id),
             preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE3_BIAS].id), 3);
 
-        preamp.stage3Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE3_ATTENUATION].id)), 
+        preamp.stage3Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE3_ATTENUATION].id)),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
     }
-    
+
     if (id == paramInfos[STAGE4_LP].id
         || id == paramInfos[STAGE4_BYPASS].id
         || id == paramInfos[STAGE4_BIAS].id)
     {
         // preamp.stage4LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id), 
+        //     *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id),
         //     preampSamplerate);
-        
+
         preamp.stage4LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id), 
+            *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id),
             preampSamplerate);
-        
-        preamp.cathodeBypassFilter4.makeLowShelf(280.0, 
-            *apvts.getRawParameterValue(paramInfos[STAGE4_BYPASS].id), 
+
+        preamp.cathodeBypassFilter4.makeLowShelf(280.0,
+            *apvts.getRawParameterValue(paramInfos[STAGE4_BYPASS].id),
             preampSamplerate);
 
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE4_BIAS].id), 4);
         return;
     }
-    
+
     if (id == paramInfos[TONESTACK_BASS].id
         || id == paramInfos[TONESTACK_MIDDLE].id
         || id == paramInfos[TONESTACK_TREBBLE].id
         || id == paramInfos[TONESTACK_MODEL].id)
     {
         TonestackModel model = static_cast<TonestackModel>((int)*apvts.getRawParameterValue(paramInfos[TONESTACK_MODEL].id));
-        
+
         if (toneStack.model != model) {
             toneStack.setModel(model);
         }
-        
+
         float bassValue = (float)*apvts.getRawParameterValue(paramInfos[TONESTACK_BASS].id);
         float midValue = (float)*apvts.getRawParameterValue(paramInfos[TONESTACK_MIDDLE].id);
         float trebbleValue = (float)*apvts.getRawParameterValue(paramInfos[TONESTACK_TREBBLE].id);
-            
+
         toneStack.bassParam.newTarget(bassValue/10.0f,       100.0f, samplerate);
         toneStack.midParam.newTarget(midValue/10.0f,         100.0f, samplerate);
         toneStack.trebbleParam.newTarget(trebbleValue/10.0f, 100.0f, samplerate);
@@ -599,35 +599,35 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         presenceFilter.makeHighShelf(PRESENCE_FREQUENCY, scale_linear(newValue, 0.0f, 10.0f, 0.0f, 18.0f), samplerate);
         return;
     }
-    
+
     if (id == paramInfos[LOW_CUT_FREQ].id) {
-        
+
         EQ.lowCut.setCoefficients(BIQUAD_HIGHPASS, newValue, 0.7, 0.0, samplerate);
         return;
     }
-    
+
     if (id == paramInfos[LOW_SHELF_FREQ].id
         || id == paramInfos[LOW_SHELF_GAIN].id)
     {
-        
-        EQ.lowShelf.setCoefficients(BIQUAD_LOWSHELF, 
+
+        EQ.lowShelf.setCoefficients(BIQUAD_LOWSHELF,
                                     *apvts.getRawParameterValue(paramInfos[LOW_SHELF_FREQ].id), 0.7,
                                     *apvts.getRawParameterValue(paramInfos[LOW_SHELF_GAIN].id), samplerate);
         return;
     }
-    
+
     if (id == paramInfos[LOWMID_FREQ].id
         || id == paramInfos[LOWMID_GAIN].id
         || id == paramInfos[LOWMID_Q].id)
     {
-    
-        EQ.lowMid.setCoefficients(BIQUAD_PEAK, 
+
+        EQ.lowMid.setCoefficients(BIQUAD_PEAK,
                                   *apvts.getRawParameterValue(paramInfos[LOWMID_FREQ].id),
                                   *apvts.getRawParameterValue(paramInfos[LOWMID_Q].id),
                                   *apvts.getRawParameterValue(paramInfos[LOWMID_GAIN].id), samplerate);
         return;
     }
-    
+
     if (id == paramInfos[MID_FREQ].id
         || id == paramInfos[MID_GAIN].id
         || id == paramInfos[MID_Q].id)
@@ -638,28 +638,28 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
                                *apvts.getRawParameterValue(paramInfos[MID_GAIN].id), samplerate);
         return;
     }
-    
+
     if (id == paramInfos[HIGH_FREQ].id
         || id == paramInfos[HIGH_GAIN].id
         || id == paramInfos[HIGH_Q].id)
     {
-        EQ.high.setCoefficients(BIQUAD_PEAK, 
+        EQ.high.setCoefficients(BIQUAD_PEAK,
                                 *apvts.getRawParameterValue(paramInfos[HIGH_FREQ].id),
                                 *apvts.getRawParameterValue(paramInfos[HIGH_Q].id),
                                 *apvts.getRawParameterValue(paramInfos[HIGH_GAIN].id), samplerate);
         return;
     }
-    
+
     if (id == paramInfos[HIGH_SHELF_FREQ].id
         || id == paramInfos[HIGH_SHELF_GAIN].id)
     {
-        EQ.highShelf.setCoefficients(BIQUAD_HIGHSHELF, 
+        EQ.highShelf.setCoefficients(BIQUAD_HIGHSHELF,
                                      *apvts.getRawParameterValue(paramInfos[HIGH_SHELF_FREQ].id), 0.7,
                                      *apvts.getRawParameterValue(paramInfos[HIGH_SHELF_GAIN].id), samplerate);
         return;
     }
-    
-    if (id == paramInfos[HIGH_CUT_FREQ].id) {        
+
+    if (id == paramInfos[HIGH_CUT_FREQ].id) {
         EQ.highCut.setCoefficients(BIQUAD_LOWPASS, *apvts.getRawParameterValue(paramInfos[HIGH_CUT_FREQ].id), 0.7, 0.0, samplerate);
         return;
     }
@@ -669,7 +669,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         masterVolume.newTarget(dbtoa(newValue), SMOOTH_PARAM_TIME, samplerate);
         return;
     }
-    
+
     if (id == paramInfos[CHANNEL_CONFIG].id) {
         channelConfig = (u8)newValue;
         return;
@@ -677,220 +677,220 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLayout()
-{   
+{
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     params.reserve(N_PARAMS);
-    
+
     auto attributes = juce::AudioParameterFloatAttributes()
-                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 2); });    
-    
+                        .withStringFromValueFunction ([] (auto x, auto) { return juce::String (x, 2); });
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[INPUT_GAIN].id.toString(), "Input Gain", 
+        paramInfos[INPUT_GAIN].id.toString(), "Input Gain",
         juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), paramInfos[INPUT_GAIN].defaultValue, attributes
     ));
 
     // Noise gate params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[GATE_THRESH].id.toString(), "Gate Thresh", 
+        paramInfos[GATE_THRESH].id.toString(), "Gate Thresh",
         juce::NormalisableRange<float>(-96.0f, -40.0f, 0.1f, 1.0f), paramInfos[GATE_THRESH].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[GATE_ATTACK].id.toString(), "Attack Time", 
+        paramInfos[GATE_ATTACK].id.toString(), "Attack Time",
         juce::NormalisableRange<float>(0.1f, 15.0f, 0.1f, 1.0f), paramInfos[GATE_ATTACK].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[GATE_RELEASE].id.toString(), "Release Time", 
+        paramInfos[GATE_RELEASE].id.toString(), "Release Time",
         juce::NormalisableRange<float>(1.0f, 25.0f, 0.1f, 1.0f), paramInfos[GATE_RELEASE].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[GATE_RETURN].id.toString(), "Hysteresis (not implemented)", 
+        paramInfos[GATE_RETURN].id.toString(), "Hysteresis (not implemented)",
         juce::NormalisableRange<float>(0.0f, 20.0f, 0.1f, 1.0f), paramInfos[GATE_RETURN].defaultValue, attributes
     ));
-    
+
     // Input Boost params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[SCREAMER_AMOUNT].id.toString(), "Screamer", 
+        paramInfos[SCREAMER_AMOUNT].id.toString(), "Screamer",
         juce::NormalisableRange<float>(0.0f, 30.0f, 0.1f, 1.0f), paramInfos[SCREAMER_AMOUNT].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[SCREAMER_FREQ].id.toString(), "Screamer Freq", 
+        paramInfos[SCREAMER_FREQ].id.toString(), "Screamer Freq",
         juce::NormalisableRange<float>(500.0f, 4000.0f, 1.0f, 0.7f), paramInfos[SCREAMER_FREQ].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[TIGHT].id.toString(), "Tight", 
+        paramInfos[TIGHT].id.toString(), "Tight",
         juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.7f), paramInfos[TIGHT].defaultValue, attributes
     ));
 
-        
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[GATE_ACTIVE].id.toString(), "Activate Gate",
         (bool)paramInfos[GATE_ACTIVE].defaultValue
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[PREAMP_ACTIVE].id.toString(), "Activate Preamp",
         (bool)paramInfos[PREAMP_ACTIVE].defaultValue
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[TONESTACK_ACTIVE].id.toString(), "Activate Tonestack",
         (bool)paramInfos[TONESTACK_ACTIVE].defaultValue
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[EQ_ACTIVE].id.toString(), "Activate EQ",
         (bool)paramInfos[EQ_ACTIVE].defaultValue
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        paramInfos[IR_ACTIVE].id.toString(), "Activate IR Loader", 
+        paramInfos[IR_ACTIVE].id.toString(), "Activate IR Loader",
         (bool)paramInfos[IR_ACTIVE].defaultValue
     ));
 
 
-    // Preamp Params 
+    // Preamp Params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[PREAMP_GAIN].id.toString(), "Pre Gain",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[PREAMP_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        paramInfos[BRIGHT_CAP].id.toString(), "Bright Switch", 
+        paramInfos[BRIGHT_CAP].id.toString(), "Bright Switch",
         (bool)paramInfos[BRIGHT_CAP].defaultValue
     ));
 
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[INPUT_FILTER].id.toString(), "Input Filter", 
+        paramInfos[INPUT_FILTER].id.toString(), "Input Filter",
         juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.7f), paramInfos[INPUT_FILTER].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterInt>(
         paramInfos[CHANNEL].id.toString(), "Amp Channel", 1, 4, (int)paramInfos[CHANNEL].defaultValue
     ));
-    
+
     // Tubes params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_LP].id.toString(), "STAGE0_LP", 
+        paramInfos[STAGE0_LP].id.toString(), "STAGE0_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE0_LP].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_BYPASS].id.toString(), "STAGE0_BYPASS", 
+        paramInfos[STAGE0_BYPASS].id.toString(), "STAGE0_BYPASS",
         juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE0_BYPASS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_BIAS].id.toString(), "STAGE0_BIAS", 
+        paramInfos[STAGE0_BIAS].id.toString(), "STAGE0_BIAS",
         juce::NormalisableRange<float>(0.0, 1.0f, 0.01f, 1.0f), paramInfos[STAGE0_BIAS].defaultValue, attributes
     ));
-    
-    
+
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE1_LP].id.toString(), "STAGE1_LP", 
+        paramInfos[STAGE1_LP].id.toString(), "STAGE1_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE1_LP].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE1_BYPASS].id.toString(), "STAGE1_BYPASS", 
+        paramInfos[STAGE1_BYPASS].id.toString(), "STAGE1_BYPASS",
         juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE1_BYPASS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE1_BIAS].id.toString(), "STAGE1_BIAS", 
+        paramInfos[STAGE1_BIAS].id.toString(), "STAGE1_BIAS",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE1_BIAS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE1_ATTENUATION].id.toString(), "STAGE1_ATTENUATION", 
+        paramInfos[STAGE1_ATTENUATION].id.toString(), "STAGE1_ATTENUATION",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE1_ATTENUATION].defaultValue, attributes
     ));
-    
-    
+
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE2_LP].id.toString(), "STAGE2_LP", 
+        paramInfos[STAGE2_LP].id.toString(), "STAGE2_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE2_LP].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE2_BYPASS].id.toString(), "STAGE2_BYPASS", 
+        paramInfos[STAGE2_BYPASS].id.toString(), "STAGE2_BYPASS",
         juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE2_BYPASS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE2_BIAS].id.toString(), "STAGE2_BIAS", 
+        paramInfos[STAGE2_BIAS].id.toString(), "STAGE2_BIAS",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE2_BIAS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE2_ATTENUATION].id.toString(), "STAGE2_ATTENUATION", 
+        paramInfos[STAGE2_ATTENUATION].id.toString(), "STAGE2_ATTENUATION",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE2_ATTENUATION].defaultValue, attributes
     ));
-    
-    
+
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE3_LP].id.toString(), "STAGE3_LP", 
+        paramInfos[STAGE3_LP].id.toString(), "STAGE3_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0f, 0.7f), paramInfos[STAGE3_LP].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE3_BYPASS].id.toString(), "STAGE3_BYPASS", 
+        paramInfos[STAGE3_BYPASS].id.toString(), "STAGE3_BYPASS",
         juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE3_BYPASS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE3_BIAS].id.toString(), "STAGE3_BIAS", 
+        paramInfos[STAGE3_BIAS].id.toString(), "STAGE3_BIAS",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE3_BIAS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE3_ATTENUATION].id.toString(), "STAGE3_ATTENUATION", 
+        paramInfos[STAGE3_ATTENUATION].id.toString(), "STAGE3_ATTENUATION",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE3_ATTENUATION].defaultValue, attributes
     ));
-    
-        
+
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE4_LP].id.toString(), "STAGE4_LP", 
+        paramInfos[STAGE4_LP].id.toString(), "STAGE4_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE4_LP].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE4_BYPASS].id.toString(), "STAGE4_BYPASS", 
+        paramInfos[STAGE4_BYPASS].id.toString(), "STAGE4_BYPASS",
         juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE4_BYPASS].defaultValue, attributes
     ));
-    
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE4_BIAS].id.toString(), "STAGE4_BIAS", 
+        paramInfos[STAGE4_BIAS].id.toString(), "STAGE4_BIAS",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE4_BIAS].defaultValue, attributes
     ));
-    
-    
+
+
     // Tonestack params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[TONESTACK_BASS].id.toString(), "Bass", 
+        paramInfos[TONESTACK_BASS].id.toString(), "Bass",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[TONESTACK_BASS].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[TONESTACK_MIDDLE].id.toString(), "Mid", 
+        paramInfos[TONESTACK_MIDDLE].id.toString(), "Mid",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[TONESTACK_MIDDLE].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[TONESTACK_TREBBLE].id.toString(), "Trebble", 
+        paramInfos[TONESTACK_TREBBLE].id.toString(), "Trebble",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[TONESTACK_TREBBLE].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterChoice>(
-        paramInfos[TONESTACK_MODEL].id.toString(), "Tonestack model", 
+        paramInfos[TONESTACK_MODEL].id.toString(), "Tonestack model",
         juce::StringArray{"SLO", "Savage", "JCM"}, (int)paramInfos[TONESTACK_MODEL].defaultValue
     ));
 
 
     // Post Preamp params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[PREAMP_VOLUME].id.toString(), "Post Gain", 
+        paramInfos[PREAMP_VOLUME].id.toString(), "Post Gain",
         juce::NormalisableRange<float>(-36.0f, 36.0f, 0.1f, 1.0f), paramInfos[PREAMP_VOLUME].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -907,72 +907,72 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         paramInfos[LOW_CUT_FREQ].id.toString(), "Low cut",
         juce::NormalisableRange<float>(10.0f, 200.0f, 0.1f, 0.7f), paramInfos[LOW_CUT_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOW_SHELF_FREQ].id.toString(), "Low Shelf Freq",
         juce::NormalisableRange<float>(10.0f, 250.0f, 0.1f, 0.7f), paramInfos[LOW_SHELF_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOW_SHELF_GAIN].id.toString(), "Gain",
         juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[LOW_SHELF_GAIN].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOWMID_FREQ].id.toString(), "Freq",
         juce::NormalisableRange<float>(100.0f, 8000.0f, 0.1f, 0.7f), paramInfos[LOWMID_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOWMID_GAIN].id.toString(), "Gain",
         juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[LOWMID_GAIN].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOWMID_Q].id.toString(), "Q",
         juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), paramInfos[LOWMID_Q].defaultValue
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[MID_FREQ].id.toString(), "Freq",
         juce::NormalisableRange<float>(100.0f, 8000.0f, 1.0f, 0.7f), paramInfos[MID_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[MID_GAIN].id.toString(), "Gain",
         juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[MID_GAIN].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[MID_Q].id.toString(), "Q",
         juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), paramInfos[MID_Q].defaultValue
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_FREQ].id.toString(), "Freq",
         juce::NormalisableRange<float>(100.0f, 8000.0f, 1.0f, 0.7f), paramInfos[HIGH_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_GAIN].id.toString(), "Gain",
         juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[HIGH_GAIN].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_Q].id.toString(), "Q",
         juce::NormalisableRange<float>(0.1f, 4.0f, 0.01f, 0.5f), paramInfos[HIGH_Q].defaultValue
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_SHELF_FREQ].id.toString(), "High Shelf Freq",
         juce::NormalisableRange<float>(4000.0f, 20000.0f, 1.0f, 0.7f), paramInfos[HIGH_SHELF_FREQ].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_SHELF_GAIN].id.toString(), "Gain",
         juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[HIGH_SHELF_GAIN].defaultValue, attributes
     ));
-        
+
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_CUT_FREQ].id.toString(), "High cut",
         juce::NormalisableRange<float>(4000.0f, 20000.0f, 1.0f, 0.7f), paramInfos[HIGH_CUT_FREQ].defaultValue, attributes

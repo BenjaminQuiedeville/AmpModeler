@@ -17,11 +17,11 @@ set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
 add_subdirectory(${JUCE_SOURCE_DIR})
 
 juce_add_plugin(${PROJECT_NAME}
-    COMPANY_NAME                Hermes140
+    COMPANY_NAME                FDN_Seeker
     IS_SYNTH                    FALSE
     NEEDS_MIDI_INPUT            FALSE 
     NEEDS_MIDI_OUTPUT           FALSE 
-    PLUGIN_MANUFACTURER_CODE    HRMS 
+    PLUGIN_MANUFACTURER_CODE    FDNS 
     PLUGIN_CODE                 AMPM 
     FORMATS                     VST3 Standalone
     PRODUCT_NAME                "AmpModeler"
