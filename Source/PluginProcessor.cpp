@@ -713,7 +713,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     // Input Boost params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[SCREAMER_AMOUNT].id.toString(), "Screamer",
-        juce::NormalisableRange<float>(0.0f, 30.0f, 0.1f, 1.0f), paramInfos[SCREAMER_AMOUNT].defaultValue, attributes
+        juce::NormalisableRange<float>(0.0f, 20.0f, 0.1f, 1.0f), paramInfos[SCREAMER_AMOUNT].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[SCREAMER_FREQ].id.toString(), "Screamer Freq",
@@ -721,7 +721,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[TIGHT].id.toString(), "Tight",
-        juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.7f), paramInfos[TIGHT].defaultValue, attributes
+        juce::NormalisableRange<float>(0.0f, 500.0f, 1.0f, 0.7f), paramInfos[TIGHT].defaultValue, attributes
     ));
 
 
@@ -765,7 +765,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[INPUT_FILTER].id.toString(), "Input Filter",
-        juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.7f), paramInfos[INPUT_FILTER].defaultValue, attributes
+        juce::NormalisableRange<float>(0.0f, 500.0f, 1.0f, 0.7f), paramInfos[INPUT_FILTER].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterInt>(
@@ -780,7 +780,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE0_BYPASS].id.toString(), "STAGE0_BYPASS",
-        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE0_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE0_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -796,7 +796,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE1_BYPASS].id.toString(), "STAGE1_BYPASS",
-        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE1_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE1_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -817,7 +817,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE2_BYPASS].id.toString(), "STAGE2_BYPASS",
-        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE2_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE2_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -838,7 +838,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE3_BYPASS].id.toString(), "STAGE3_BYPASS",
-        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE3_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE3_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -859,7 +859,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE4_BYPASS].id.toString(), "STAGE4_BYPASS",
-        juce::NormalisableRange<float>(-15.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE4_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE4_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(

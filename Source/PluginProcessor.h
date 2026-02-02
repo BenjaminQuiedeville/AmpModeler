@@ -152,27 +152,27 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "INPUT_FILTER",         100.0f },
     { "PREAMP_VOLUME",        0.0f },
     
-    { "STAGE0_LP",            12000.0f },
+    { "STAGE0_LP",            15000.0f },
     { "STAGE0_BYPASS",        -5.0f },
     { "STAGE0_BIAS",          0.0f },
     
-    { "STAGE1_LP",            12000.0f },
-    { "STAGE1_BYPASS",        -4.0f },
+    { "STAGE1_LP",            15000.0f },
+    { "STAGE1_BYPASS",        -3.0f },
     { "STAGE1_BIAS",          0.2f },
     { "STAGE1_ATTENUATION",   0.9f },
     
-    { "STAGE2_LP",            12000.0f },
+    { "STAGE2_LP",            15000.0f },
     { "STAGE2_BYPASS",        0.0f },
     { "STAGE2_BIAS",          0.3f },
     { "STAGE2_ATTENUATION",   0.6f },
     
-    { "STAGE3_LP",            12000.0f },
-    { "STAGE3_BYPASS",        -6.0f },
+    { "STAGE3_LP",            15000.0f },
+    { "STAGE3_BYPASS",        -2.0f },
     { "STAGE3_BIAS",          0.0f },
     { "STAGE3_ATTENUATION",   0.6f },
     
-    { "STAGE4_LP",            12000.0f },
-    { "STAGE4_BYPASS",        -6.0f },
+    { "STAGE4_LP",            15000.0f },
+    { "STAGE4_BYPASS",        -2.0f },
     { "STAGE4_BIAS",          0.0f },
     
     { "TONE_MODEL",           0.0f },
