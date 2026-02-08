@@ -536,12 +536,15 @@ Editor::Editor (Processor& p)
     volumePanel(p)
 {
 
-    juce::Colour colour = findColour (juce::ResizableWindow::backgroundColourId);
-    tabs.addTab("Input", colour, &gateBoostPage, true);
-    tabs.addTab("Amplifier", colour, &ampPage, true);
-    tabs.addTab("Gain Stages", colour, &gainStagesPage, true);
-    tabs.addTab("EQ", colour, &eqPage, true);
-    tabs.addTab("IR Loader", colour, &irLoaderPage, true);
+    juce::Colour tabColour = juce::Colours::black;
+    tabs.setColour(juce::TabbedComponent::ColourIds::backgroundColourId, tabColour);
+    tabs.setColour(juce::TabbedComponent::ColourIds::outlineColourId, tabColour);
+    
+    tabs.addTab("Input",       tabColour, &gateBoostPage,  true);
+    tabs.addTab("Amplifier",   tabColour, &ampPage,        true);
+    tabs.addTab("Gain Stages", tabColour, &gainStagesPage, true);
+    tabs.addTab("EQ",          tabColour, &eqPage,         true);
+    tabs.addTab("IR Loader",   tabColour, &irLoaderPage,   true);
     tabs.setCurrentTabIndex(1);
     
     // passer un ptr vers gainStagesPage dans ampPage pour 
@@ -550,16 +553,20 @@ Editor::Editor (Processor& p)
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);
 
-    getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkred);
-
+    // getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkred);
+    setLookAndFeel(&this->lookAndFeel);
     setSize(windoWidth, windowHeight);
     setResizable(false, false);
+}
+
+Editor::~Editor() {
+    setLookAndFeel(nullptr);
 }
 
 //==============================================================================
 void Editor::paint (juce::Graphics& g) {
     ZoneScoped;
-	g.fillAll(juce::Colours::darkgrey);
+	g.fillAll(juce::Colours::black);
     volumePanel.paint(g);
 }
 

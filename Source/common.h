@@ -32,6 +32,9 @@ typedef int32_t  s32;
 typedef uint64_t u64;
 typedef int64_t  s64;
 
+#define min(x, y) (x) < (y) ? (x) : (y)
+#define max(x, y) (x) > (y) ? (x) : (y)   
+
 inline float dbtoa(float value) {
     return std::pow(10.0f, value/20.0f);
 }

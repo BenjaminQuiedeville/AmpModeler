@@ -21,6 +21,52 @@ static const int nCols = 6;
 static const int windoWidth = 1000;
 static const int windowHeight = 450;
 
+
+struct AmpModelerLAF : public juce::LookAndFeel_V4 {
+
+    void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                           float sliderPos, float rotaryStartAngle,
+                           float rotaryEndAngle, juce::Slider& slider) override
+    {
+        auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
+        auto fill    = juce::Colours::darkred;
+    
+        auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
+    
+        auto radius = min(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+        auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+        auto lineW = min(8.0f, radius * 0.5f);
+        auto arcRadius = radius - lineW * 0.5f;
+    
+        juce::Path backgroundArc;
+        backgroundArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+                                    arcRadius, arcRadius,
+                                    0.0f, rotaryStartAngle, rotaryEndAngle,
+                                    true);
+    
+        g.setColour(outline);
+        g.strokePath(backgroundArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    
+        if (slider.isEnabled()) {
+            juce::Path valueArc;
+            valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+                                   arcRadius, arcRadius,
+                                   0.0f, rotaryStartAngle, toAngle, true);
+    
+            g.setColour(fill);
+            g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        }
+    
+        auto thumbWidth = lineW * 2.0f;
+        // juce::Point<float>thumbPoint(bounds.getCentreX() + arcRadius * std::cos(toAngle - juce::MathConstants<float>::halfPi),
+        //                              bounds.getCentreY() + arcRadius * std::sin(toAngle - juce::MathConstants<float>::halfPi));
+    
+        // g.setColour(slider.findColour(juce::Slider::thumbColourId));
+        // g.fillEllipse(juce::Rectangle<float>(thumbWidth, thumbWidth).withCentre(thumbPoint));
+    }
+};
+
+
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;
@@ -62,6 +108,10 @@ struct GateBoostPage : public juce::Component {
     GateBoostPage(Processor &p);
     void resized();
 
+    void paint(juce::Graphics &g) {
+        g.fillAll(juce::Colours::black);
+    }
+
     Knob gateKnob;
     // Knob gateAttackKnob;
     // Knob gateReleaseKnob;
@@ -90,6 +140,10 @@ struct AmplifierPage : public juce::Component {
     AmplifierPage(Processor &p);
     void resized();
 
+    void paint(juce::Graphics &g) {
+        g.fillAll(juce::Colours::black);
+    }
+
     Knob gainKnob;
     Knob inputFilterKnob;
     Knob bassEQKnob;
@@ -112,6 +166,10 @@ struct AmplifierPage : public juce::Component {
 struct GainStagesPage : public juce::Component {
     GainStagesPage(Processor &p);
     void resized();
+
+    void paint(juce::Graphics &g) {
+        g.fillAll(juce::Colours::black);
+    }
 
     juce::TextButton resetButton {"Reset"};
 
@@ -144,6 +202,10 @@ struct IRLoaderPage : public juce::Component {
     IRLoaderPage(Processor &audioProcessor);
     void resized();
 
+    void paint(juce::Graphics &g) {
+        g.fillAll(juce::Colours::black);
+    }
+
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
 
@@ -159,6 +221,11 @@ struct IRLoaderPage : public juce::Component {
 
 struct EQPage : public juce::Component {
     EQPage(Processor &audioProcessor);
+    
+    void paint(juce::Graphics &g) {
+        g.fillAll(juce::Colours::black);
+    }
+    
     void resized();
 
     juce::TextButton resetButton {"Reset Gains"};
@@ -195,7 +262,7 @@ struct MasterVolPanel : public juce::Component {
     }
 
     void paint(juce::Graphics& g) override {
-        g.fillAll(juce::Colours::darkgrey);
+        g.fillAll(juce::Colours::black);
     }
 
 
@@ -212,7 +279,8 @@ struct MasterVolPanel : public juce::Component {
 
 struct Editor : public juce::AudioProcessorEditor
 {
-    Editor (Processor&);
+    Editor(Processor&);
+    ~Editor();
 
     //==============================================================================
     void paint (juce::Graphics&) override;
@@ -220,7 +288,8 @@ struct Editor : public juce::AudioProcessorEditor
 
     juce::TabbedComponent tabs {juce::TabbedButtonBar::TabsAtTop};
     juce::Component statusBar;
-
+    AmpModelerLAF lookAndFeel;
+    
     GateBoostPage gateBoostPage;
     AmplifierPage ampPage;
     GainStagesPage gainStagesPage;
