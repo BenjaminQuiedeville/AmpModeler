@@ -566,7 +566,7 @@ Editor::~Editor() {
 //==============================================================================
 void Editor::paint (juce::Graphics& g) {
     ZoneScoped;
-	g.fillAll(juce::Colours::black);
+	g.fillAll(backgroundColor);
     volumePanel.paint(g);
 }
 
@@ -601,6 +601,7 @@ Knob::Knob(juce::String labelID, juce::String name, juce::Component *comp, juce:
     comp->addAndMakeVisible(*this);
 
     label.setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+    label.setColour(juce::Label::ColourIds::outlineColourId, juce::Colours::transparentBlack);
     label.setJustificationType(juce::Justification::centred);
     label.setFont(15.0f);
     comp->addAndMakeVisible(label);

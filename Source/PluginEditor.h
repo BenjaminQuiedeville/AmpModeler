@@ -10,6 +10,11 @@
 
 #include "PluginProcessor.h"
 
+const juce::Colour backgroundColor {0xFF0F0F0F}; // noir sombre
+const juce::Colour widgetColor     {0xFF232D3F}; // gris bleuté
+const juce::Colour accentColor1    {0XFF005B41}; // vert bouteille
+const juce::Colour accentColor2    {0XFF008170}; // bleu plus clair
+
 static const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
 
 static const int knobSize = 100;
@@ -23,13 +28,66 @@ static const int windowHeight = 450;
 
 
 struct AmpModelerLAF : public juce::LookAndFeel_V4 {
+    
+    void drawLabel(juce::Graphics& g, juce::Label& label) {
+        g.fillAll(backgroundColor);
+    
+        if (!label.isBeingEdited()) {
+            auto alpha = label.isEnabled() ? 1.0f : 0.5f;
+            const juce::Font font(getLabelFont(label));
+    
+            g.setColour(label.findColour(juce::Label::textColourId).withMultipliedAlpha(alpha));
+            g.setFont(font);
+    
+            auto textArea = getLabelBorderSize(label).subtractedFrom(label.getLocalBounds());
+    
+            g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
+                              max(1, (int)((float)textArea.getHeight() / font.getHeight())),
+                              label.getMinimumHorizontalScale());
+    
+            g.setColour(juce::Colours::transparentBlack);
+        }
+        else if (label.isEnabled()) {
+            g.setColour(juce::Colours::transparentBlack);
+        }
+    
+        g.drawRect(label.getLocalBounds());
+    }
+
+    
+    void drawComboBox(juce::Graphics& g, int width, int height, bool,
+                                       int, int, int, int, juce::ComboBox& box)
+    {
+        auto cornerSize = box.findParentComponentOfClass<juce::ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
+        juce::Rectangle<int> boxBounds(0, 0, width, height);
+    
+        // g.setColour(box.findColour(ComboBox::backgroundColourId));
+        g.setColour(widgetColor);
+        g.fillRoundedRectangle(boxBounds.toFloat(), cornerSize);
+    
+        // g.setColour(box.findColour(ComboBox::outlineColourId));
+        g.setColour(widgetColor);
+        g.drawRoundedRectangle(boxBounds.toFloat().reduced(0.5f, 0.5f), cornerSize, 1.0f);
+    
+        juce::Rectangle<int> arrowZone(width - 30, 0, 20, height);
+        juce::Path path;
+        path.startNewSubPath((float)arrowZone.getX() + 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+        path.lineTo((float)arrowZone.getCentreX(), (float)arrowZone.getCentreY() + 3.0f);
+        path.lineTo((float)arrowZone.getRight() - 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+    
+        // g.setColour(box.findColour(ComboBox::arrowColourId).withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
+        g.setColour(accentColor2.withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
+        g.strokePath(path, juce::PathStrokeType(2.0f));
+    }
+
 
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
                            float sliderPos, float rotaryStartAngle,
                            float rotaryEndAngle, juce::Slider& slider) override
     {
-        auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
-        auto fill    = juce::Colours::darkred;
+        // auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
+        auto outline = widgetColor;
+        auto fill    = accentColor2;
     
         auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
     
@@ -64,6 +122,50 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         // g.setColour(slider.findColour(juce::Slider::thumbColourId));
         // g.fillEllipse(juce::Rectangle<float>(thumbWidth, thumbWidth).withCentre(thumbPoint));
     }
+        
+    void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                           float sliderPos,
+                           float minSliderPos,
+                           float maxSliderPos,
+                           const juce::Slider::SliderStyle style, juce::Slider& slider)
+    {
+    
+        assert(!slider.isBar());
+
+        auto trackWidth = min(6.0f, slider.isHorizontal() ? (float)height * 0.25f : (float)width * 0.25f);
+
+        juce::Point<float> startPoint(slider.isHorizontal() ? (float)x : (float)x + (float)width * 0.5f,
+                                     slider.isHorizontal() ? (float)y + (float)height * 0.5f : (float)(height + y));
+
+        juce::Point<float> endPoint(slider.isHorizontal() ? (float)(width + x) : startPoint.x,
+                                   slider.isHorizontal() ? startPoint.y : (float)y);
+
+        juce::Path backgroundTrack;
+        backgroundTrack.startNewSubPath(startPoint);
+        backgroundTrack.lineTo(endPoint);
+        g.setColour(widgetColor);
+        g.strokePath(backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+
+        juce::Path valueTrack;
+        juce::Point<float> minPoint, maxPoint, thumbPoint;
+
+        auto kx = slider.isHorizontal() ? sliderPos : ((float)x + (float)width * 0.5f);
+        auto ky = slider.isHorizontal() ? ((float)y + (float)height * 0.5f) : sliderPos;
+
+        minPoint = startPoint;
+        maxPoint = { kx, ky };
+
+        auto thumbWidth = getSliderThumbRadius(slider);
+
+        valueTrack.startNewSubPath(minPoint);
+        valueTrack.lineTo(maxPoint);
+        g.setColour(slider.findColour(juce::Slider::trackColourId));
+        g.strokePath(valueTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+
+        g.setColour(accentColor2);
+        g.fillEllipse(juce::Rectangle<float>(static_cast<float>(thumbWidth), static_cast<float>(thumbWidth)).withCentre(maxPoint));
+    }
+
 };
 
 
@@ -109,7 +211,7 @@ struct GateBoostPage : public juce::Component {
     void resized();
 
     void paint(juce::Graphics &g) {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
 
     Knob gateKnob;
@@ -141,7 +243,7 @@ struct AmplifierPage : public juce::Component {
     void resized();
 
     void paint(juce::Graphics &g) {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
 
     Knob gainKnob;
@@ -168,7 +270,7 @@ struct GainStagesPage : public juce::Component {
     void resized();
 
     void paint(juce::Graphics &g) {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
 
     juce::TextButton resetButton {"Reset"};
@@ -203,7 +305,7 @@ struct IRLoaderPage : public juce::Component {
     void resized();
 
     void paint(juce::Graphics &g) {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
 
     juce::TextButton irLoadButton {"Load IR"};
@@ -223,7 +325,7 @@ struct EQPage : public juce::Component {
     EQPage(Processor &audioProcessor);
     
     void paint(juce::Graphics &g) {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
     
     void resized();
@@ -262,7 +364,7 @@ struct MasterVolPanel : public juce::Component {
     }
 
     void paint(juce::Graphics& g) override {
-        g.fillAll(juce::Colours::black);
+        g.fillAll(backgroundColor);
     }
 
 
