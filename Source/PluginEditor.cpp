@@ -17,7 +17,7 @@ static inline int computeYcoord(float row, int height) {
 }
 
 
-GateBoostPage::GateBoostPage(Processor &p) :
+GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     gateKnob("GATE_KNOB_LABEL",                "Gate Thresh",     this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
     // gateAttackKnob("GATE_Attack_LABEL",        "Gate Attack",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
     // gateReleaseKnob("GATE_RELEASE_LABEL",      "Gate Release",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
@@ -41,6 +41,11 @@ GateBoostPage::GateBoostPage(Processor &p) :
     EQToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, paramInfos[EQ_ACTIVE].id.toString(), EQToggle
     );
+
+    gateToggle.onStateChange      = [this]() {}; // pour desactiver les pages correspondantes
+    preampToggle.onStateChange    = [this]() {};
+    tonestackToggle.onStateChange = [this]() {};
+    EQToggle.onStateChange        = [this]() {};
 
     addAndMakeVisible(gateToggle);
     addAndMakeVisible(preampToggle);
@@ -89,7 +94,7 @@ void GateBoostPage::resized() {
 }
 
 
-AmplifierPage::AmplifierPage(Processor &p) :
+AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     gainKnob("GAIN_KNOB_LABEL",                  "Pre Gain",        this, paramInfos[PREAMP_GAIN].id.toString(),       p.apvts, ""),
 
     inputFilterKnob("INPUT_KNOB_FILTER_LABEL",   "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
@@ -112,7 +117,11 @@ AmplifierPage::AmplifierPage(Processor &p) :
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
                                  juce::NotificationType::dontSendNotification);
-
+    
+    ampChannelBox.onChange = [this]() {
+        // setEnabled() des slider de la page de gain stages, nécessite une ref à l'Editor
+    }; 
+    
     toneStackModelBox.addItemList({"Normal", "Scooped", "Mids!"}, 1);
     toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[TONESTACK_MODEL].id) + 1,
                                      juce::NotificationType::dontSendNotification);
@@ -180,7 +189,7 @@ void AmplifierPage::resized() {
 }
 
 
-GainStagesPage::GainStagesPage(Processor &p) :
+GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage0LPSlider("STAGE0_LP_SLIDER_LABEL",         "Stage 0 output filter",   this, paramInfos[STAGE0_LP].id.toString(),          p.apvts, " Hz"),
     stage0BypassSlider("STAGE0_BYPASS_SLIDER_LABEL", "Stage 0 cathode bypass",  this, paramInfos[STAGE0_BYPASS].id.toString(),      p.apvts, " dB"),
     stage0BiasSlider("STAGE0_BIAS_SLIDER_LABEL",     "Stage 0 tube bias",       this, paramInfos[STAGE0_BIAS].id.toString(),        p.apvts, ""),
@@ -292,7 +301,7 @@ void GainStagesPage::resized() {
     stage4BiasSlider.label.setBounds(stage4BiasSlider.getX(), stage4BiasSlider.getY() - 15, sliderWidth, 20);
 }
 
-IRLoaderPage::IRLoaderPage(Processor &audioProcessor) {
+IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
 
     bypassButtonAttachment = std::make_unique<ButtonAttachment>(
         audioProcessor.apvts, paramInfos[IR_ACTIVE].id.toString(), bypassToggle
@@ -440,7 +449,7 @@ void IRLoaderPage::resized() {
     prevIRButton.setBounds(nextIRButton.getX(), nextIRButton.getY() + 50, 120, 30);
 }
 
-EQPage::EQPage(Processor &p) :
+EQPage::EQPage(Editor *editor, Processor &p) :
     lowcutFreqKnob("LOW_CUT_FREQ_KNOB_LABEL",       "Low cut",         this, paramInfos[LOW_CUT_FREQ].id.toString(),    p.apvts, " Hz"),
     lowShelfFreqKnob("LOW_SHELF_FREQ_KNOB_LABEL",   "Low Shelf Freq",  this, paramInfos[LOW_SHELF_FREQ].id.toString(),  p.apvts, " Hz"),
     lowShelfGainKnob("LOW_SHELF_GAIN_KNOB_LABEL",   "Gain",            this, paramInfos[LOW_SHELF_GAIN].id.toString(),  p.apvts, " dB"),
@@ -528,11 +537,11 @@ void EQPage::resized() {
 Editor::Editor (Processor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
 
-    gateBoostPage(p),
-    ampPage(p),
-    gainStagesPage(p),
-    irLoaderPage(p),
-    eqPage(p),
+    gateBoostPage(this, p),
+    ampPage(this, p),
+    gainStagesPage(this, p),
+    irLoaderPage(this, p),
+    eqPage(this, p),
     volumePanel(p)
 {
 
@@ -547,13 +556,9 @@ Editor::Editor (Processor& p)
     tabs.addTab("IR Loader",   tabColour, &irLoaderPage,   true);
     tabs.setCurrentTabIndex(1);
     
-    // passer un ptr vers gainStagesPage dans ampPage pour 
-    // ampPage.gainstages = &gainStagesPage;
-    
     addAndMakeVisible(tabs);
     addAndMakeVisible(volumePanel);
 
-    // getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkred);
     setLookAndFeel(&this->lookAndFeel);
     setSize(windoWidth, windowHeight);
     setResizable(false, false);
@@ -567,7 +572,6 @@ Editor::~Editor() {
 void Editor::paint (juce::Graphics& g) {
     ZoneScoped;
 	g.fillAll(backgroundColor);
-    volumePanel.paint(g);
 }
 
 void Editor::resized() {

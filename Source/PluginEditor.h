@@ -242,6 +242,8 @@ using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;
 using ButtonAttachment = Apvts::ButtonAttachment;
 
+struct Editor; 
+
 struct Knob : public juce::Slider {
     Knob(juce::String labelID, juce::String name, juce::Component *comp, juce::String paramID, Apvts &apvts, juce::String suffix);
 
@@ -275,7 +277,7 @@ struct ComboBox : public juce::ComboBox {
 
 
 struct GateBoostPage : public juce::Component {
-    GateBoostPage(Processor &p);
+    GateBoostPage(Editor *editor, Processor &p);
     void resized();
 
     void paint(juce::Graphics &g) {
@@ -307,7 +309,7 @@ struct GateBoostPage : public juce::Component {
 
 
 struct AmplifierPage : public juce::Component {
-    AmplifierPage(Processor &p);
+    AmplifierPage(Editor *editor, Processor &p);
     void resized();
 
     void paint(juce::Graphics &g) {
@@ -334,7 +336,7 @@ struct AmplifierPage : public juce::Component {
 
 
 struct GainStagesPage : public juce::Component {
-    GainStagesPage(Processor &p);
+    GainStagesPage(Editor *editor, Processor &p);
     void resized();
 
     void paint(juce::Graphics &g) {
@@ -369,7 +371,7 @@ struct GainStagesPage : public juce::Component {
 
 
 struct IRLoaderPage : public juce::Component {
-    IRLoaderPage(Processor &audioProcessor);
+    IRLoaderPage(Editor *editor, Processor &audioProcessor);
     void resized();
 
     void paint(juce::Graphics &g) {
@@ -390,7 +392,7 @@ struct IRLoaderPage : public juce::Component {
 
 
 struct EQPage : public juce::Component {
-    EQPage(Processor &audioProcessor);
+    EQPage(Editor *editor, Processor &audioProcessor);
     
     void paint(juce::Graphics &g) {
         g.fillAll(backgroundColor);
