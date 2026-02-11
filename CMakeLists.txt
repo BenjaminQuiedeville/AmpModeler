@@ -41,7 +41,11 @@ if (MSVC)
     
     # add_link_options(/NODEFAULTLIB:LIBCMTD)
 else()
-    add_compile_options(-Wall -Wextra -mavx2 -ffast-math -fno-math-errno)
+    add_compile_options(-Wall -Wextra -ffast-math -fno-math-errno)
+    
+    if (NOT APPLE) 
+        add_compile_options(-mavx2)
+    endif()
     
     set(OPTI_FLAGS "-O3 ")
     set(DEBUG_FLAGS "-g -gcodeview")
