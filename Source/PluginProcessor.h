@@ -159,7 +159,7 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "STAGE1_LP",            15000.0f },
     { "STAGE1_BYPASS",        -3.0f },
     { "STAGE1_BIAS",          0.2f },
-    { "STAGE1_ATTENUATION",   0.9f },
+    { "STAGE1_ATTENUATION",   0.6f },
     
     { "STAGE2_LP",            15000.0f },
     { "STAGE2_BYPASS",        0.0f },
@@ -169,7 +169,7 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "STAGE3_LP",            15000.0f },
     { "STAGE3_BYPASS",        -2.0f },
     { "STAGE3_BIAS",          0.0f },
-    { "STAGE3_ATTENUATION",   0.6f },
+    { "STAGE3_ATTENUATION",   0.4f },
     
     { "STAGE4_LP",            15000.0f },
     { "STAGE4_BYPASS",        -2.0f },

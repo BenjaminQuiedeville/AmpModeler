@@ -26,11 +26,37 @@ static const int nCols = 6;
 static const int windoWidth = 1000;
 static const int windowHeight = 450;
 
-
 struct AmpModelerLAF : public juce::LookAndFeel_V4 {
     
+    AmpModelerLAF() {
+        
+        setColour(juce::Slider::rotarySliderOutlineColourId, widgetColor);
+        setColour(juce::Slider::rotarySliderFillColourId, accentColor2);
+        setColour(juce::Slider::thumbColourId, accentColor2);
+        setColour(juce::Slider::backgroundColourId, widgetColor);
+        setColour(juce::Slider::trackColourId, accentColor1);
+        setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+        
+        setColour(juce::ComboBox::backgroundColourId, widgetColor);
+        setColour(juce::ComboBox::outlineColourId, widgetColor);
+        setColour(juce::ComboBox::buttonColourId, widgetColor);
+        setColour(juce::ComboBox::arrowColourId, accentColor1);
+        setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::darkred);
+        
+        setColour(juce::Label::backgroundColourId, backgroundColor);
+        setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
+        
+        setColour(juce::PopupMenu::backgroundColourId, widgetColor);
+        
+        setColour(juce::TabbedComponent::outlineColourId, widgetColor);
+        setColour(juce::TabbedButtonBar::tabOutlineColourId, backgroundColor);
+        setColour(juce::TabbedButtonBar::frontOutlineColourId, widgetColor);
+        
+        setColour(juce::TextButton::buttonColourId, widgetColor);
+    }
+    
     void drawLabel(juce::Graphics& g, juce::Label& label) {
-        g.fillAll(backgroundColor);
+        g.fillAll(label.findColour(juce::Label::backgroundColourId));
     
         if (!label.isBeingEdited()) {
             auto alpha = label.isEnabled() ? 1.0f : 0.5f;
@@ -44,11 +70,12 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
             g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
                               max(1, (int)((float)textArea.getHeight() / font.getHeight())),
                               label.getMinimumHorizontalScale());
-    
-            g.setColour(juce::Colours::transparentBlack);
+
+            g.setColour(label.findColour(juce::Label::outlineColourId).withMultipliedAlpha(alpha));
+
         }
         else if (label.isEnabled()) {
-            g.setColour(juce::Colours::transparentBlack);
+            g.setColour(label.findColour(juce::Label::outlineColourId));
         }
     
         g.drawRect(label.getLocalBounds());
@@ -61,12 +88,10 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         auto cornerSize = box.findParentComponentOfClass<juce::ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
         juce::Rectangle<int> boxBounds(0, 0, width, height);
     
-        // g.setColour(box.findColour(ComboBox::backgroundColourId));
-        g.setColour(widgetColor);
+        g.setColour(box.findColour(juce::ComboBox::backgroundColourId));
         g.fillRoundedRectangle(boxBounds.toFloat(), cornerSize);
     
-        // g.setColour(box.findColour(ComboBox::outlineColourId));
-        g.setColour(widgetColor);
+        g.setColour(box.findColour(juce::ComboBox::outlineColourId));
         g.drawRoundedRectangle(boxBounds.toFloat().reduced(0.5f, 0.5f), cornerSize, 1.0f);
     
         juce::Rectangle<int> arrowZone(width - 30, 0, 20, height);
@@ -75,8 +100,7 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         path.lineTo((float)arrowZone.getCentreX(), (float)arrowZone.getCentreY() + 3.0f);
         path.lineTo((float)arrowZone.getRight() - 3.0f, (float)arrowZone.getCentreY() - 2.0f);
     
-        // g.setColour(box.findColour(ComboBox::arrowColourId).withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
-        g.setColour(accentColor2.withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
+        g.setColour(box.findColour(juce::ComboBox::arrowColourId).withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
         g.strokePath(path, juce::PathStrokeType(2.0f));
     }
 
@@ -85,9 +109,8 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
                            float sliderPos, float rotaryStartAngle,
                            float rotaryEndAngle, juce::Slider& slider) override
     {
-        // auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
-        auto outline = widgetColor;
-        auto fill    = accentColor2;
+        auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
+        auto fill    = slider.findColour(juce::Slider::rotarySliderFillColourId);
     
         auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
     
@@ -114,13 +137,6 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
             g.setColour(fill);
             g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
-    
-        auto thumbWidth = lineW * 2.0f;
-        // juce::Point<float>thumbPoint(bounds.getCentreX() + arcRadius * std::cos(toAngle - juce::MathConstants<float>::halfPi),
-        //                              bounds.getCentreY() + arcRadius * std::sin(toAngle - juce::MathConstants<float>::halfPi));
-    
-        // g.setColour(slider.findColour(juce::Slider::thumbColourId));
-        // g.fillEllipse(juce::Rectangle<float>(thumbWidth, thumbWidth).withCentre(thumbPoint));
     }
         
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -132,7 +148,8 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
     
         assert(!slider.isBar());
 
-        auto trackWidth = min(6.0f, slider.isHorizontal() ? (float)height * 0.25f : (float)width * 0.25f);
+        // auto trackWidth = min(6.0f, slider.isHorizontal() ? (float)height * 0.25f : (float)width * 0.25f);
+        float trackWidth = 12.0f;
 
         juce::Point<float> startPoint(slider.isHorizontal() ? (float)x : (float)x + (float)width * 0.5f,
                                      slider.isHorizontal() ? (float)y + (float)height * 0.5f : (float)(height + y));
@@ -143,7 +160,7 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         juce::Path backgroundTrack;
         backgroundTrack.startNewSubPath(startPoint);
         backgroundTrack.lineTo(endPoint);
-        g.setColour(widgetColor);
+        g.setColour(slider.findColour(juce::Slider::backgroundColourId));
         g.strokePath(backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
 
         juce::Path valueTrack;
@@ -155,15 +172,66 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         minPoint = startPoint;
         maxPoint = { kx, ky };
 
-        auto thumbWidth = getSliderThumbRadius(slider);
 
         valueTrack.startNewSubPath(minPoint);
         valueTrack.lineTo(maxPoint);
         g.setColour(slider.findColour(juce::Slider::trackColourId));
         g.strokePath(valueTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
 
-        g.setColour(accentColor2);
-        g.fillEllipse(juce::Rectangle<float>(static_cast<float>(thumbWidth), static_cast<float>(thumbWidth)).withCentre(maxPoint));
+        // auto thumbWidth = getSliderThumbRadius(slider);
+        // g.setColour(slider.findColour(juce::Slider::thumbColourId));
+        // g.fillEllipse(juce::Rectangle<float>(static_cast<float>(thumbWidth), static_cast<float>(thumbWidth)).withCentre(maxPoint));
+    }
+
+    juce::Slider::SliderLayout getSliderLayout (juce::Slider& slider)
+    {
+        // 1. compute the actually visible textBox size from the slider textBox size and some additional constraints
+    
+        int minXSpace = 0;
+        int minYSpace = 0;
+    
+        auto textBoxPos = slider.getTextBoxPosition();
+    
+        minYSpace = 5;
+    
+        auto localBounds = slider.getLocalBounds();
+    
+        auto textBoxWidth  = max(0, min(slider.getTextBoxWidth(),  localBounds.getWidth() - minXSpace));
+        auto textBoxHeight = max(0, min(slider.getTextBoxHeight(), localBounds.getHeight() - minYSpace));
+    
+        juce::Slider::SliderLayout layout;
+    
+        // 2. set the textBox bounds
+    
+        if (slider.isBar()) {
+            layout.textBoxBounds = localBounds;
+        } else {
+            layout.textBoxBounds.setWidth(textBoxWidth);
+            layout.textBoxBounds.setHeight(textBoxHeight);
+
+            layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
+
+            if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.textBoxBounds.setY (0); }
+            else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight); }
+        }
+    
+        // 3. set the slider bounds
+    
+        layout.sliderBounds = localBounds;
+    
+        if (slider.isBar()) {
+            layout.sliderBounds.reduce (1, 1);   // bar border
+        } else {
+            if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.sliderBounds.removeFromTop (textBoxHeight); }
+            else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.sliderBounds.removeFromBottom (textBoxHeight); }
+    
+            const int thumbIndent = getSliderThumbRadius (slider);
+    
+            if (slider.isHorizontal())    { layout.sliderBounds.reduce(thumbIndent, 0); }
+            else if (slider.isVertical()) { layout.sliderBounds.reduce(0, thumbIndent); }
+        }
+
+        return layout;
     }
 
 };
