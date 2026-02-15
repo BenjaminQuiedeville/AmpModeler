@@ -155,9 +155,9 @@ struct GainStagesPage : public juce::Component {
 
     juce::TextButton resetButton {"Reset"};
     juce::Label stage1Label {"STAGE_1_LABEL", "Stage 1"};
-    juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2"};
-    juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3"};
-    juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4"};
+    juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2\nChannel 1"};
+    juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3\nChannel 2"};
+    juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4\nChannel 3"};
     
     Knob stage1LP;
     Knob stage1Bypass;

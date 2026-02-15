@@ -129,14 +129,12 @@ void AmpModelerLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width,
                            arcRadius, arcRadius,
                            0.0f, rotaryStartAngle, toAngle, true);
 
-    g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0 : 0.5));
+    g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0 : 0.3));
     g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 }
     
 void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
-                                     float sliderPos,
-                                     float minSliderPos,
-                                     float maxSliderPos,
+                                     float sliderPos, float minSliderPos, float maxSliderPos,
                                      const juce::Slider::SliderStyle style, juce::Slider& slider)
 {
 
@@ -189,11 +187,13 @@ juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
     minYSpace = 5;
 
     auto localBounds = slider.getLocalBounds();
+    auto sliderBounds = slider.getBounds();
 
-    auto textBoxWidth  = max(0, min(slider.getTextBoxWidth(),  localBounds.getWidth() - minXSpace));
-    auto textBoxHeight = max(0, min(slider.getTextBoxHeight(), localBounds.getHeight() - minYSpace));
+    static const int textBoxWidth = 120;
+    static const int textBoxHeight = 30;
 
     juce::Slider::SliderLayout layout;
+    
 
     // 2. set the textBox bounds
 
@@ -203,10 +203,10 @@ juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
         layout.textBoxBounds.setWidth(textBoxWidth);
         layout.textBoxBounds.setHeight(textBoxHeight);
 
-        layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
+        layout.textBoxBounds.setX((localBounds.getWidth() - textBoxWidth) / 2);
 
-        if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.textBoxBounds.setY (0); }
-        else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight); }
+        if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.textBoxBounds.setY(0); }
+        else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.textBoxBounds.setY(localBounds.getHeight() - textBoxHeight - 15); }
     }
 
     // 3. set the slider bounds
@@ -228,10 +228,8 @@ juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
     return layout;
 }
 
-void AmpModelerLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
-                           const juce::Colour& backgroundColour,
-                           bool shouldDrawButtonAsHighlighted,
-                           bool shouldDrawButtonAsDown)
+void AmpModelerLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
+                                         bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
     auto cornerSize = 6.0f;
     auto bounds = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
@@ -446,8 +444,24 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
                                  juce::NotificationType::dontSendNotification);
     
-    ampChannelBox.onChange = [this]() {
-        // setEnabled() des slider de la page de gain stages, nécessite une ref à l'Editor
+    ampChannelBox.onChange = [this, editor]() {
+        int channel = ampChannelBox.getSelectedId();
+        
+        editor->gainStagesPage.stage2LP.setEnabled(channel >= 1);
+        editor->gainStagesPage.stage2Bypass.setEnabled(channel > 1);
+        editor->gainStagesPage.stage2Bias.setEnabled(channel >= 1);
+        editor->gainStagesPage.stage2Gain.setEnabled(channel >= 1);
+        
+        editor->gainStagesPage.stage3LP.setEnabled(channel >= 2);
+        editor->gainStagesPage.stage3Bypass.setEnabled(channel > 2);
+        editor->gainStagesPage.stage3Bias.setEnabled(channel >= 2);
+        editor->gainStagesPage.stage3Gain.setEnabled(channel >= 2);
+        
+        editor->gainStagesPage.stage4LP.setEnabled(channel >= 3);
+        editor->gainStagesPage.stage4Bypass.setEnabled(channel > 3);
+        editor->gainStagesPage.stage4Bias.setEnabled(channel >= 3);
+        editor->gainStagesPage.stage4Gain.setEnabled(channel >= 3);
+
     }; 
     
     toneStackModelBox.addItemList({"Normal", "Scooped", "Mids!"}, 1);
@@ -460,10 +474,6 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     
     // stereoSettingBox.valueChanged = [&, this](juce::Value &value) {
         
-    //     value;
-    //     // changer le style des potard en disabled dans le gainstages 
-    // };
-
     brightToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, paramInfos[BRIGHT_CAP].id.toString(), brightToggle
     );
@@ -492,15 +502,15 @@ void AmplifierPage::resized() {
     toneStackModelBox.setBounds(ampChannelBox.getRight() + 5, ampChannelBox.getY(), 120, 30);
     toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, knobSize, 20);
 
-    placeKnob(&gain1Knob, ampChannelBox.getX(), ampChannelBox.getBottom() + verticalSpacing + 5, knobSize);
+    placeKnob(&gain1Knob, ampChannelBox.getX(), ampChannelBox.getBottom() + verticalSpacing + 10, knobSize);
     placeKnob(&gain2Knob, gain1Knob.getX(), gain1Knob.getBottom() + verticalSpacing, knobSize);
     placeKnob(&inputFilterKnob, gain1Knob.getX() - knobSize - horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
     
-    placeKnob(&bassEQKnob,    gain1Knob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
-    placeKnob(&midEQKnob,     bassEQKnob.getRight() + horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&bassEQKnob, gain1Knob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&midEQKnob, bassEQKnob.getRight() + horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
     placeKnob(&trebbleEQKnob, midEQKnob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
 
-    placeKnob(&presenceKnob,  trebbleEQKnob.getRight() + horizontalSpacing, gain1Knob.getY(), knobSize);
+    placeKnob(&presenceKnob, trebbleEQKnob.getRight() + horizontalSpacing, gain1Knob.getY(), knobSize);
     placeKnob(&resonanceKnob, trebbleEQKnob.getRight() + horizontalSpacing, gain2Knob.getY(), knobSize);
 
     placeKnob(&preampVolumeKnob, presenceKnob.getRight() + horizontalSpacing, trebbleEQKnob.getY(),  knobSize);
@@ -561,8 +571,8 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    static const int horizontalSpacing = 0;
-    static const int verticalSpacing = 5;
+    static const int horizontalSpacing = 15;
+    static const int verticalSpacing = 0;
     static const int stageKnobSize = 100;
     static const int labelWidth = stageKnobSize;
     static const int labelHeight = 20;
@@ -572,26 +582,26 @@ void GainStagesPage::resized() {
     // stage1LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
     // stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
 
-    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
+    resetButton.setBounds(horizontalMargin, verticalMargin + 10, 100, 30);
 
-    stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin, labelWidth, 20);
-    stage2Label.setBounds(stage1Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
-    stage3Label.setBounds(stage2Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
-    stage4Label.setBounds(stage3Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
+    stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin - 10, labelWidth, 40);
+    stage2Label.setBounds(stage1Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
+    stage3Label.setBounds(stage2Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
+    stage4Label.setBounds(stage3Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
         
-    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
     placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
     placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
     placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
     placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
     placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
     placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
     placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
     placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 }
@@ -726,16 +736,19 @@ void IRLoaderPage::resized() {
 
     int width = getWidth();
     int height = getHeight();
+    
+    static const int horizontalSpacing = 10;
+    static const int verticalSpacing = 10;
 
-    irLoadButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 50);
+    irLoadButton.setBounds(horizontalMargin, verticalMargin, 100, 50);
 
-    bypassToggle.setBounds(computeXcoord(1, width), computeYcoord(0, height) - 20, 120, 30);
-    defaultIRButton.setBounds(bypassToggle.getX(), bypassToggle.getY() + 40, 120, 30);
+    bypassToggle.setBounds(irLoadButton.getRight() + horizontalSpacing, irLoadButton.getY() - 10, 120, 30);
+    defaultIRButton.setBounds(bypassToggle.getX(), bypassToggle.getBottom() + verticalSpacing, 120, 30);
 
-    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getY() + irLoadButton.getHeight() + 5, 400, 50);
+    irNameLabel.setBounds(irLoadButton.getX(), irLoadButton.getBottom() + 15, 400, 50);
 
-    nextIRButton.setBounds(computeXcoord(0, width), computeYcoord(1, height), 120, 30);
-    prevIRButton.setBounds(nextIRButton.getX(), nextIRButton.getY() + 50, 120, 30);
+    nextIRButton.setBounds(irNameLabel.getX(), irNameLabel.getBottom() + verticalSpacing, 120, 30);
+    prevIRButton.setBounds(nextIRButton.getX(), nextIRButton.getBottom() + verticalSpacing, 120, 30);
 }
 
 EQPage::EQPage(Editor *editor, Processor &p) :
@@ -784,7 +797,7 @@ void EQPage::resized() {
     static const int verticalSpacing = 5;
     static const int horizontalSpacing = 0;
     
-    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, labelHeight);
+    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
     
     placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing, verticalMargin, eqKnobSize);
     placeKnob(&lowShelfGainKnob, lowShelfFreqKnob.getX(), lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);

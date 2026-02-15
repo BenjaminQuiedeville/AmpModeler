@@ -462,7 +462,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE1_BIAS].id), 0);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN1].id)->getNormalisableRange();
-        preamp.stage1Gain.newTarget(tube_gain * scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
+        preamp.stage1Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                   SMOOTH_PARAM_TIME, preampSamplerate);
         preamp.brightCapFilter.makeLowShelf(
             550.0,
@@ -885,7 +885,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     // EQ params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOW_CUT_FREQ].id.toString(), "Low cut",
-        juce::NormalisableRange<float>(0.0f, 300.0f, 0.1f, 0.7f), paramInfos[LOW_CUT_FREQ].defaultValue, attributes
+        juce::NormalisableRange<float>(5.0f, 200.0f, 0.1f, 0.7f), paramInfos[LOW_CUT_FREQ].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
