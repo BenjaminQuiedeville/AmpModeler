@@ -44,7 +44,10 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::darkred);
         
         setColour(juce::Label::backgroundColourId, backgroundColor);
-        setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
+        // setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
+        setColour(juce::Label::outlineColourId, juce::Colours::white);
+        setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+
         
         setColour(juce::PopupMenu::backgroundColourId, widgetColor);
         
@@ -53,6 +56,7 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         setColour(juce::TabbedButtonBar::frontOutlineColourId, widgetColor);
         
         setColour(juce::TextButton::buttonColourId, widgetColor);
+        setColour(juce::TextButton::buttonOnColourId, accentColor1);
     }
     
     void drawLabel(juce::Graphics& g, juce::Label& label) {
@@ -128,15 +132,13 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
         g.setColour(outline);
         g.strokePath(backgroundArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     
-        if (slider.isEnabled()) {
-            juce::Path valueArc;
-            valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
-                                   arcRadius, arcRadius,
-                                   0.0f, rotaryStartAngle, toAngle, true);
+        juce::Path valueArc;
+        valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+                               arcRadius, arcRadius,
+                               0.0f, rotaryStartAngle, toAngle, true);
     
-            g.setColour(fill);
-            g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        }
+        g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0 : 0.5));
+        g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
         
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -233,10 +235,77 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
 
         return layout;
     }
-
+    
+    void drawButtonBackground(juce::Graphics& g, juce::Button& button,
+                               const juce::Colour& backgroundColour,
+                               bool shouldDrawButtonAsHighlighted,
+                               bool shouldDrawButtonAsDown)
+    {
+        auto cornerSize = 6.0f;
+        auto bounds = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
+    
+        auto baseColour = backgroundColour.withMultipliedSaturation(button.hasKeyboardFocus(true) ? 1.3f : 0.9f)
+                                          .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f);
+    
+        if (shouldDrawButtonAsDown || shouldDrawButtonAsHighlighted) {
+            baseColour = baseColour.contrasting(shouldDrawButtonAsDown ? 0.2f : 0.05f);
+        }
+    
+        g.setColour(baseColour);
+    
+        auto flatOnLeft   = button.isConnectedOnLeft();
+        auto flatOnRight  = button.isConnectedOnRight();
+        auto flatOnTop    = button.isConnectedOnTop();
+        auto flatOnBottom = button.isConnectedOnBottom();
+    
+        if (flatOnLeft || flatOnRight || flatOnTop || flatOnBottom) {
+            juce::Path path;
+            path.addRoundedRectangle(bounds.getX(), bounds.getY(),
+                                    bounds.getWidth(), bounds.getHeight(),
+                                    cornerSize, cornerSize,
+                                    !(flatOnLeft  || flatOnTop),
+                                    !(flatOnRight || flatOnTop),
+                                    !(flatOnLeft  || flatOnBottom),
+                                    !(flatOnRight || flatOnBottom));
+    
+            g.fillPath(path);
+    
+            g.setColour(button.findColour(juce::ComboBox::outlineColourId));
+            g.strokePath(path, juce::PathStrokeType (1.0f));
+        } else {
+            g.fillRoundedRectangle(bounds, cornerSize);
+    
+            g.setColour(button.findColour(juce::ComboBox::outlineColourId));
+            g.drawRoundedRectangle(bounds, cornerSize, 1.0f);
+        }
+    }
+    
+    void drawButtonText(juce::Graphics& g, juce::TextButton& button,
+                         bool /*shouldDrawButtonAsHighlighted*/, bool /*shouldDrawButtonAsDown*/)
+    {
+        juce::Font font(getTextButtonFont(button, button.getHeight()));
+        g.setFont(font);
+        g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
+                                                              : juce::TextButton::textColourOffId)
+                           .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+    
+        const int yIndent = min(4, button.proportionOfHeight (0.3f));
+        const int cornerSize = min(button.getHeight(), button.getWidth()) / 2;
+    
+        const int fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
+        const int leftIndent  = min(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+        const int rightIndent = min(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+        const int textWidth = button.getWidth() - leftIndent - rightIndent;
+    
+        if (textWidth > 0) {
+            g.drawFittedText(button.getButtonText(),
+                             leftIndent, yIndent, textWidth, button.getHeight() - yIndent * 2,
+                             juce::Justification::centred, 2);
+        }
+    }
 };
 
-
+// changer pour des ButtonParameterAttachment et autres, ca retire une couche d'allocation
 using Apvts = juce::AudioProcessorValueTreeState;
 using SliderAttachment = Apvts::SliderAttachment;
 using ComboBoxAttachment = Apvts::ComboBoxAttachment;
@@ -284,6 +353,8 @@ struct GateBoostPage : public juce::Component {
         g.fillAll(backgroundColor);
     }
 
+    Editor *main_editor = nullptr;
+
     Knob gateKnob;
     // Knob gateAttackKnob;
     // Knob gateReleaseKnob;
@@ -295,10 +366,10 @@ struct GateBoostPage : public juce::Component {
 
     Knob inputGainKnob;
 
-    juce::ToggleButton gateToggle {"Activate Gate/Boost"};
-    juce::ToggleButton preampToggle {"Activate Preamp"};
-    juce::ToggleButton tonestackToggle {"Activate Tonestack"};
-    juce::ToggleButton EQToggle {"Activate EQ"};
+    juce::TextButton gateToggle {"Activate Gate/Boost"};
+    juce::TextButton preampToggle {"Activate Preamp"};
+    juce::TextButton tonestackToggle {"Activate Tonestack"};
+    juce::TextButton EQToggle {"Activate EQ"};
 
     std::unique_ptr<ButtonAttachment> gateToggleAttachment;
     std::unique_ptr<ButtonAttachment> preampToggleAttachment;
@@ -316,6 +387,8 @@ struct AmplifierPage : public juce::Component {
         g.fillAll(backgroundColor);
     }
 
+    Editor *main_editor = nullptr;
+
     Knob gainKnob;
     Knob inputFilterKnob;
     Knob bassEQKnob;
@@ -330,7 +403,7 @@ struct AmplifierPage : public juce::Component {
     ComboBox toneStackModelBox;
     ComboBox channelConfigBox;
 
-    juce::ToggleButton brightToggle {"Bright Switch"};
+    juce::TextButton brightToggle {"Bright Switch"};
     std::unique_ptr<ButtonAttachment> brightToggleAttachment;
 };
 
@@ -343,30 +416,37 @@ struct GainStagesPage : public juce::Component {
         g.fillAll(backgroundColor);
     }
 
+    Editor *main_editor = nullptr;
+
     juce::TextButton resetButton {"Reset"};
+    juce::Label stage0Label {"STAGE_0_LABEL", "Stage 0"};
+    juce::Label stage1Label {"STAGE_1_LABEL", "Stage 1"};
+    juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2"};
+    juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3"};
+    juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4"};
+    
+    Knob stage0LPSlider;
+    Knob stage0BypassSlider;
+    Knob stage0BiasSlider;
 
-    HSlider stage0LPSlider;
-    HSlider stage0BypassSlider;
-    HSlider stage0BiasSlider;
+    Knob stage1LPSlider;
+    Knob stage1BypassSlider;
+    Knob stage1BiasSlider;
+    Knob stage1AttSlider;
 
-    HSlider stage1LPSlider;
-    HSlider stage1BypassSlider;
-    HSlider stage1BiasSlider;
-    HSlider stage1AttSlider;
+    Knob stage2LPSlider;
+    Knob stage2BypassSlider;
+    Knob stage2BiasSlider;
+    Knob stage2AttSlider;
 
-    HSlider stage2LPSlider;
-    HSlider stage2BypassSlider;
-    HSlider stage2BiasSlider;
-    HSlider stage2AttSlider;
+    Knob stage3LPSlider;
+    Knob stage3BypassSlider;
+    Knob stage3BiasSlider;
+    Knob stage3AttSlider;
 
-    HSlider stage3LPSlider;
-    HSlider stage3BypassSlider;
-    HSlider stage3BiasSlider;
-    HSlider stage3AttSlider;
-
-    HSlider stage4LPSlider;
-    HSlider stage4BypassSlider;
-    HSlider stage4BiasSlider;
+    Knob stage4LPSlider;
+    Knob stage4BypassSlider;
+    Knob stage4BiasSlider;
 };
 
 
@@ -378,6 +458,8 @@ struct IRLoaderPage : public juce::Component {
         g.fillAll(backgroundColor);
     }
 
+    Editor *main_editor = nullptr;
+
     juce::TextButton irLoadButton {"Load IR"};
     juce::Label irNameLabel {"IR_NAME_LABEL", "Default IR"};
 
@@ -386,7 +468,7 @@ struct IRLoaderPage : public juce::Component {
 
     juce::TextButton defaultIRButton {"Load default IR"};
 
-    juce::ToggleButton bypassToggle {"Activate IRloader"};
+    juce::TextButton bypassToggle {"Activate IRloader"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 };
 
@@ -399,6 +481,8 @@ struct EQPage : public juce::Component {
     }
     
     void resized();
+
+    Editor *main_editor = nullptr;
 
     juce::TextButton resetButton {"Reset Gains"};
 

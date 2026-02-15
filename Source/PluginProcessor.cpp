@@ -907,7 +907,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     // EQ params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOW_CUT_FREQ].id.toString(), "Low cut",
-        juce::NormalisableRange<float>(10.0f, 200.0f, 0.1f, 0.7f), paramInfos[LOW_CUT_FREQ].defaultValue, attributes
+        juce::NormalisableRange<float>(0.0f, 300.0f, 0.1f, 0.7f), paramInfos[LOW_CUT_FREQ].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -917,17 +917,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOW_SHELF_GAIN].id.toString(), "Gain",
-        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[LOW_SHELF_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), paramInfos[LOW_SHELF_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOWMID_FREQ].id.toString(), "Freq",
-        juce::NormalisableRange<float>(100.0f, 8000.0f, 0.1f, 0.7f), paramInfos[LOWMID_FREQ].defaultValue, attributes
+        juce::NormalisableRange<float>(100.0f, 800.0f, 0.1f, 0.7f), paramInfos[LOWMID_FREQ].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[LOWMID_GAIN].id.toString(), "Gain",
-        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[LOWMID_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), paramInfos[LOWMID_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -937,12 +937,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[MID_FREQ].id.toString(), "Freq",
-        juce::NormalisableRange<float>(100.0f, 8000.0f, 1.0f, 0.7f), paramInfos[MID_FREQ].defaultValue, attributes
+        juce::NormalisableRange<float>(400.0f, 2000.0f, 1.0f, 0.7f), paramInfos[MID_FREQ].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[MID_GAIN].id.toString(), "Gain",
-        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[MID_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), paramInfos[MID_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -952,12 +952,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_FREQ].id.toString(), "Freq",
-        juce::NormalisableRange<float>(100.0f, 8000.0f, 1.0f, 0.7f), paramInfos[HIGH_FREQ].defaultValue, attributes
+        juce::NormalisableRange<float>(1000.0f, 8000.0f, 1.0f, 0.7f), paramInfos[HIGH_FREQ].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_GAIN].id.toString(), "Gain",
-        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[HIGH_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), paramInfos[HIGH_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -972,7 +972,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[HIGH_SHELF_GAIN].id.toString(), "Gain",
-        juce::NormalisableRange<float>(-18.0f, 18.0f, 0.1f, 1.0f), paramInfos[HIGH_SHELF_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.1f, 1.0f), paramInfos[HIGH_SHELF_GAIN].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
