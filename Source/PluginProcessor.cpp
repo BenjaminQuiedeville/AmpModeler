@@ -426,21 +426,6 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         irLoader.active = (bool)newValue;
     }
 
-    if (id == paramInfos[PREAMP_GAIN].id) {
-        auto paramRange = apvts.getParameter(id)->getNormalisableRange();
-
-        preamp.preGain.newTarget(tube_gain * scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
-                                  SMOOTH_PARAM_TIME,
-                                  preampSamplerate);
-        preamp.brightCapFilter.makeLowShelf(
-            550.0,
-            scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
-            preampSamplerate
-        );
-
-        return;
-    }
-
     if (id == paramInfos[BRIGHT_CAP].id) {
         preamp.bright = (bool)newValue;
     }
@@ -451,37 +436,18 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[PREAMP_VOLUME].id) {
-        preamp.postGain.newTarget(dbtoa(newValue + preamp.outputAttenuationdB), SMOOTH_PARAM_TIME, preampSamplerate);
+        preamp.volume.newTarget(dbtoa(newValue + preamp.outputAttenuationdB), SMOOTH_PARAM_TIME, preampSamplerate);
         return;
     }
 
-    if (id == paramInfos[STAGE0_LP].id
-        || id == paramInfos[STAGE0_BYPASS].id
-        || id == paramInfos[STAGE0_BIAS].id)
-    {
-        // preamp.stage0LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id),
-        //     preampSamplerate);
 
-        preamp.stage0LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE0_LP].id),
-            preampSamplerate);
-
-        preamp.cathodeBypassFilter0.makeLowShelf(280.0,
-            *apvts.getRawParameterValue(paramInfos[STAGE0_BYPASS].id),
-            preampSamplerate);
-
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE0_BIAS].id), 0);
-
-        return;
-    }
-
+    
     if (id == paramInfos[STAGE1_LP].id
         || id == paramInfos[STAGE1_BYPASS].id
         || id == paramInfos[STAGE1_BIAS].id
-        || id == paramInfos[STAGE1_ATTENUATION].id)
+        || id == paramInfos[GAIN1].id)
     {
-        // preamp.stage1LP.setCoefficients(
+        // preamp.stage0LP.setCoefficients(
         //     *apvts.getRawParameterValue(paramInfos[STAGE1_LP].id),
         //     preampSamplerate);
 
@@ -493,10 +459,16 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(paramInfos[STAGE1_BYPASS].id),
             preampSamplerate);
 
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE1_BIAS].id), 1);
+        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE1_BIAS].id), 0);
 
-        preamp.stage1Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE1_ATTENUATION].id)),
-                                    SMOOTH_PARAM_TIME, preampSamplerate);
+        auto paramRange = apvts.getParameter(paramInfos[GAIN1].id)->getNormalisableRange();
+        preamp.stage1Gain.newTarget(tube_gain * scale(newValue, paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
+                                  SMOOTH_PARAM_TIME, preampSamplerate);
+        preamp.brightCapFilter.makeLowShelf(
+            550.0,
+            scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
+            preampSamplerate
+        );
 
         return;
     }
@@ -504,9 +476,9 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == paramInfos[STAGE2_LP].id
         || id == paramInfos[STAGE2_BYPASS].id
         || id == paramInfos[STAGE2_BIAS].id
-        || id == paramInfos[STAGE2_ATTENUATION].id)
+        || id == paramInfos[GAIN2].id)
     {
-        // preamp.stage2LP.setCoefficients(
+        // preamp.stage1LP.setCoefficients(
         //     *apvts.getRawParameterValue(paramInfos[STAGE2_LP].id),
         //     preampSamplerate);
 
@@ -518,9 +490,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(paramInfos[STAGE2_BYPASS].id),
             preampSamplerate);
 
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE2_BIAS].id), 2);
+        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE2_BIAS].id), 1);
 
-        preamp.stage2Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE2_ATTENUATION].id)),
+        auto paramRange = apvts.getParameter(paramInfos[GAIN2].id)->getNormalisableRange();
+        preamp.stage2Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN2].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
@@ -529,9 +502,9 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     if (id == paramInfos[STAGE3_LP].id
         || id == paramInfos[STAGE3_BYPASS].id
         || id == paramInfos[STAGE3_BIAS].id
-        || id == paramInfos[STAGE3_ATTENUATION].id)
+        || id == paramInfos[GAIN3].id)
     {
-        // preamp.stage3LP.setCoefficients(
+        // preamp.stage2LP.setCoefficients(
         //     *apvts.getRawParameterValue(paramInfos[STAGE3_LP].id),
         //     preampSamplerate);
 
@@ -543,9 +516,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(paramInfos[STAGE3_BYPASS].id),
             preampSamplerate);
 
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE3_BIAS].id), 3);
+        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE3_BIAS].id), 2);
 
-        preamp.stage3Gain.newTarget(tube_gain * (*apvts.getRawParameterValue(paramInfos[STAGE3_ATTENUATION].id)),
+        auto paramRange = apvts.getParameter(paramInfos[GAIN3].id)->getNormalisableRange();
+        preamp.stage3Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN3].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
@@ -553,9 +527,10 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     if (id == paramInfos[STAGE4_LP].id
         || id == paramInfos[STAGE4_BYPASS].id
-        || id == paramInfos[STAGE4_BIAS].id)
+        || id == paramInfos[STAGE4_BIAS].id
+        || id == paramInfos[GAIN4].id)
     {
-        // preamp.stage4LP.setCoefficients(
+        // preamp.stage3LP.setCoefficients(
         //     *apvts.getRawParameterValue(paramInfos[STAGE4_LP].id),
         //     preampSamplerate);
 
@@ -567,7 +542,28 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
             *apvts.getRawParameterValue(paramInfos[STAGE4_BYPASS].id),
             preampSamplerate);
 
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE4_BIAS].id), 4);
+        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE4_BIAS].id), 3);
+
+        auto paramRange = apvts.getParameter(paramInfos[GAIN4].id)->getNormalisableRange();
+        preamp.stage4Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN3].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
+                                    SMOOTH_PARAM_TIME, preampSamplerate);
+
+        return;
+    }
+
+    if (id == paramInfos[STAGE5_LP].id
+        || id == paramInfos[STAGE5_BYPASS].id
+        || id == paramInfos[STAGE5_BIAS].id)
+    {
+        // preamp.stage4LP.setCoefficients(
+        //     *apvts.getRawParameterValue(paramInfos[STAGE5_LP].id),
+        //     preampSamplerate);
+
+        preamp.stage5LP.makeLowpass(
+            *apvts.getRawParameterValue(paramInfos[STAGE5_LP].id),
+            preampSamplerate);
+
+        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE5_BIAS].id), 4);
         return;
     }
 
@@ -754,11 +750,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
 
     // Preamp Params
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[PREAMP_GAIN].id.toString(), "Pre Gain",
-        juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[PREAMP_GAIN].defaultValue, attributes
-    ));
-
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[BRIGHT_CAP].id.toString(), "Bright Switch",
         (bool)paramInfos[BRIGHT_CAP].defaultValue
@@ -776,39 +767,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     // Tubes params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_LP].id.toString(), "STAGE0_LP",
-        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE0_LP].defaultValue, attributes
-    ));
-
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_BYPASS].id.toString(), "STAGE0_BYPASS",
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE0_BYPASS].defaultValue, attributes
-    ));
-
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE0_BIAS].id.toString(), "STAGE0_BIAS",
-        juce::NormalisableRange<float>(0.0, 1.0f, 0.01f, 1.0f), paramInfos[STAGE0_BIAS].defaultValue, attributes
-    ));
-
-
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE1_LP].id.toString(), "STAGE1_LP",
         juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE1_LP].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE1_BYPASS].id.toString(), "STAGE1_BYPASS",
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE1_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE1_BYPASS].defaultValue, attributes
     ));
-
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE1_BIAS].id.toString(), "STAGE1_BIAS",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE1_BIAS].defaultValue, attributes
+        juce::NormalisableRange<float>(0.0, 1.0f, 0.01f, 1.0f), paramInfos[STAGE1_BIAS].defaultValue, attributes
     ));
-
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE1_ATTENUATION].id.toString(), "STAGE1_ATTENUATION",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE1_ATTENUATION].defaultValue, attributes
+        paramInfos[GAIN1].id.toString(), "Gain 1",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[GAIN1].defaultValue, attributes
     ));
 
 
@@ -819,7 +792,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE2_BYPASS].id.toString(), "STAGE2_BYPASS",
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE2_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE2_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -828,14 +801,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE2_ATTENUATION].id.toString(), "STAGE2_ATTENUATION",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE2_ATTENUATION].defaultValue, attributes
+        paramInfos[GAIN2].id.toString(), "Gain 2",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[GAIN2].defaultValue, attributes
     ));
 
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE3_LP].id.toString(), "STAGE3_LP",
-        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0f, 0.7f), paramInfos[STAGE3_LP].defaultValue, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE3_LP].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -849,24 +822,45 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE3_ATTENUATION].id.toString(), "STAGE3_ATTENUATION",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.7f), paramInfos[STAGE3_ATTENUATION].defaultValue, attributes
+        paramInfos[GAIN3].id.toString(), "Gain 3",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[GAIN3].defaultValue, attributes
     ));
 
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE4_LP].id.toString(), "STAGE4_LP",
-        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE4_LP].defaultValue, attributes
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0f, 0.7f), paramInfos[STAGE4_LP].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE4_BYPASS].id.toString(), "STAGE4_BYPASS",
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE4_BYPASS].defaultValue, attributes
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f),  paramInfos[STAGE4_BYPASS].defaultValue, attributes
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[STAGE4_BIAS].id.toString(), "STAGE4_BIAS",
         juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE4_BIAS].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[GAIN4].id.toString(), "Gain 4",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.01f, 1.0f), paramInfos[GAIN4].defaultValue, attributes
+    ));
+
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[STAGE5_LP].id.toString(), "STAGE5_LP",
+        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE5_LP].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[STAGE5_BYPASS].id.toString(), "STAGE5_BYPASS",
+        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE5_BYPASS].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[STAGE5_BIAS].id.toString(), "STAGE5_BIAS",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE5_BIAS].defaultValue, attributes
     ));
 
 

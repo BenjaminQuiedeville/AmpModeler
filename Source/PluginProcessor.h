@@ -64,34 +64,34 @@ enum Params {
     EQ_ACTIVE,
     IR_ACTIVE,
     
-    PREAMP_GAIN,
     BRIGHT_CAP,
     CHANNEL,
     INPUT_FILTER,
     PREAMP_VOLUME,
     
-    STAGE0_LP,
-    STAGE0_BYPASS,
-    STAGE0_BIAS,
-    
     STAGE1_LP,
     STAGE1_BYPASS,
     STAGE1_BIAS,
-    STAGE1_ATTENUATION,
+    GAIN1,
     
     STAGE2_LP,
     STAGE2_BYPASS,
     STAGE2_BIAS,
-    STAGE2_ATTENUATION,
+    GAIN2,
     
     STAGE3_LP,
     STAGE3_BYPASS,
     STAGE3_BIAS,
-    STAGE3_ATTENUATION,
+    GAIN3,
     
     STAGE4_LP,
     STAGE4_BYPASS,
     STAGE4_BIAS,
+    GAIN4,
+    
+    STAGE5_LP,
+    STAGE5_BYPASS,
+    STAGE5_BIAS,
     
     TONESTACK_MODEL,
     TONESTACK_BASS,
@@ -146,34 +146,34 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "EQ_ACTIVE",            1.0f },
     { "IR_ACTIVE",            1.0f },
     
-    { "PREAMP_GAIN",          5.0f },
     { "BRIGHT_CAP",           1.0f },
     { "CHANNEL",              3.0f },
     { "INPUT_FILTER",         100.0f },
     { "PREAMP_VOLUME",        0.0f },
     
-    { "STAGE0_LP",            15000.0f },
-    { "STAGE0_BYPASS",        -5.0f },
-    { "STAGE0_BIAS",          0.0f },
-    
     { "STAGE1_LP",            15000.0f },
-    { "STAGE1_BYPASS",        -3.0f },
-    { "STAGE1_BIAS",          0.2f },
-    { "STAGE1_ATTENUATION",   0.6f },
+    { "STAGE1_BYPASS",        -5.0f },
+    { "STAGE1_BIAS",          0.0f },
+    { "GAIN1",                5.0f },
     
     { "STAGE2_LP",            15000.0f },
-    { "STAGE2_BYPASS",        0.0f },
-    { "STAGE2_BIAS",          0.3f },
-    { "STAGE2_ATTENUATION",   0.6f },
+    { "STAGE2_BYPASS",        -3.0f },
+    { "STAGE2_BIAS",          0.2f },
+    { "GAIN2",                5.0f },
     
     { "STAGE3_LP",            15000.0f },
-    { "STAGE3_BYPASS",        -2.0f },
-    { "STAGE3_BIAS",          0.0f },
-    { "STAGE3_ATTENUATION",   0.4f },
+    { "STAGE3_BYPASS",        0.0f },
+    { "STAGE3_BIAS",          0.3f },
+    { "GAIN3",                5.0f },
     
     { "STAGE4_LP",            15000.0f },
     { "STAGE4_BYPASS",        -2.0f },
     { "STAGE4_BIAS",          0.0f },
+    { "GAIN4",                5.0f },
+    
+    { "STAGE5_LP",            15000.0f },
+    { "STAGE5_BYPASS",        -2.0f },
+    { "STAGE5_BIAS",          0.0f },
     
     { "TONE_MODEL",           0.0f },
     { "TONE_BASS",            5.0f },

@@ -24,31 +24,29 @@ struct Preamp {
     void setBias(float value, int tube_index);  
     void process(float *bufferL, float *bufferR, u32 nSamples);
 
-    SmoothParamLinear preGain;
-    SmoothParamLinear postGain;
-
     SmoothParamLinear stage1Gain;
     SmoothParamLinear stage2Gain;
     SmoothParamLinear stage3Gain;
+    SmoothParamLinear stage4Gain;
+    
+    SmoothParamLinear volume;
 
     FirstOrderFilter inputFilter;
     FirstOrderFilter inputMudFilter;
     Biquad midBoost;
     
     FirstOrderFilter brightCapFilter;
-    
-    FirstOrderFilter couplingFilter1;
     FirstOrderFilter couplingFilter2;
     FirstOrderFilter couplingFilter3;
     FirstOrderFilter couplingFilter4;
+    FirstOrderFilter couplingFilter5;
 
-    FirstOrderFilter stage0LP;
     FirstOrderFilter stage1LP;
     FirstOrderFilter stage2LP;
     FirstOrderFilter stage3LP;
     FirstOrderFilter stage4LP;
+    FirstOrderFilter stage5LP;
 
-    FirstOrderFilter cathodeBypassFilter0;
     FirstOrderFilter cathodeBypassFilter1;
     FirstOrderFilter cathodeBypassFilter2;
     FirstOrderFilter cathodeBypassFilter3;
@@ -65,11 +63,11 @@ struct Preamp {
     float *upSampledBufferL = nullptr;
     float *upSampledBufferR = nullptr;
 
-    float stage0_bias[2] = {0};
     float stage1_bias[2] = {0};
     float stage2_bias[2] = {0};
     float stage3_bias[2] = {0};
     float stage4_bias[2] = {0};
+    float stage5_bias[2] = {0};
 
     float outputAttenuationdB = -34.0f;
     u8 channel = 0;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(AmpModeler VERSION 0.3.0)
+project(AmpModeler VERSION 0.4.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -8,11 +8,6 @@ set(USE_TRACY FALSE)
 
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
 set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
-
-# if(USE_TRACY)
-#     set(TRACY_DIR W:/Tracy-Profiler/tracy-0.11.1)
-#     # set(TRACY_DIR D:/Dev/tracy)
-# endif()
  
 add_subdirectory(${JUCE_SOURCE_DIR})
 

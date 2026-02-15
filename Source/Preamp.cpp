@@ -15,13 +15,13 @@ void Preamp::prepareToPlay(float samplerate, u32 blockSize) {
     float upSamplerate = samplerate*PREAMP_UP_SAMPLE_FACTOR;
     u32 upBlockSize = blockSize * PREAMP_UP_SAMPLE_FACTOR;
 
-    preGain.init(0.0f, upBlockSize);
-    postGain.init(dbtoa(-60.0f), upBlockSize);
 
     stage1Gain.init(0.0f, upBlockSize);
     stage2Gain.init(0.0f, upBlockSize);
     stage3Gain.init(0.0f, upBlockSize);
+    stage4Gain.init(0.0f, upBlockSize);
 
+    volume.init(dbtoa(-60.0f), upBlockSize);
 
     inputMudFilter.reset();
     inputMudFilter.makeHighpass(100.0, upSamplerate);
@@ -32,22 +32,21 @@ void Preamp::prepareToPlay(float samplerate, u32 blockSize) {
     inputFilter.reset();
     inputFilter.makeHighpass(100.0f, upSamplerate);
     
-    couplingFilter1.reset();
     couplingFilter2.reset();
     couplingFilter3.reset();
     couplingFilter4.reset();
-    couplingFilter1.makeHighpass(15.0, upSamplerate);
+    couplingFilter5.reset();
     couplingFilter2.makeHighpass(15.0, upSamplerate);
     couplingFilter3.makeHighpass(15.0, upSamplerate);
     couplingFilter4.makeHighpass(15.0, upSamplerate);
+    couplingFilter5.makeHighpass(15.0, upSamplerate);
 
-    stage0LP.reset();
     stage1LP.reset();
     stage2LP.reset();
     stage3LP.reset();
     stage4LP.reset();
+    stage5LP.reset();
 
-    cathodeBypassFilter0.reset();
     cathodeBypassFilter1.reset();
     cathodeBypassFilter2.reset();
     cathodeBypassFilter3.reset();
@@ -79,11 +78,11 @@ void Preamp::setBias(float bias, int tube_index) {
     float *selected_stage_bias = nullptr;
     switch (tube_index) {
     
-        case 0: { selected_stage_bias = stage0_bias; break; }
-        case 1: { selected_stage_bias = stage1_bias; break; }
-        case 2: { selected_stage_bias = stage2_bias; break; }
-        case 3: { selected_stage_bias = stage3_bias; break; }
-        case 4: { selected_stage_bias = stage4_bias; break; }
+        case 0: { selected_stage_bias = stage1_bias; break; }
+        case 1: { selected_stage_bias = stage2_bias; break; }
+        case 2: { selected_stage_bias = stage3_bias; break; }
+        case 3: { selected_stage_bias = stage4_bias; break; }
+        case 4: { selected_stage_bias = stage5_bias; break; }
         default: { assert(false && "setBias: wrong tube_index"); }
     }
 
@@ -210,19 +209,15 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
     {
         ZoneScopedN("GainsStages");
         
-        // Input Gain
-        // static const float INPUT_GAIN = (float)dbtoa(0.0);
-        // applyGainLinear(INPUT_GAIN, upBufferL, upBufferR, upNumSamples);
-
-        // ------------ Stage 0 ------------
+        // ------------ Stage 1 ------------
         gridConduction(upBufferL, upBufferR, upNumSamples, 2.0f);        
-        cathodeBypassFilter0.process(upBufferL, upBufferR, upNumSamples);        
-        tubeSim(upBufferL, upBufferR, upNumSamples, stage0_bias[0], stage0_bias[1]);
+        cathodeBypassFilter1.process(upBufferL, upBufferR, upNumSamples);        
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage1_bias[0], stage1_bias[1]);
 
         inputFilter.process(upBufferL, upBufferR, upNumSamples);
-        stage0LP.process(upBufferL, upBufferR, upNumSamples);
+        stage1LP.process(upBufferL, upBufferR, upNumSamples);
 
-        preGain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
+        stage1Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
         inputMudFilter.process(upBufferL, upBufferR, upNumSamples);
         midBoost.process(upBufferL, upBufferR, upNumSamples);
 
@@ -231,32 +226,17 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
         }
 
 
-        // ------------ Stage 1 ------------
-        gridConduction(upBufferL, upBufferR, upNumSamples, 4.0f);
-        if (channel != 1) { 
-            cathodeBypassFilter1.process(upBufferL, upBufferR, upNumSamples); 
-        }
-        tubeSim(upBufferL, upBufferR, upNumSamples, stage1_bias[0], stage1_bias[1]);
-        
-        couplingFilter1.process(upBufferL, upBufferR, upNumSamples);
-        stage1LP.process(upBufferL, upBufferR, upNumSamples);
-    
-        if (channel == 1) {
-            goto gain_stages_end_of_scope;
-        }
-
-        stage1Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
-
-
         // ------------ Stage 2 ------------
         gridConduction(upBufferL, upBufferR, upNumSamples, 4.0f);
-        if (channel != 2) { cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples); }
+        if (channel != 1) { 
+            cathodeBypassFilter2.process(upBufferL, upBufferR, upNumSamples); 
+        }
         tubeSim(upBufferL, upBufferR, upNumSamples, stage2_bias[0], stage2_bias[1]);
         
         couplingFilter2.process(upBufferL, upBufferR, upNumSamples);
         stage2LP.process(upBufferL, upBufferR, upNumSamples);
-
-        if (channel == 2) {
+    
+        if (channel == 1) {
             goto gain_stages_end_of_scope;
         }
 
@@ -265,13 +245,13 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
         // ------------ Stage 3 ------------
         gridConduction(upBufferL, upBufferR, upNumSamples, 4.0f);
-        if (channel != 3) { cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples); }
+        if (channel != 2) { cathodeBypassFilter3.process(upBufferL, upBufferR, upNumSamples); }
         tubeSim(upBufferL, upBufferR, upNumSamples, stage3_bias[0], stage3_bias[1]);
         
         couplingFilter3.process(upBufferL, upBufferR, upNumSamples);
         stage3LP.process(upBufferL, upBufferR, upNumSamples);
 
-        if (channel == 3) {
+        if (channel == 2) {
             goto gain_stages_end_of_scope;
         }
 
@@ -279,17 +259,31 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
 
         // ------------ Stage 4 ------------
-        gridConduction(upBufferL, upBufferR, upNumSamples, 8.0f);
-        if (channel != 4) { cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples); }
+        gridConduction(upBufferL, upBufferR, upNumSamples, 4.0f);
+        if (channel != 3) { cathodeBypassFilter4.process(upBufferL, upBufferR, upNumSamples); }
         tubeSim(upBufferL, upBufferR, upNumSamples, stage4_bias[0], stage4_bias[1]);
         
         couplingFilter4.process(upBufferL, upBufferR, upNumSamples);
         stage4LP.process(upBufferL, upBufferR, upNumSamples);
 
+        if (channel == 3) {
+            goto gain_stages_end_of_scope;
+        }
+
+        stage4Gain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
+
+
+        // ------------ Stage 5 ------------
+        gridConduction(upBufferL, upBufferR, upNumSamples, 8.0f);
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage5_bias[0], stage5_bias[1]);
+        
+        couplingFilter5.process(upBufferL, upBufferR, upNumSamples);
+        stage5LP.process(upBufferL, upBufferR, upNumSamples);
+
         gain_stages_end_of_scope: {}
     }
 
-    postGain.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
+    volume.applySmoothGainLinear(upBufferL, upBufferR, upNumSamples);
 
 
     {

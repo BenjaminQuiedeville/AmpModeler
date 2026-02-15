@@ -21,17 +21,291 @@ static inline void placeKnob(Knob *knob, int x, int y, int size) {
     knob->label.setBounds(knob->getX(), knob->getY() - 15, size, 20);
 }
 
+AmpModelerLAF::AmpModelerLAF() {
+    
+    setColour(juce::Slider::rotarySliderOutlineColourId, widgetColor);
+    setColour(juce::Slider::rotarySliderFillColourId, accentColor2);
+    setColour(juce::Slider::thumbColourId, accentColor2);
+    setColour(juce::Slider::backgroundColourId, widgetColor);
+    setColour(juce::Slider::trackColourId, accentColor1);
+    setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    
+    setColour(juce::ComboBox::backgroundColourId, widgetColor);
+    setColour(juce::ComboBox::outlineColourId, widgetColor);
+    setColour(juce::ComboBox::buttonColourId, widgetColor);
+    setColour(juce::ComboBox::arrowColourId, accentColor1);
+    setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::darkred);
+    
+    setColour(juce::Label::backgroundColourId, backgroundColor);
+    // setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
+    setColour(juce::Label::outlineColourId, juce::Colours::white);
+    setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
+
+    
+    setColour(juce::PopupMenu::backgroundColourId, widgetColor);
+    
+    setColour(juce::TabbedComponent::outlineColourId, widgetColor);
+    setColour(juce::TabbedButtonBar::tabOutlineColourId, backgroundColor);
+    setColour(juce::TabbedButtonBar::frontOutlineColourId, widgetColor);
+    
+    setColour(juce::TextButton::buttonColourId, widgetColor);
+    setColour(juce::TextButton::buttonOnColourId, accentColor1);
+}
+
+void AmpModelerLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
+    g.fillAll(label.findColour(juce::Label::backgroundColourId));
+
+    if (!label.isBeingEdited()) {
+        auto alpha = label.isEnabled() ? 1.0f : 0.5f;
+        const juce::Font font(getLabelFont(label));
+
+        g.setColour(label.findColour(juce::Label::textColourId).withMultipliedAlpha(alpha));
+        g.setFont(font);
+
+        auto textArea = getLabelBorderSize(label).subtractedFrom(label.getLocalBounds());
+
+        g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
+                          max(1, (int)((float)textArea.getHeight() / font.getHeight())),
+                          label.getMinimumHorizontalScale());
+
+        g.setColour(label.findColour(juce::Label::outlineColourId).withMultipliedAlpha(alpha));
+
+    }
+    else if (label.isEnabled()) {
+        g.setColour(label.findColour(juce::Label::outlineColourId));
+    }
+
+    g.drawRect(label.getLocalBounds());
+}
+
+
+void AmpModelerLAF::drawComboBox(juce::Graphics& g, int width, int height, bool, int, int, int, int, juce::ComboBox& box)
+{
+    auto cornerSize = box.findParentComponentOfClass<juce::ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
+    juce::Rectangle<int> boxBounds(0, 0, width, height);
+
+    g.setColour(box.findColour(juce::ComboBox::backgroundColourId));
+    g.fillRoundedRectangle(boxBounds.toFloat(), cornerSize);
+
+    g.setColour(box.findColour(juce::ComboBox::outlineColourId));
+    g.drawRoundedRectangle(boxBounds.toFloat().reduced(0.5f, 0.5f), cornerSize, 1.0f);
+
+    juce::Rectangle<int> arrowZone(width - 30, 0, 20, height);
+    juce::Path path;
+    path.startNewSubPath((float)arrowZone.getX() + 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+    path.lineTo((float)arrowZone.getCentreX(), (float)arrowZone.getCentreY() + 3.0f);
+    path.lineTo((float)arrowZone.getRight() - 3.0f, (float)arrowZone.getCentreY() - 2.0f);
+
+    g.setColour(box.findColour(juce::ComboBox::arrowColourId).withAlpha((box.isEnabled() ? 0.9f : 0.2f)));
+    g.strokePath(path, juce::PathStrokeType(2.0f));
+}
+
+
+void AmpModelerLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+                                     float sliderPos, float rotaryStartAngle,
+                                     float rotaryEndAngle, juce::Slider& slider)
+{
+    auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
+    auto fill    = slider.findColour(juce::Slider::rotarySliderFillColourId);
+
+    auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
+
+    auto radius = min(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+    auto lineW = min(8.0f, radius * 0.5f);
+    auto arcRadius = radius - lineW * 0.5f;
+
+    juce::Path backgroundArc;
+    backgroundArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+                                arcRadius, arcRadius,
+                                0.0f, rotaryStartAngle, rotaryEndAngle,
+                                true);
+
+    g.setColour(outline);
+    g.strokePath(backgroundArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+
+    juce::Path valueArc;
+    valueArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
+                           arcRadius, arcRadius,
+                           0.0f, rotaryStartAngle, toAngle, true);
+
+    g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0 : 0.5));
+    g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+}
+    
+void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
+                                     float sliderPos,
+                                     float minSliderPos,
+                                     float maxSliderPos,
+                                     const juce::Slider::SliderStyle style, juce::Slider& slider)
+{
+
+    assert(!slider.isBar());
+
+    // auto trackWidth = min(6.0f, slider.isHorizontal() ? (float)height * 0.25f : (float)width * 0.25f);
+    float trackWidth = 12.0f;
+
+    juce::Point<float> startPoint(slider.isHorizontal() ? (float)x : (float)x + (float)width * 0.5f,
+                                 slider.isHorizontal() ? (float)y + (float)height * 0.5f : (float)(height + y));
+
+    juce::Point<float> endPoint(slider.isHorizontal() ? (float)(width + x) : startPoint.x,
+                               slider.isHorizontal() ? startPoint.y : (float)y);
+
+    juce::Path backgroundTrack;
+    backgroundTrack.startNewSubPath(startPoint);
+    backgroundTrack.lineTo(endPoint);
+    g.setColour(slider.findColour(juce::Slider::backgroundColourId));
+    g.strokePath(backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+
+    juce::Path valueTrack;
+    juce::Point<float> minPoint, maxPoint, thumbPoint;
+
+    auto kx = slider.isHorizontal() ? sliderPos : ((float)x + (float)width * 0.5f);
+    auto ky = slider.isHorizontal() ? ((float)y + (float)height * 0.5f) : sliderPos;
+
+    minPoint = startPoint;
+    maxPoint = { kx, ky };
+
+
+    valueTrack.startNewSubPath(minPoint);
+    valueTrack.lineTo(maxPoint);
+    g.setColour(slider.findColour(juce::Slider::trackColourId));
+    g.strokePath(valueTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
+
+    // auto thumbWidth = getSliderThumbRadius(slider);
+    // g.setColour(slider.findColour(juce::Slider::thumbColourId));
+    // g.fillEllipse(juce::Rectangle<float>(static_cast<float>(thumbWidth), static_cast<float>(thumbWidth)).withCentre(maxPoint));
+}
+
+juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
+{
+    // 1. compute the actually visible textBox size from the slider textBox size and some additional constraints
+
+    int minXSpace = 0;
+    int minYSpace = 0;
+
+    auto textBoxPos = slider.getTextBoxPosition();
+
+    minYSpace = 5;
+
+    auto localBounds = slider.getLocalBounds();
+
+    auto textBoxWidth  = max(0, min(slider.getTextBoxWidth(),  localBounds.getWidth() - minXSpace));
+    auto textBoxHeight = max(0, min(slider.getTextBoxHeight(), localBounds.getHeight() - minYSpace));
+
+    juce::Slider::SliderLayout layout;
+
+    // 2. set the textBox bounds
+
+    if (slider.isBar()) {
+        layout.textBoxBounds = localBounds;
+    } else {
+        layout.textBoxBounds.setWidth(textBoxWidth);
+        layout.textBoxBounds.setHeight(textBoxHeight);
+
+        layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
+
+        if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.textBoxBounds.setY (0); }
+        else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight); }
+    }
+
+    // 3. set the slider bounds
+
+    layout.sliderBounds = localBounds;
+
+    if (slider.isBar()) {
+        layout.sliderBounds.reduce (1, 1);   // bar border
+    } else {
+        if (textBoxPos == juce::Slider::TextBoxAbove)      { layout.sliderBounds.removeFromTop (textBoxHeight); }
+        else if (textBoxPos == juce::Slider::TextBoxBelow) { layout.sliderBounds.removeFromBottom (textBoxHeight); }
+
+        const int thumbIndent = getSliderThumbRadius (slider);
+
+        if (slider.isHorizontal())    { layout.sliderBounds.reduce(thumbIndent, 0); }
+        else if (slider.isVertical()) { layout.sliderBounds.reduce(0, thumbIndent); }
+    }
+
+    return layout;
+}
+
+void AmpModelerLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button,
+                           const juce::Colour& backgroundColour,
+                           bool shouldDrawButtonAsHighlighted,
+                           bool shouldDrawButtonAsDown)
+{
+    auto cornerSize = 6.0f;
+    auto bounds = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
+
+    auto baseColour = backgroundColour.withMultipliedSaturation(button.hasKeyboardFocus(true) ? 1.3f : 0.9f)
+                                      .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f);
+
+    if (shouldDrawButtonAsDown || shouldDrawButtonAsHighlighted) {
+        baseColour = baseColour.contrasting(shouldDrawButtonAsDown ? 0.2f : 0.05f);
+    }
+
+    g.setColour(baseColour);
+
+    auto flatOnLeft   = button.isConnectedOnLeft();
+    auto flatOnRight  = button.isConnectedOnRight();
+    auto flatOnTop    = button.isConnectedOnTop();
+    auto flatOnBottom = button.isConnectedOnBottom();
+
+    if (flatOnLeft || flatOnRight || flatOnTop || flatOnBottom) {
+        juce::Path path;
+        path.addRoundedRectangle(bounds.getX(), bounds.getY(),
+                                bounds.getWidth(), bounds.getHeight(),
+                                cornerSize, cornerSize,
+                                !(flatOnLeft  || flatOnTop),
+                                !(flatOnRight || flatOnTop),
+                                !(flatOnLeft  || flatOnBottom),
+                                !(flatOnRight || flatOnBottom));
+
+        g.fillPath(path);
+
+        g.setColour(button.findColour(juce::ComboBox::outlineColourId));
+        g.strokePath(path, juce::PathStrokeType (1.0f));
+    } else {
+        g.fillRoundedRectangle(bounds, cornerSize);
+
+        g.setColour(button.findColour(juce::ComboBox::outlineColourId));
+        g.drawRoundedRectangle(bounds, cornerSize, 1.0f);
+    }
+}
+
+void AmpModelerLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button,
+                     bool /*shouldDrawButtonAsHighlighted*/, bool /*shouldDrawButtonAsDown*/)
+{
+    juce::Font font(getTextButtonFont(button, button.getHeight()));
+    g.setFont(font);
+    g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
+                                                          : juce::TextButton::textColourOffId)
+                       .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
+
+    const int yIndent = min(4, button.proportionOfHeight (0.3f));
+    const int cornerSize = min(button.getHeight(), button.getWidth()) / 2;
+
+    const int fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
+    const int leftIndent  = min(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+    const int rightIndent = min(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+    const int textWidth = button.getWidth() - leftIndent - rightIndent;
+
+    if (textWidth > 0) {
+        g.drawFittedText(button.getButtonText(),
+                         leftIndent, yIndent, textWidth, button.getHeight() - yIndent * 2,
+                         juce::Justification::centred, 2);
+    }
+}
+
 
 GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
-    gateKnob("GATE_KNOB_LABEL",                "Gate Thresh",     this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
-    // gateAttackKnob("GATE_Attack_LABEL",        "Gate Attack",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
+    gateKnob(       "GATE_KNOB_LABEL",         "Gate Thresh",     this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
+    // gateAttackKnob( "GATE_Attack_LABEL",       "Gate Attack",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
     // gateReleaseKnob("GATE_RELEASE_LABEL",      "Gate Release",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
-    // gateReturnKnob("GATE_RETURN_LABEL",        "Gate Hysteresis", this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
-
+    // gateReturnKnob( "GATE_RETURN_LABEL",       "Gate Hysteresis", this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
     boostAttackKnob("BOOST_ATTACK_KNOB_LABEL", "Boost Top",       this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
-    boostFreqKnob("BOOST_FREQ_KNOB_LABEL",     "Boost Freq",      this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
-    boostTightKnob("BOOST_TIGHT_KNOB_LABEL",   "Boost Tight",     this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
-    inputGainKnob("INPUT_GAIN_KNOB_LABEL",     "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
+    boostFreqKnob(  "BOOST_FREQ_KNOB_LABEL",   "Boost Freq",      this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
+    boostTightKnob( "BOOST_TIGHT_KNOB_LABEL",  "Boost Tight",     this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
+    inputGainKnob(  "INPUT_GAIN_KNOB_LABEL",   "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
 
 {
     gateToggleAttachment = std::make_unique<ButtonAttachment>(
@@ -74,7 +348,8 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     preampToggle.onStateChange = [this, editor]() {
         bool state = preampToggle.getToggleState();
         
-        editor->ampPage.gainKnob.setEnabled(state);
+        editor->ampPage.gain1Knob.setEnabled(state);
+        editor->ampPage.gain2Knob.setEnabled(state);
         editor->ampPage.inputFilterKnob.setEnabled(state);
         editor->ampPage.preampVolumeKnob.setEnabled(state);
 
@@ -151,24 +426,21 @@ void GateBoostPage::resized() {
 
 
 AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
-    gainKnob("GAIN_KNOB_LABEL",                  "Pre Gain",        this, paramInfos[PREAMP_GAIN].id.toString(),       p.apvts, ""),
-
-    inputFilterKnob("INPUT_KNOB_FILTER_LABEL",   "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
-
-    bassEQKnob("BASS_EQ_KNOB_LABEL",             "Bass",            this, paramInfos[TONESTACK_BASS].id.toString(),    p.apvts, ""),
-    midEQKnob("MIDDLE_EQ_KNOB_LABEL",            "Mid",             this, paramInfos[TONESTACK_MIDDLE].id.toString(),  p.apvts, ""),
-    trebbleEQKnob("TREBBLE_EQ_KNOB_LABEL",       "Trebble",         this, paramInfos[TONESTACK_TREBBLE].id.toString(), p.apvts, ""),
-
-    preampVolumeKnob("PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, paramInfos[PREAMP_VOLUME].id.toString(),     p.apvts, " dB"),
-
-    resonanceKnob("RESONANCE_KNOB_LABEL",        "Resonance",       this, paramInfos[RESONANCE].id.toString(),         p.apvts, ""),
-    presenceKnob("PRESENCE_KNOB_LABEL",          "Presence",        this, paramInfos[PRESENCE].id.toString(),          p.apvts, ""),
-
-    ampChannelBox("AMP_CHANNEL_BOX_LABEL",       "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),           p.apvts),
-    toneStackModelBox("TONE_MODEL_BOX_LABEL",    "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
-    channelConfigBox("CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
+    gain1Knob(        "GAIN1_KNOB_LABEL",         "Gain 1",          this, paramInfos[GAIN1].id.toString(),             p.apvts, ""),
+    gain2Knob(        "GAIN2_KNOB_LABEL",         "Gain 2",          this, paramInfos[GAIN2].id.toString(),             p.apvts, ""),
+    inputFilterKnob(  "INPUT_KNOB_FILTER_LABEL",  "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
+    bassEQKnob(       "BASS_EQ_KNOB_LABEL",       "Bass",            this, paramInfos[TONESTACK_BASS].id.toString(),    p.apvts, ""),
+    midEQKnob(        "MIDDLE_EQ_KNOB_LABEL",     "Mid",             this, paramInfos[TONESTACK_MIDDLE].id.toString(),  p.apvts, ""),
+    trebbleEQKnob(    "TREBBLE_EQ_KNOB_LABEL",    "Trebble",         this, paramInfos[TONESTACK_TREBBLE].id.toString(), p.apvts, ""),
+    preampVolumeKnob( "PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, paramInfos[PREAMP_VOLUME].id.toString(),     p.apvts, " dB"),
+    resonanceKnob(    "RESONANCE_KNOB_LABEL",     "Resonance",       this, paramInfos[RESONANCE].id.toString(),         p.apvts, ""),
+    presenceKnob(     "PRESENCE_KNOB_LABEL",      "Presence",        this, paramInfos[PRESENCE].id.toString(),          p.apvts, ""),
+    ampChannelBox(    "AMP_CHANNEL_BOX_LABEL",    "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),           p.apvts),
+    toneStackModelBox("TONE_MODEL_BOX_LABEL",     "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
+    channelConfigBox( "CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
 {
-    gainKnob.setNumDecimalPlacesToDisplay(2);
+    gain1Knob.setNumDecimalPlacesToDisplay(2);
+    gain2Knob.setNumDecimalPlacesToDisplay(2);
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
@@ -189,7 +461,7 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     // channelConfigBox.valueChanged = [&, this](juce::Value &value) {
         
     //     value;
-    //     // changer le style des potard dans le gainstages 
+    //     // changer le style des potard en disabled dans le gainstages 
     // };
 
     brightToggleAttachment = std::make_unique<ButtonAttachment>(
@@ -207,8 +479,9 @@ void AmplifierPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    placeKnob(&gainKnob,        computeXcoord(1, width), computeYcoord(0, height), knobSize);
-    placeKnob(&inputFilterKnob, computeXcoord(1, width), computeYcoord(1, height), knobSize);
+    placeKnob(&gain1Knob,       computeXcoord(1, width), computeYcoord(0, height), knobSize);
+    placeKnob(&gain2Knob,       computeXcoord(1, width), computeYcoord(1, height), knobSize);
+    placeKnob(&inputFilterKnob, computeXcoord(1, width), computeYcoord(2, height), knobSize);
     placeKnob(&bassEQKnob,      computeXcoord(2, width), computeYcoord(0, height), knobSize);
     placeKnob(&midEQKnob,       computeXcoord(3, width), computeYcoord(0, height), knobSize);
     placeKnob(&trebbleEQKnob,   computeXcoord(4, width), computeYcoord(0, height), knobSize);
@@ -231,98 +504,100 @@ void AmplifierPage::resized() {
 
 
 GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
-    stage0LPSlider("STAGE0_LP_SLIDER_LABEL",         "Output filter",   this, paramInfos[STAGE0_LP].id.toString(),          p.apvts, " Hz"),
-    stage0BypassSlider("STAGE0_BYPASS_SLIDER_LABEL", "Cathode bypass",  this, paramInfos[STAGE0_BYPASS].id.toString(),      p.apvts, " dB"),
-    stage0BiasSlider("STAGE0_BIAS_SLIDER_LABEL",     "Tube bias",       this, paramInfos[STAGE0_BIAS].id.toString(),        p.apvts, ""),
-
-    stage1LPSlider("STAGE1_LP_SLIDER_LABEL",         "Output filter",   this, paramInfos[STAGE1_LP].id.toString(),          p.apvts, " Hz"),
-    stage1BypassSlider("STAGE1_BYPASS_SLIDER_LABEL", "Cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(),      p.apvts, " dB"),
-    stage1BiasSlider("STAGE1_BIAS_SLIDER_LABEL",     "Tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),        p.apvts, ""),
-    stage1AttSlider("STAGE1_ATTEN_SLIDER_LABEL",     "Attenuation",     this, paramInfos[STAGE1_ATTENUATION].id.toString(), p.apvts, ""),
-
-    stage2LPSlider("STAGE2_LP_SLIDER_LABEL",         "Output filter",   this, paramInfos[STAGE2_LP].id.toString(),          p.apvts, " Hz"),
-    stage2BypassSlider("STAGE2_BYPASS_SLIDER_LABEL", "Cathode bypass",  this, paramInfos[STAGE2_BYPASS].id.toString(),      p.apvts, " dB"),
-    stage2BiasSlider("STAGE2_BIAS_SLIDER_LABEL",     "Tube bias",       this, paramInfos[STAGE2_BIAS].id.toString(),        p.apvts, ""),
-    stage2AttSlider("STAGE2_ATTEN_SLIDER_LABEL",     "Attenuation",     this, paramInfos[STAGE2_ATTENUATION].id.toString(), p.apvts, ""),
-
-    stage3LPSlider("STAGE3_LP_SLIDER_LABEL",         "Output filter",   this, paramInfos[STAGE3_LP].id.toString(),          p.apvts, " Hz"),
-    stage3BypassSlider("STAGE3_BYPASS_SLIDER_LABEL", "Cathode bypass",  this, paramInfos[STAGE3_BYPASS].id.toString(),      p.apvts, " dB"),
-    stage3BiasSlider("STAGE3_BIAS_SLIDER_LABEL",     "Tube bias",       this, paramInfos[STAGE3_BIAS].id.toString(),        p.apvts, ""),
-    stage3AttSlider("STAGE3_ATTEN_SLIDER_LABEL",     "Attenuation",     this, paramInfos[STAGE3_ATTENUATION].id.toString(), p.apvts, ""),
-
-    stage4LPSlider("STAGE4_LP_SLIDER_LABEL",         "Output filter",   this, paramInfos[STAGE4_LP].id.toString(),          p.apvts, " Hz"),
-    stage4BypassSlider("STAGE4_BYPASS_SLIDER_LABEL", "Cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(),      p.apvts, " dB"),
-    stage4BiasSlider("STAGE4_BIAS_SLIDER_LABEL",     "Tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),        p.apvts, "")
+    stage1LP(      "STAGE1_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE1_LP].id.toString(),     p.apvts, " Hz"),
+    stage1Bypass(  "STAGE1_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(), p.apvts, " dB"),
+    stage1Bias(    "STAGE1_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),   p.apvts, ""),
+    stage1Gain(    "STAGE1_GAIN_SLIDER_LABEL",    "Gain 1",          this, paramInfos[GAIN1].id.toString(),         p.apvts, ""),
+    
+    stage2LP(      "STAGE2_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE2_LP].id.toString(),     p.apvts, " Hz"),
+    stage2Bypass(  "STAGE2_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE2_BYPASS].id.toString(), p.apvts, " dB"),
+    stage2Bias(    "STAGE2_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE2_BIAS].id.toString(),   p.apvts, ""),
+    stage2Gain(    "STAGE2_GAIN_SLIDER_LABEL",    "Gain2"      ,     this, paramInfos[GAIN2].id.toString(),         p.apvts, ""),
+    
+    stage3LP(      "STAGE3_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE3_LP].id.toString(),     p.apvts, " Hz"),
+    stage3Bypass(  "STAGE3_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE3_BYPASS].id.toString(), p.apvts, " dB"),
+    stage3Bias(    "STAGE3_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE3_BIAS].id.toString(),   p.apvts, ""),
+    stage3Gain(    "STAGE3_GAIN_SLIDER_LABEL",    "Gain 3",          this, paramInfos[GAIN3].id.toString(),         p.apvts, ""),
+    
+    stage4LP(      "STAGE4_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE4_LP].id.toString(),     p.apvts, " Hz"),
+    stage4Bypass(  "STAGE4_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(), p.apvts, " dB"),
+    stage4Bias(    "STAGE4_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),   p.apvts, ""),
+    stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, ""),
+    
+    stage5LP(      "STAGE5_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE5_LP].id.toString(),     p.apvts, " Hz"),
+    stage5Bypass(  "STAGE5_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE5_BYPASS].id.toString(), p.apvts, " dB"),
+    stage5Bias(    "STAGE5_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE5_BIAS].id.toString(),   p.apvts, "")
 {
     resetButton.onClick = [&p, this]() {
     
-        Knob* slider_refs[19] = { 
-            &stage0LPSlider, &stage0BypassSlider, &stage0BiasSlider,
-            &stage1LPSlider, &stage1BypassSlider, &stage1BiasSlider, &stage1AttSlider,
-            &stage2LPSlider, &stage2BypassSlider, &stage2BiasSlider, &stage2AttSlider,
-            &stage3LPSlider, &stage3BypassSlider, &stage3BiasSlider, &stage3AttSlider,
-            &stage4LPSlider, &stage4BypassSlider, &stage4BiasSlider
+        Knob* slider_refs[] = { 
+            &stage1LP, &stage1Bypass, &stage1Bias, &stage1Gain,
+            &stage2LP, &stage2Bypass, &stage2Bias, &stage2Gain,
+            &stage3LP, &stage3Bypass, &stage3Bias, &stage3Gain,
+            &stage4LP, &stage4Bypass, &stage4Bias, &stage4Gain,
+            &stage5LP, &stage5Bypass, &stage5Bias
         };
     
-        for (int paramIndex = STAGE0_LP; paramIndex <= STAGE4_BIAS; paramIndex++) {
+        for (int paramIndex = STAGE1_LP; paramIndex <= STAGE5_BIAS; paramIndex++) {
             p.apvts.getParameter(paramInfos[paramIndex].id.toString())->setValueNotifyingHost(paramInfos[paramIndex].defaultValue);        
-            slider_refs[paramIndex - STAGE0_LP]->setValue(paramInfos[paramIndex].defaultValue);
+            slider_refs[paramIndex - STAGE1_LP]->setValue(paramInfos[paramIndex].defaultValue);
         }
     };
     
     addAndMakeVisible(resetButton);
     
-    stage0Label.setJustificationType(juce::Justification::centred);
     stage1Label.setJustificationType(juce::Justification::centred);
     stage2Label.setJustificationType(juce::Justification::centred);
     stage3Label.setJustificationType(juce::Justification::centred);
     stage4Label.setJustificationType(juce::Justification::centred);
+    stage5Label.setJustificationType(juce::Justification::centred);
     
-    addAndMakeVisible(stage0Label);
     addAndMakeVisible(stage1Label);
     addAndMakeVisible(stage2Label);
     addAndMakeVisible(stage3Label);
     addAndMakeVisible(stage4Label);
+    addAndMakeVisible(stage5Label);
 }
 
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    static const int horizontalSpacing = 50;
-    static const int verticalSpacing = 15;
+    static const int horizontalSpacing = 30;
+    static const int verticalSpacing = 5;
     static const int stageKnobSize = 90;
     static const int labelWidth = stageKnobSize + 20;
     static const int labelHeight = 20;
 
     static const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
     
-    // stage0LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
-    // stage0LPSlider.label.setBounds(stage0LPSlider.getX(), stage0LPSlider.getY() - 15, sliderWidth, 20);
-    stage0Label.setBounds(120, 10, labelWidth, 20);
-    stage1Label.setBounds(stage0Label.getX() + 150, 10, labelWidth, labelHeight);
-    stage2Label.setBounds(stage1Label.getX() + 150, 10, labelWidth, labelHeight);
-    stage3Label.setBounds(stage2Label.getX() + 150, 10, labelWidth, labelHeight);
-    stage4Label.setBounds(stage3Label.getX() + 150, 10, labelWidth, labelHeight);
+    // stage1LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
+    // stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
+    stage1Label.setBounds(150, verticalMargin, labelWidth, 20);
+    stage2Label.setBounds(stage1Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
+    stage3Label.setBounds(stage2Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
+    stage4Label.setBounds(stage3Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
+    stage5Label.setBounds(stage4Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
         
-    placeKnob(&stage0BypassSlider, stage0Label.getX() + knobCenterOffset, stage1Label.getY() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage0BiasSlider, stage0BypassSlider.getX(), stage0BypassSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
+    placeKnob(&stage1Bias, stage1Bypass.getX(), stage1Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage1Gain, stage1Bias.getX(), stage1Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
 
-    placeKnob(&stage1BypassSlider, stage1Label.getX() + knobCenterOffset, stage1Label.getY() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage1BiasSlider, stage1BypassSlider.getX(), stage1BypassSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage1AttSlider, stage1BiasSlider.getX(), stage1BiasSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
+    placeKnob(&stage2Bias, stage2Bypass.getX(), stage2Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage2Gain, stage2Bias.getX(), stage2Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
 
-    placeKnob(&stage2BypassSlider, stage2Label.getX() + knobCenterOffset, stage2Label.getY() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage2BiasSlider, stage2BypassSlider.getX(), stage2BypassSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage2AttSlider, stage2BiasSlider.getX(), stage2BiasSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
+    placeKnob(&stage3Bias, stage3Bypass.getX(), stage3Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage3Gain, stage3Bias.getX(), stage3Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
 
-    placeKnob(&stage3BypassSlider, stage3Label.getX() + knobCenterOffset, stage3Label.getY() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage3BiasSlider, stage3BypassSlider.getX(), stage3BypassSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage3AttSlider, stage3BiasSlider.getX(), stage3BiasSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
+    placeKnob(&stage4Bias, stage4Bypass.getX(), stage4Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage4Gain, stage4Bias.getX(), stage4Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
 
-    placeKnob(&stage4BypassSlider, stage4Label.getX() + knobCenterOffset, stage4Label.getY() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage4BiasSlider, stage4BypassSlider.getX(), stage4BypassSlider.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage5Bypass, stage5Label.getX() + knobCenterOffset, stage5Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
+    placeKnob(&stage5Bias, stage5Bypass.getX(), stage5Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
     
-    resetButton.setBounds(100, 300, 100, 30);
+    resetButton.setBounds(horizontalMargin, verticalMargin, 100, 30);
 }
 
 IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
@@ -512,42 +787,25 @@ void EQPage::resized() {
 
     resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 30);
     
-    lowShelfFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    lowShelfFreqKnob.label.setBounds(lowShelfFreqKnob.getX(), lowShelfFreqKnob.getY() - 15, eqKnobSize, 20);
-    lowShelfGainKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    lowShelfGainKnob.label.setBounds(lowShelfGainKnob.getX(), lowShelfGainKnob.getY() - 15, eqKnobSize, 20);
-
-    lowcutFreqKnob.setBounds(computeXcoord(1, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    lowcutFreqKnob.label.setBounds(lowcutFreqKnob.getX(), lowcutFreqKnob.getY() - 15, eqKnobSize, 20);
-
-    lowMidFreqKnob.setBounds(computeXcoord(2, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    lowMidFreqKnob.label.setBounds(lowMidFreqKnob.getX(), lowMidFreqKnob.getY() - 15, eqKnobSize, 20);
-    lowMidGainKnob.setBounds(computeXcoord(2, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    lowMidGainKnob.label.setBounds(lowMidGainKnob.getX(), lowMidGainKnob.getY() - 15, eqKnobSize, 20);
-    lowMidQKnob.setBounds(computeXcoord(2, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    lowMidQKnob.label.setBounds(lowMidQKnob.getX(), lowMidQKnob.getY() - 15, eqKnobSize, 20);
-
-    midFreqKnob.setBounds(computeXcoord(3, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    midFreqKnob.label.setBounds(midFreqKnob.getX(), midFreqKnob.getY() - 15, eqKnobSize, 20);
-    midGainKnob.setBounds(computeXcoord(3, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    midGainKnob.label.setBounds(midGainKnob.getX(), midGainKnob.getY() - 15, eqKnobSize, 20);
-    midQKnob.setBounds(computeXcoord(3, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    midQKnob.label.setBounds(midQKnob.getX(), midQKnob.getY() - 15, eqKnobSize, 20);
-
-    highFreqKnob.setBounds(computeXcoord(4, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    highFreqKnob.label.setBounds(highFreqKnob.getX(), highFreqKnob.getY() - 15, eqKnobSize, 20);
-    highGainKnob.setBounds(computeXcoord(4, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    highGainKnob.label.setBounds(highGainKnob.getX(), highGainKnob.getY() - 15, eqKnobSize, 20);
-    highQKnob.setBounds(computeXcoord(4, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    highQKnob.label.setBounds(highQKnob.getX(), highQKnob.getY() - 15, eqKnobSize, 20);
-
-    highShelfFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(0, height), eqKnobSize, eqKnobSize);
-    highShelfFreqKnob.label.setBounds(highShelfFreqKnob.getX(), highShelfFreqKnob.getY() - 15, eqKnobSize, 20);
-    highShelfGainKnob.setBounds(computeXcoord(5, width), computeYcoord(1, height), eqKnobSize, eqKnobSize);
-    highShelfGainKnob.label.setBounds(highShelfGainKnob.getX(), highShelfGainKnob.getY() - 15, eqKnobSize, 20);
-
-    highcutFreqKnob.setBounds(computeXcoord(5, width), computeYcoord(2, height), eqKnobSize, eqKnobSize);
-    highcutFreqKnob.label.setBounds(highcutFreqKnob.getX(), highcutFreqKnob.getY() - 15, eqKnobSize, 20);
+    placeKnob(&lowShelfFreqKnob, computeXcoord(1, width), computeYcoord(0, height), eqKnobSize);
+    placeKnob(&lowShelfGainKnob, computeXcoord(1, width), computeYcoord(1, height), eqKnobSize);
+    placeKnob(&lowcutFreqKnob, computeXcoord(1, width), computeYcoord(2, height), eqKnobSize);
+    
+    placeKnob(&lowMidFreqKnob, computeXcoord(2, width), computeYcoord(0, height), eqKnobSize);
+    placeKnob(&lowMidGainKnob, computeXcoord(2, width), computeYcoord(1, height), eqKnobSize);
+    placeKnob(&lowMidQKnob, computeXcoord(2, width), computeYcoord(2, height), eqKnobSize);
+    
+    placeKnob(&midFreqKnob, computeXcoord(3, width), computeYcoord(0, height), eqKnobSize);
+    placeKnob(&midGainKnob, computeXcoord(3, width), computeYcoord(1, height), eqKnobSize);
+    placeKnob(&midQKnob, computeXcoord(3, width), computeYcoord(2, height), eqKnobSize);
+    
+    placeKnob(&highFreqKnob, computeXcoord(4, width), computeYcoord(0, height), eqKnobSize);
+    placeKnob(&highGainKnob, computeXcoord(4, width), computeYcoord(1, height), eqKnobSize);
+    placeKnob(&highQKnob, computeXcoord(4, width), computeYcoord(2, height), eqKnobSize);
+    
+    placeKnob(&highShelfFreqKnob, computeXcoord(5, width), computeYcoord(0, height), eqKnobSize);
+    placeKnob(&highShelfGainKnob, computeXcoord(5, width), computeYcoord(1, height), eqKnobSize);
+    placeKnob(&highcutFreqKnob, computeXcoord(5, width), computeYcoord(2, height), eqKnobSize);
 }
 
 
