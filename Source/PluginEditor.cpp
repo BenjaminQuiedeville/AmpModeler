@@ -37,8 +37,8 @@ AmpModelerLAF::AmpModelerLAF() {
     setColour(juce::ComboBox::focusedOutlineColourId, juce::Colours::darkred);
     
     setColour(juce::Label::backgroundColourId, backgroundColor);
-    // setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
-    setColour(juce::Label::outlineColourId, juce::Colours::white);
+    setColour(juce::Label::outlineColourId, juce::Colours::transparentBlack);
+    // setColour(juce::Label::outlineColourId, juce::Colours::white);
     setColour(juce::Label::ColourIds::textColourId, juce::Colours::white);
 
     
@@ -385,7 +385,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
         editor->eqPage.highQKnob.setEnabled(state);
         editor->eqPage.highShelfFreqKnob.setEnabled(state);
         editor->eqPage.highShelfGainKnob.setEnabled(state);
-        editor->eqPage.highcutFreqKnob.setEnabled(state);
+        editor->eqPage.highCutFreqKnob.setEnabled(state);
     };
 
     addAndMakeVisible(gateToggle);
@@ -426,18 +426,18 @@ void GateBoostPage::resized() {
 
 
 AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
-    gain1Knob(        "GAIN1_KNOB_LABEL",         "Gain 1",          this, paramInfos[GAIN1].id.toString(),             p.apvts, ""),
-    gain2Knob(        "GAIN2_KNOB_LABEL",         "Gain 2",          this, paramInfos[GAIN2].id.toString(),             p.apvts, ""),
-    inputFilterKnob(  "INPUT_KNOB_FILTER_LABEL",  "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
-    bassEQKnob(       "BASS_EQ_KNOB_LABEL",       "Bass",            this, paramInfos[TONESTACK_BASS].id.toString(),    p.apvts, ""),
-    midEQKnob(        "MIDDLE_EQ_KNOB_LABEL",     "Mid",             this, paramInfos[TONESTACK_MIDDLE].id.toString(),  p.apvts, ""),
-    trebbleEQKnob(    "TREBBLE_EQ_KNOB_LABEL",    "Trebble",         this, paramInfos[TONESTACK_TREBBLE].id.toString(), p.apvts, ""),
-    preampVolumeKnob( "PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, paramInfos[PREAMP_VOLUME].id.toString(),     p.apvts, " dB"),
-    resonanceKnob(    "RESONANCE_KNOB_LABEL",     "Resonance",       this, paramInfos[RESONANCE].id.toString(),         p.apvts, ""),
-    presenceKnob(     "PRESENCE_KNOB_LABEL",      "Presence",        this, paramInfos[PRESENCE].id.toString(),          p.apvts, ""),
-    ampChannelBox(    "AMP_CHANNEL_BOX_LABEL",    "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),           p.apvts),
-    toneStackModelBox("TONE_MODEL_BOX_LABEL",     "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
-    channelConfigBox( "CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
+    gain1Knob(         "GAIN1_KNOB_LABEL",         "Gain 1",          this, paramInfos[GAIN1].id.toString(),             p.apvts, ""),
+    gain2Knob(         "GAIN2_KNOB_LABEL",         "Gain 2",          this, paramInfos[GAIN2].id.toString(),             p.apvts, ""),
+    inputFilterKnob(   "INPUT_KNOB_FILTER_LABEL",  "Input Filter",    this, paramInfos[INPUT_FILTER].id.toString(),      p.apvts, " Hz"),
+    bassEQKnob(        "BASS_EQ_KNOB_LABEL",       "Bass",            this, paramInfos[TONESTACK_BASS].id.toString(),    p.apvts, ""),
+    midEQKnob(         "MIDDLE_EQ_KNOB_LABEL",     "Mid",             this, paramInfos[TONESTACK_MIDDLE].id.toString(),  p.apvts, ""),
+    trebbleEQKnob(     "TREBBLE_EQ_KNOB_LABEL",    "Trebble",         this, paramInfos[TONESTACK_TREBBLE].id.toString(), p.apvts, ""),
+    preampVolumeKnob(  "PREMP_VOLUME_KNOB_LABEL",  "Post Gain",       this, paramInfos[PREAMP_VOLUME].id.toString(),     p.apvts, " dB"),
+    resonanceKnob(     "RESONANCE_KNOB_LABEL",     "Resonance",       this, paramInfos[RESONANCE].id.toString(),         p.apvts, ""),
+    presenceKnob(      "PRESENCE_KNOB_LABEL",      "Presence",        this, paramInfos[PRESENCE].id.toString(),          p.apvts, ""),
+    ampChannelBox(     "AMP_CHANNEL_BOX_LABEL",    "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),           p.apvts),
+    toneStackModelBox( "TONE_MODEL_BOX_LABEL",     "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
+    stereoSettingBox(  "CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
 {
     gain1Knob.setNumDecimalPlacesToDisplay(2);
     gain2Knob.setNumDecimalPlacesToDisplay(2);
@@ -454,11 +454,11 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     toneStackModelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[TONESTACK_MODEL].id) + 1,
                                      juce::NotificationType::dontSendNotification);
 
-    channelConfigBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
-    channelConfigBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL_CONFIG].id) + 1,
+    stereoSettingBox.addItemList({"Mono","Fake Stereo", "Stereo"}, 1);
+    stereoSettingBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL_CONFIG].id) + 1,
                                     juce::NotificationType::dontSendNotification);
     
-    // channelConfigBox.valueChanged = [&, this](juce::Value &value) {
+    // stereoSettingBox.valueChanged = [&, this](juce::Value &value) {
         
     //     value;
     //     // changer le style des potard en disabled dans le gainstages 
@@ -479,27 +479,33 @@ void AmplifierPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    placeKnob(&gain1Knob,       computeXcoord(1, width), computeYcoord(0, height), knobSize);
-    placeKnob(&gain2Knob,       computeXcoord(1, width), computeYcoord(1, height), knobSize);
-    placeKnob(&inputFilterKnob, computeXcoord(1, width), computeYcoord(2, height), knobSize);
-    placeKnob(&bassEQKnob,      computeXcoord(2, width), computeYcoord(0, height), knobSize);
-    placeKnob(&midEQKnob,       computeXcoord(3, width), computeYcoord(0, height), knobSize);
-    placeKnob(&trebbleEQKnob,   computeXcoord(4, width), computeYcoord(0, height), knobSize);
-    placeKnob(&resonanceKnob,   computeXcoord(5, width), computeYcoord(1, height), knobSize);
-    placeKnob(&presenceKnob,    computeXcoord(5, width), computeYcoord(0, height), knobSize);
+    static const int labelHeight = 20;
+    static const int horizontalSpacing = 0;
+    static const int verticalSpacing = 20;
+        
+    stereoSettingBox.setBounds(horizontalMargin, verticalMargin + labelHeight, 120, 30);
+    stereoSettingBox.label.setBounds(stereoSettingBox.getX(), stereoSettingBox.getY() - 20, knobSize, 20);
 
-    placeKnob(&preampVolumeKnob, computeXcoord(6, width), computeYcoord(0, height), knobSize);
-
-    ampChannelBox.setBounds(computeXcoord(2, width), computeYcoord(1, height) + 30, 120, 30);
+    ampChannelBox.setBounds(stereoSettingBox.getRight() + 5, stereoSettingBox.getY(), 120, 30);
     ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20, knobSize, 20);
 
-    toneStackModelBox.setBounds(computeXcoord(3, width), computeYcoord(1, height) + 30, 120, 30);
+    toneStackModelBox.setBounds(ampChannelBox.getRight() + 5, ampChannelBox.getY(), 120, 30);
     toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, knobSize, 20);
 
-    channelConfigBox.setBounds(computeXcoord(0, width), computeYcoord(0, height) + 30, 120, 30);
-    channelConfigBox.label.setBounds(channelConfigBox.getX(), channelConfigBox.getY() - 20, knobSize, 20);
+    placeKnob(&gain1Knob, ampChannelBox.getX(), ampChannelBox.getBottom() + verticalSpacing + 5, knobSize);
+    placeKnob(&gain2Knob, gain1Knob.getX(), gain1Knob.getBottom() + verticalSpacing, knobSize);
+    placeKnob(&inputFilterKnob, gain1Knob.getX() - knobSize - horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
+    
+    placeKnob(&bassEQKnob,    gain1Knob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&midEQKnob,     bassEQKnob.getRight() + horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&trebbleEQKnob, midEQKnob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
 
-    brightToggle.setBounds(channelConfigBox.getX(), channelConfigBox.getY() + 40, 120, 30);
+    placeKnob(&presenceKnob,  trebbleEQKnob.getRight() + horizontalSpacing, gain1Knob.getY(), knobSize);
+    placeKnob(&resonanceKnob, trebbleEQKnob.getRight() + horizontalSpacing, gain2Knob.getY(), knobSize);
+
+    placeKnob(&preampVolumeKnob, presenceKnob.getRight() + horizontalSpacing, trebbleEQKnob.getY(),  knobSize);
+
+    brightToggle.setBounds(inputFilterKnob.getX(), inputFilterKnob.getY() - labelHeight*2 - 10, knobSize, 30);
 }
 
 
@@ -522,11 +528,7 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage4LP(      "STAGE4_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE4_LP].id.toString(),     p.apvts, " Hz"),
     stage4Bypass(  "STAGE4_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(), p.apvts, " dB"),
     stage4Bias(    "STAGE4_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),   p.apvts, ""),
-    stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, ""),
-    
-    stage5LP(      "STAGE5_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE5_LP].id.toString(),     p.apvts, " Hz"),
-    stage5Bypass(  "STAGE5_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE5_BYPASS].id.toString(), p.apvts, " dB"),
-    stage5Bias(    "STAGE5_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE5_BIAS].id.toString(),   p.apvts, "")
+    stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, "")
 {
     resetButton.onClick = [&p, this]() {
     
@@ -535,10 +537,9 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
             &stage2LP, &stage2Bypass, &stage2Bias, &stage2Gain,
             &stage3LP, &stage3Bypass, &stage3Bias, &stage3Gain,
             &stage4LP, &stage4Bypass, &stage4Bias, &stage4Gain,
-            &stage5LP, &stage5Bypass, &stage5Bias
         };
     
-        for (int paramIndex = STAGE1_LP; paramIndex <= STAGE5_BIAS; paramIndex++) {
+        for (int paramIndex = STAGE1_LP; paramIndex <= GAIN4; paramIndex++) {
             p.apvts.getParameter(paramInfos[paramIndex].id.toString())->setValueNotifyingHost(paramInfos[paramIndex].defaultValue);        
             slider_refs[paramIndex - STAGE1_LP]->setValue(paramInfos[paramIndex].defaultValue);
         }
@@ -550,54 +551,49 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage2Label.setJustificationType(juce::Justification::centred);
     stage3Label.setJustificationType(juce::Justification::centred);
     stage4Label.setJustificationType(juce::Justification::centred);
-    stage5Label.setJustificationType(juce::Justification::centred);
     
     addAndMakeVisible(stage1Label);
     addAndMakeVisible(stage2Label);
     addAndMakeVisible(stage3Label);
     addAndMakeVisible(stage4Label);
-    addAndMakeVisible(stage5Label);
 }
 
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    static const int horizontalSpacing = 30;
+    static const int horizontalSpacing = 0;
     static const int verticalSpacing = 5;
-    static const int stageKnobSize = 90;
-    static const int labelWidth = stageKnobSize + 20;
+    static const int stageKnobSize = 100;
+    static const int labelWidth = stageKnobSize;
     static const int labelHeight = 20;
 
     static const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
     
     // stage1LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
     // stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
-    stage1Label.setBounds(150, verticalMargin, labelWidth, 20);
-    stage2Label.setBounds(stage1Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
-    stage3Label.setBounds(stage2Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
-    stage4Label.setBounds(stage3Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
-    stage5Label.setBounds(stage4Label.getX() + 150, stage1Label.getY(), labelWidth, labelHeight);
+
+    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
+
+    stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin, labelWidth, 20);
+    stage2Label.setBounds(stage1Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
+    stage3Label.setBounds(stage2Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
+    stage4Label.setBounds(stage3Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, labelHeight);
         
-    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
-    placeKnob(&stage1Bias, stage1Bypass.getX(), stage1Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage1Gain, stage1Bias.getX(), stage1Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
-    placeKnob(&stage2Bias, stage2Bypass.getX(), stage2Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage2Gain, stage2Bias.getX(), stage2Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
-    placeKnob(&stage3Bias, stage3Bypass.getX(), stage3Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage3Gain, stage3Bias.getX(), stage3Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 
-    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
-    placeKnob(&stage4Bias, stage4Bypass.getX(), stage4Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage4Gain, stage4Bias.getX(), stage4Bias.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-
-    placeKnob(&stage5Bypass, stage5Label.getX() + knobCenterOffset, stage5Label.getY() + verticalSpacing + labelHeight + 5, stageKnobSize);
-    placeKnob(&stage5Bias, stage5Bypass.getX(), stage5Bypass.getY() + stageKnobSize + verticalSpacing + labelHeight, stageKnobSize);
-    
-    resetButton.setBounds(horizontalMargin, verticalMargin, 100, 30);
+    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing + 5,            stageKnobSize);
+    placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
+    placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
 }
 
 IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
@@ -757,7 +753,7 @@ EQPage::EQPage(Editor *editor, Processor &p) :
     highQKnob("HIGH_Q_KNOB_LABEL",                  "Q",               this, paramInfos[HIGH_Q].id.toString(),          p.apvts, ""),
     highShelfFreqKnob("HIGH_SHELF_FREQ_KNOB_LABEL", "High Shelf Freq", this, paramInfos[HIGH_SHELF_FREQ].id.toString(), p.apvts, " Hz"),
     highShelfGainKnob("HIGH_SHELF_GAIN_KNOB_LABEL", "Gain",            this, paramInfos[HIGH_SHELF_GAIN].id.toString(), p.apvts, " dB"),
-    highcutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, paramInfos[HIGH_CUT_FREQ].id.toString(),   p.apvts, " Hz")
+    highCutFreqKnob("HIGH_CUT_FREQ_KNOB_LABEL",     "High cut",        this, paramInfos[HIGH_CUT_FREQ].id.toString(),   p.apvts, " Hz")
 {
     resetButton.onClick = [&p, this]() {
     
@@ -783,29 +779,32 @@ void EQPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    static const int eqKnobSize = 90;
+    static const int eqKnobSize = 100;
+    static const int labelHeight = 20;
+    static const int verticalSpacing = 5;
+    static const int horizontalSpacing = 0;
+    
+    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, labelHeight);
+    
+    placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing, verticalMargin, eqKnobSize);
+    placeKnob(&lowShelfGainKnob, lowShelfFreqKnob.getX(), lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&lowcutFreqKnob,   lowShelfFreqKnob.getX(), lowShelfGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    
+    placeKnob(&lowMidFreqKnob, lowShelfFreqKnob.getRight() + horizontalSpacing, lowShelfFreqKnob.getY(), eqKnobSize);
+    placeKnob(&lowMidGainKnob, lowMidFreqKnob.getX(), lowMidFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&lowMidQKnob,    lowMidFreqKnob.getX(), lowMidGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
 
-    resetButton.setBounds(computeXcoord(0, width), computeYcoord(0, height), 100, 30);
-    
-    placeKnob(&lowShelfFreqKnob, computeXcoord(1, width), computeYcoord(0, height), eqKnobSize);
-    placeKnob(&lowShelfGainKnob, computeXcoord(1, width), computeYcoord(1, height), eqKnobSize);
-    placeKnob(&lowcutFreqKnob, computeXcoord(1, width), computeYcoord(2, height), eqKnobSize);
-    
-    placeKnob(&lowMidFreqKnob, computeXcoord(2, width), computeYcoord(0, height), eqKnobSize);
-    placeKnob(&lowMidGainKnob, computeXcoord(2, width), computeYcoord(1, height), eqKnobSize);
-    placeKnob(&lowMidQKnob, computeXcoord(2, width), computeYcoord(2, height), eqKnobSize);
-    
-    placeKnob(&midFreqKnob, computeXcoord(3, width), computeYcoord(0, height), eqKnobSize);
-    placeKnob(&midGainKnob, computeXcoord(3, width), computeYcoord(1, height), eqKnobSize);
-    placeKnob(&midQKnob, computeXcoord(3, width), computeYcoord(2, height), eqKnobSize);
-    
-    placeKnob(&highFreqKnob, computeXcoord(4, width), computeYcoord(0, height), eqKnobSize);
-    placeKnob(&highGainKnob, computeXcoord(4, width), computeYcoord(1, height), eqKnobSize);
-    placeKnob(&highQKnob, computeXcoord(4, width), computeYcoord(2, height), eqKnobSize);
-    
-    placeKnob(&highShelfFreqKnob, computeXcoord(5, width), computeYcoord(0, height), eqKnobSize);
-    placeKnob(&highShelfGainKnob, computeXcoord(5, width), computeYcoord(1, height), eqKnobSize);
-    placeKnob(&highcutFreqKnob, computeXcoord(5, width), computeYcoord(2, height), eqKnobSize);
+    placeKnob(&midFreqKnob, lowMidFreqKnob.getRight() + horizontalSpacing, lowMidFreqKnob.getY(), eqKnobSize);
+    placeKnob(&midGainKnob, midFreqKnob.getX(), midFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&midQKnob,    midFreqKnob.getX(), midGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+
+    placeKnob(&highFreqKnob, midFreqKnob.getRight() + horizontalSpacing, midFreqKnob.getY(), eqKnobSize);
+    placeKnob(&highGainKnob, highFreqKnob.getX(), highFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&highQKnob,    highFreqKnob.getX(), highGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+
+    placeKnob(&highShelfFreqKnob, highFreqKnob.getRight() + horizontalSpacing, highFreqKnob.getY(), eqKnobSize);
+    placeKnob(&highShelfGainKnob, highShelfFreqKnob.getX(), highShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&highCutFreqKnob,   highShelfFreqKnob.getX(), highShelfGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
 }
 
 

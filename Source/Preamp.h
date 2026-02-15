@@ -67,7 +67,6 @@ struct Preamp {
     float stage2_bias[2] = {0};
     float stage3_bias[2] = {0};
     float stage4_bias[2] = {0};
-    float stage5_bias[2] = {0};
 
     float outputAttenuationdB = -34.0f;
     u8 channel = 0;

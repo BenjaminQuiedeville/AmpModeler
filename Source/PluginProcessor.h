@@ -88,11 +88,7 @@ enum Params {
     STAGE4_BYPASS,
     STAGE4_BIAS,
     GAIN4,
-    
-    STAGE5_LP,
-    STAGE5_BYPASS,
-    STAGE5_BIAS,
-    
+        
     TONESTACK_MODEL,
     TONESTACK_BASS,
     TONESTACK_MIDDLE,
@@ -152,7 +148,7 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "PREAMP_VOLUME",        0.0f },
     
     { "STAGE1_LP",            15000.0f },
-    { "STAGE1_BYPASS",        -5.0f },
+    { "STAGE1_BYPASS",        -4.0f },
     { "STAGE1_BIAS",          0.0f },
     { "GAIN1",                5.0f },
     
@@ -170,10 +166,6 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "STAGE4_BYPASS",        -2.0f },
     { "STAGE4_BIAS",          0.0f },
     { "GAIN4",                5.0f },
-    
-    { "STAGE5_LP",            15000.0f },
-    { "STAGE5_BYPASS",        -2.0f },
-    { "STAGE5_BIAS",          0.0f },
     
     { "TONE_MODEL",           0.0f },
     { "TONE_BASS",            5.0f },

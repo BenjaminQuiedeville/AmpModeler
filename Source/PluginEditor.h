@@ -19,11 +19,11 @@ static const juce::String defaultIRText = "Default IR, made by JuanPabloZed with
 
 static const int knobSize = 100;
 static const int horizontalMargin = 25;
-static const int verticalMargin = 30;
+static const int verticalMargin = 20;
 static const int nRows = 3;
 static const int nCols = 6;
 
-static const int windoWidth = 1000;
+static const int windoWidth = 850;
 static const int windowHeight = 450;
 
 struct AmpModelerLAF : public juce::LookAndFeel_V4 {
@@ -136,7 +136,7 @@ struct AmplifierPage : public juce::Component {
 
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
-    ComboBox channelConfigBox;
+    ComboBox stereoSettingBox;
 
     juce::TextButton brightToggle {"Bright Switch"};
     std::unique_ptr<ButtonAttachment> brightToggleAttachment;
@@ -158,7 +158,6 @@ struct GainStagesPage : public juce::Component {
     juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2"};
     juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3"};
     juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4"};
-    juce::Label stage5Label {"STAGE_5_LABEL", "Stage 5"};
     
     Knob stage1LP;
     Knob stage1Bypass;
@@ -179,10 +178,6 @@ struct GainStagesPage : public juce::Component {
     Knob stage4Bypass;
     Knob stage4Bias;
     Knob stage4Gain;
-
-    Knob stage5LP;
-    Knob stage5Bypass;
-    Knob stage5Bias;
 };
 
 
@@ -242,7 +237,7 @@ struct EQPage : public juce::Component {
     Knob highShelfFreqKnob;
     Knob highShelfGainKnob;
 
-    Knob highcutFreqKnob;
+    Knob highCutFreqKnob;
 };
 
 

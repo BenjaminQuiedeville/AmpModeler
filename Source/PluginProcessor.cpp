@@ -551,22 +551,6 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
-    if (id == paramInfos[STAGE5_LP].id
-        || id == paramInfos[STAGE5_BYPASS].id
-        || id == paramInfos[STAGE5_BIAS].id)
-    {
-        // preamp.stage4LP.setCoefficients(
-        //     *apvts.getRawParameterValue(paramInfos[STAGE5_LP].id),
-        //     preampSamplerate);
-
-        preamp.stage5LP.makeLowpass(
-            *apvts.getRawParameterValue(paramInfos[STAGE5_LP].id),
-            preampSamplerate);
-
-        preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE5_BIAS].id), 4);
-        return;
-    }
-
     if (id == paramInfos[TONESTACK_BASS].id
         || id == paramInfos[TONESTACK_MIDDLE].id
         || id == paramInfos[TONESTACK_TREBBLE].id
@@ -848,20 +832,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE5_LP].id.toString(), "STAGE5_LP",
-        juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE5_LP].defaultValue, attributes
-    ));
+    // params.push_back(std::make_unique<juce::AudioParameterFloat>(
+    //     paramInfos[STAGE5_LP].id.toString(), "STAGE5_LP",
+    //     juce::NormalisableRange<float>(1000.0f, 20000.0f, 1.0, 0.7f), paramInfos[STAGE5_LP].defaultValue, attributes
+    // ));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE5_BYPASS].id.toString(), "STAGE5_BYPASS",
-        juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE5_BYPASS].defaultValue, attributes
-    ));
+    // params.push_back(std::make_unique<juce::AudioParameterFloat>(
+    //     paramInfos[STAGE5_BYPASS].id.toString(), "STAGE5_BYPASS",
+    //     juce::NormalisableRange<float>(-6.0f, 0.0f, 0.1f, 1.0f), paramInfos[STAGE5_BYPASS].defaultValue, attributes
+    // ));
 
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[STAGE5_BIAS].id.toString(), "STAGE5_BIAS",
-        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE5_BIAS].defaultValue, attributes
-    ));
+    // params.push_back(std::make_unique<juce::AudioParameterFloat>(
+    //     paramInfos[STAGE5_BIAS].id.toString(), "STAGE5_BIAS",
+    //     juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[STAGE5_BIAS].defaultValue, attributes
+    // ));
 
 
     // Tonestack params
