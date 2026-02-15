@@ -253,7 +253,9 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
         EQ.highShelf.process(audioPtrL, audioPtrR, numSamples);
         EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
     }
-
+    
+    
+    applyGainLinear(dbtoa(-9.0), audioPtrL, audioPtrR, numSamples);
     masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
 
 
@@ -686,7 +688,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[INPUT_GAIN].id.toString(), "Input Gain",
-        juce::NormalisableRange<float>(-36.0f, 12.0f, 0.1f, 1.0f), paramInfos[INPUT_GAIN].defaultValue, attributes
+        juce::NormalisableRange<float>(-18.0f, 12.0f, 0.1f, 1.0f), paramInfos[INPUT_GAIN].defaultValue, attributes
     ));
 
     // Noise gate params
