@@ -41,7 +41,7 @@ if (MSVC)
     
     # add_link_options(/NODEFAULTLIB:LIBCMTD)
 else()
-    add_compile_options(-Wall -Wextra -ffast-math -fno-math-errno)
+    add_compile_options(-Wall -Wextra -ffast-math -fno-math-errno -Wno-zero-as-null-pointer-constant)
     
     if (NOT APPLE) 
         add_compile_options(-mavx2)
