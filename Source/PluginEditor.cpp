@@ -450,17 +450,18 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
         editor->gainStagesPage.stage2LP.setEnabled(channel >= 1);
         editor->gainStagesPage.stage2Bypass.setEnabled(channel > 1);
         editor->gainStagesPage.stage2Bias.setEnabled(channel >= 1);
-        editor->gainStagesPage.stage2Gain.setEnabled(channel >= 1);
+        editor->gainStagesPage.stage2Gain.setEnabled(channel > 1);
+        gain2Knob.setEnabled(channel > 1);
         
         editor->gainStagesPage.stage3LP.setEnabled(channel >= 2);
         editor->gainStagesPage.stage3Bypass.setEnabled(channel > 2);
         editor->gainStagesPage.stage3Bias.setEnabled(channel >= 2);
-        editor->gainStagesPage.stage3Gain.setEnabled(channel >= 2);
+        editor->gainStagesPage.stage3Gain.setEnabled(channel > 2);
         
         editor->gainStagesPage.stage4LP.setEnabled(channel >= 3);
         editor->gainStagesPage.stage4Bypass.setEnabled(channel > 3);
         editor->gainStagesPage.stage4Bias.setEnabled(channel >= 3);
-        editor->gainStagesPage.stage4Gain.setEnabled(channel >= 3);
+        editor->gainStagesPage.stage4Gain.setEnabled(channel > 3);
 
     }; 
     
@@ -523,12 +524,12 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage1LP(      "STAGE1_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE1_LP].id.toString(),     p.apvts, " Hz"),
     stage1Bypass(  "STAGE1_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(), p.apvts, " dB"),
     stage1Bias(    "STAGE1_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),   p.apvts, ""),
-    stage1Gain(    "STAGE1_GAIN_SLIDER_LABEL",    "Gain 1",          this, paramInfos[GAIN1].id.toString(),         p.apvts, ""),
+    stage1Gain(    "STAGE1_GAIN_SLIDER_LABEL",    "Gain 1 (mirror)", this, paramInfos[GAIN1].id.toString(),         p.apvts, ""),
     
     stage2LP(      "STAGE2_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE2_LP].id.toString(),     p.apvts, " Hz"),
     stage2Bypass(  "STAGE2_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE2_BYPASS].id.toString(), p.apvts, " dB"),
     stage2Bias(    "STAGE2_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE2_BIAS].id.toString(),   p.apvts, ""),
-    stage2Gain(    "STAGE2_GAIN_SLIDER_LABEL",    "Gain2"      ,     this, paramInfos[GAIN2].id.toString(),         p.apvts, ""),
+    stage2Gain(    "STAGE2_GAIN_SLIDER_LABEL",    "Gain2 (mirror)",  this, paramInfos[GAIN2].id.toString(),         p.apvts, ""),
     
     stage3LP(      "STAGE3_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE3_LP].id.toString(),     p.apvts, " Hz"),
     stage3Bypass(  "STAGE3_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE3_BYPASS].id.toString(), p.apvts, " dB"),

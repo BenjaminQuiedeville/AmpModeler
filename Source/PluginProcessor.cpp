@@ -255,7 +255,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
     
     
-    applyGainLinear(dbtoa(-9.0), audioPtrL, audioPtrR, numSamples);
+    applyGainLinear(dbtoa(-6.0), audioPtrL, audioPtrR, numSamples);
     masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
 
 
@@ -545,7 +545,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE4_BIAS].id), 3);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN4].id)->getNormalisableRange();
-        preamp.stage4Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN3].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
+        preamp.stage4Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN4].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 2.5f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;

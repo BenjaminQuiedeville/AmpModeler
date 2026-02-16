@@ -30,19 +30,18 @@ static const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
-parameterChanged : comparer la file de if avec des elseif
 
-irloader 
-    normaliser les IRs et compenser le volume du mode sans IR
-    algorithme partitionné mono
-    double IR mixable
-    alignement de phase
-    
-général 
-    bypass le bright cap et mettre un bright switch ?
-    controller les attenuations en sortie des étages de gain ?
-    
-    presets
+    - normaliser les IRs et compenser le volume du mode sans IR
+    - double IR mixable, alignement de phase
+     
+    - pouvoir mettre les 2 premiers etages de gains en parallele à la plexi
+    - ajouter tablesaw
+    - désactiver le boost et la gate indépendament  
+    - refaire la gate 
+    - mieux indiquer la correspondance entre les gains 1, 2 du panneaux principal et les 
+    gain 1, 2 du panneau de gain stage
+    - les boutons de désactivation sur leur panneau respectif
+    - flow diagram pour les étages de gain 
 */
 
 enum Params {
@@ -154,13 +153,13 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     
     { "STAGE2_LP",            15000.0f },
     { "STAGE2_BYPASS",        -3.0f },
-    { "STAGE2_BIAS",          0.2f },
+    { "STAGE2_BIAS",          0.1f },
     { "GAIN2",                5.0f },
     
     { "STAGE3_LP",            15000.0f },
     { "STAGE3_BYPASS",        0.0f },
     { "STAGE3_BIAS",          0.3f },
-    { "GAIN3",                5.0f },
+    { "GAIN3",                9.0f },
     
     { "STAGE4_LP",            15000.0f },
     { "STAGE4_BYPASS",        -2.0f },
