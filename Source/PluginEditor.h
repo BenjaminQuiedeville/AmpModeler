@@ -159,6 +159,7 @@ struct GainStagesPage : public juce::Component {
     juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2\nChannel 1"};
     juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3\nChannel 2"};
     juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4\nChannel 3"};
+    juce::Label stage5Label {"STAGE_5_LABEL", "Stage 5\nChannel 4"};
 
     ComboBox ampChannelBox;
     
@@ -181,6 +182,9 @@ struct GainStagesPage : public juce::Component {
     Knob stage4Bypass;
     Knob stage4Bias;
     Knob stage4Gain;
+
+    Knob stage5LP;
+    Knob stage5Bias;
 };
 
 

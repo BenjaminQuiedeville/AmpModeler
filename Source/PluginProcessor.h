@@ -57,12 +57,12 @@ enum Params {
     SCREAMER_FREQ,
     TIGHT,
 
-    GATE_ACTIVE,
-    BOOST_ACTIVE,
-    PREAMP_ACTIVE,
-    TONESTACK_ACTIVE,
-    EQ_ACTIVE,
-    IR_ACTIVE,
+    DO_GATE,
+    DO_BOOST,
+    DO_PREAMP,
+    DO_TONESTACK,
+    DO_EQ,
+    DO_IR,
     
     BRIGHT_CAP,
     CHANNEL,
@@ -88,6 +88,9 @@ enum Params {
     STAGE4_BYPASS,
     STAGE4_BIAS,
     GAIN4,
+    
+    STAGE5_LP, 
+    STAGE5_BIAS,
         
     TONESTACK_MODEL,
     TONESTACK_BASS,
@@ -136,12 +139,12 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "SCEAMER_FREQ",         1300.0f },
     { "TIGHT",                10.0f },
     
-    { "GATE_ACTIVE",          1.0f },
-    { "BOOST_ACTIVE",         1.0f },
-    { "PREAMP_ACTIVE",        1.0f },
-    { "TONESTACK_ACTIVE",     1.0f },
-    { "EQ_ACTIVE",            0.0f },
-    { "IR_ACTIVE",            1.0f },
+    { "DO_GATE",          1.0f },
+    { "DO_BOOST",         1.0f },
+    { "DO_PREAMP",        1.0f },
+    { "DO_TONESTACK",     1.0f },
+    { "DO_EQ",            0.0f },
+    { "DO_IR",            1.0f },
     
     { "BRIGHT_CAP",           1.0f },
     { "CHANNEL",              3.0f },
@@ -167,6 +170,9 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "STAGE4_BYPASS",        -2.0f },
     { "STAGE4_BIAS",          0.0f },
     { "GAIN4",                5.0f },
+
+    { "STAGE5_LP",            15000.0f }, 
+    { "STAGE5_BIAS",          0.0f },
     
     { "TONE_MODEL",           0.0f },
     { "TONE_BASS",            5.0f },

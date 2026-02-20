@@ -46,7 +46,6 @@ void Preamp::prepareToPlay(float samplerate, u32 blockSize) {
     stage3LP.reset();
     stage4LP.reset();
     stage5LP.reset();
-    stage5LP.makeLowpass(15000.0, upSamplerate);
 
     cathodeBypassFilter1.reset();
     cathodeBypassFilter2.reset();
@@ -82,7 +81,7 @@ void Preamp::setBias(float bias, int tube_index) {
         case 1: { selected_stage_bias = stage2_bias; break; }
         case 2: { selected_stage_bias = stage3_bias; break; }
         case 3: { selected_stage_bias = stage4_bias; break; }
-        // case 4: { selected_stage_bias = stage5_bias; break; }
+        case 4: { selected_stage_bias = stage5_bias; break; }
         default: { assert(false && "setBias: wrong tube_index"); }
     }
 
@@ -275,7 +274,7 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
 
         // ------------ Stage 5 ------------
         gridConduction(upBufferL, upBufferR, upNumSamples, 8.0f);
-        tubeSim(upBufferL, upBufferR, upNumSamples, 0.0f, 0.0f);
+        tubeSim(upBufferL, upBufferR, upNumSamples, stage5_bias[0], stage5_bias[1]);
         
         couplingFilter5.process(upBufferL, upBufferR, upNumSamples);
         stage5LP.process(upBufferL, upBufferR, upNumSamples);

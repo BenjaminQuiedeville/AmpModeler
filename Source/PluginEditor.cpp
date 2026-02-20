@@ -309,7 +309,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     this->main_editor = editor; 
 
     gateToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[GATE_ACTIVE].id.toString(), gateToggle
+        p.apvts, paramInfos[DO_GATE].id.toString(), gateToggle
     );
 
     gateToggle.setToggleable(true);
@@ -325,7 +325,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     addAndMakeVisible(gateToggle);
     
     boostToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[BOOST_ACTIVE].id.toString(), boostToggle
+        p.apvts, paramInfos[DO_BOOST].id.toString(), boostToggle
     );
     
     boostToggle.setToggleable(true);
@@ -387,6 +387,9 @@ static void updateGainStageKnobsState(Editor *editor, int channel) {
     editor->gainStagesPage.stage4Bypass.setEnabled(channel > 3);
     editor->gainStagesPage.stage4Bias.setEnabled(channel >= 3);
     editor->gainStagesPage.stage4Gain.setEnabled(channel > 3);
+
+    editor->gainStagesPage.stage5LP.setEnabled(channel == 4);
+    editor->gainStagesPage.stage5Bias.setEnabled(channel == 4);
     
     editor->ampPage.gain2Knob.setEnabled(channel > 1);
 }
@@ -411,7 +414,7 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     gain2Knob.setNumDecimalPlacesToDisplay(2);
 
     preampToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[PREAMP_ACTIVE].id.toString(), preampToggle
+        p.apvts, paramInfos[DO_PREAMP].id.toString(), preampToggle
     );
 
     preampToggle.setToggleable(true);
@@ -438,7 +441,7 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     addAndMakeVisible(preampToggle);
 
     tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[TONESTACK_ACTIVE].id.toString(), tonestackToggle
+        p.apvts, paramInfos[DO_TONESTACK].id.toString(), tonestackToggle
     );
     
     tonestackToggle.setToggleable(true);
@@ -525,25 +528,28 @@ void AmplifierPage::resized() {
 
 
 GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
-    stage1LP(      "STAGE1_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE1_LP].id.toString(),     p.apvts, " Hz"),
+    stage1LP(      "STAGE1_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE1_LP].id.toString(),     p.apvts, " Hz"),
     stage1Bypass(  "STAGE1_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(), p.apvts, " dB"),
     stage1Bias(    "STAGE1_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),   p.apvts, ""),
     stage1Gain(    "STAGE1_GAIN_SLIDER_LABEL",    "Gain 1 (mirror)", this, paramInfos[GAIN1].id.toString(),         p.apvts, ""),
     
-    stage2LP(      "STAGE2_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE2_LP].id.toString(),     p.apvts, " Hz"),
+    stage2LP(      "STAGE2_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE2_LP].id.toString(),     p.apvts, " Hz"),
     stage2Bypass(  "STAGE2_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE2_BYPASS].id.toString(), p.apvts, " dB"),
     stage2Bias(    "STAGE2_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE2_BIAS].id.toString(),   p.apvts, ""),
     stage2Gain(    "STAGE2_GAIN_SLIDER_LABEL",    "Gain2 (mirror)",  this, paramInfos[GAIN2].id.toString(),         p.apvts, ""),
     
-    stage3LP(      "STAGE3_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE3_LP].id.toString(),     p.apvts, " Hz"),
+    stage3LP(      "STAGE3_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE3_LP].id.toString(),     p.apvts, " Hz"),
     stage3Bypass(  "STAGE3_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE3_BYPASS].id.toString(), p.apvts, " dB"),
     stage3Bias(    "STAGE3_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE3_BIAS].id.toString(),   p.apvts, ""),
     stage3Gain(    "STAGE3_GAIN_SLIDER_LABEL",    "Gain 3",          this, paramInfos[GAIN3].id.toString(),         p.apvts, ""),
     
-    stage4LP(      "STAGE4_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE4_LP].id.toString(),     p.apvts, " Hz"),
+    stage4LP(      "STAGE4_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE4_LP].id.toString(),     p.apvts, " Hz"),
     stage4Bypass(  "STAGE4_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(), p.apvts, " dB"),
     stage4Bias(    "STAGE4_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),   p.apvts, ""),
     stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, ""),
+    
+    stage5LP(      "STAGE5_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE5_LP].id.toString(),     p.apvts, " Hz"),
+    stage5Bias(    "STAGE5_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE5_BIAS].id.toString(),   p.apvts, ""),
     ampChannelBox( "AMP_CHANNEL_BOX_LABEL2",      "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),       p.apvts)
 
 {
@@ -556,9 +562,10 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
             &stage2LP, &stage2Bypass, &stage2Bias, &stage2Gain,
             &stage3LP, &stage3Bypass, &stage3Bias, &stage3Gain,
             &stage4LP, &stage4Bypass, &stage4Bias, &stage4Gain,
+            &stage5LP,                &stage5Bias,
         };
     
-        for (int paramIndex = STAGE1_LP; paramIndex <= GAIN4; paramIndex++) {
+        for (int paramIndex = STAGE1_LP; paramIndex <= STAGE5_BIAS; paramIndex++) {
             p.apvts.getParameter(paramInfos[paramIndex].id.toString())->setValueNotifyingHost(paramInfos[paramIndex].defaultValue);        
             slider_refs[paramIndex - STAGE1_LP]->setValue(paramInfos[paramIndex].defaultValue);
         }
@@ -581,58 +588,64 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage2Label.setJustificationType(juce::Justification::centred);
     stage3Label.setJustificationType(juce::Justification::centred);
     stage4Label.setJustificationType(juce::Justification::centred);
+    stage5Label.setJustificationType(juce::Justification::centred);
     
     addAndMakeVisible(stage1Label);
     addAndMakeVisible(stage2Label);
     addAndMakeVisible(stage3Label);
     addAndMakeVisible(stage4Label);
+    addAndMakeVisible(stage5Label);
 }
 
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    static const int horizontalSpacing = 15;
-    static const int verticalSpacing = 0;
-    static const int stageKnobSize = 100;
+    static const int horizontalSpacing = 20;
+    static const int verticalSpacing = 10;
+    static const int stageKnobSize = 95;
     static const int labelWidth = stageKnobSize;
-    static const int labelHeight = 20;
 
     static const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
     
-    // stage1LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
-    // stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
-
     updateGainStageKnobsState(main_editor, ampChannelBox.getSelectedId());
 
     ampChannelBox.setBounds(horizontalMargin, verticalMargin + 10, 100, 30);
     resetButton.setBounds(ampChannelBox.getBounds() + juce::Point(0, ampChannelBox.getHeight() + 10)); 
     
-    stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin - 10, labelWidth, 40);
+    stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin - 20, labelWidth, 40);
     stage2Label.setBounds(stage1Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
     stage3Label.setBounds(stage2Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
     stage4Label.setBounds(stage3Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
-        
-    placeKnob(&stage1Bypass, stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
-    placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
+    stage5Label.setBounds(stage4Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
+    
+    placeKnob(&stage1LP,     stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing, stageKnobSize);
+    placeKnob(&stage1Bypass, stage1LP.getX(),                       stage1LP.getBottom(),                       stageKnobSize);
+    placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom(), stageKnobSize);
+    placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom(), stageKnobSize);
 
-    placeKnob(&stage2Bypass, stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
-    placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
+    placeKnob(&stage2LP,     stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing, stageKnobSize);
+    placeKnob(&stage2Bypass, stage2LP.getX(),                       stage2LP.getBottom(),                       stageKnobSize);
+    placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom(), stageKnobSize);
+    placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom(), stageKnobSize);
 
-    placeKnob(&stage3Bypass, stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
-    placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
+    placeKnob(&stage3LP,     stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing, stageKnobSize);
+    placeKnob(&stage3Bypass, stage3LP.getX(),                       stage3LP.getBottom(),                       stageKnobSize);
+    placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom(), stageKnobSize);
+    placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom(), stageKnobSize);
 
-    placeKnob(&stage4Bypass, stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing + 10,            stageKnobSize);
-    placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom() + verticalSpacing + labelHeight, stageKnobSize);
-    placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom() + verticalSpacing + labelHeight,   stageKnobSize);
+    placeKnob(&stage4LP,     stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing, stageKnobSize);
+    placeKnob(&stage4Bypass, stage4LP.getX(),                       stage4LP.getBottom(),                       stageKnobSize);
+    placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom(), stageKnobSize);
+    placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom(), stageKnobSize);
+    
+    placeKnob(&stage5LP,     stage5Label.getX() + knobCenterOffset, stage5Label.getBottom() + verticalSpacing, stageKnobSize);
+    placeKnob(&stage5Bias,   stage5LP.getX(),                       stage4Bias.getY(),                         stageKnobSize);
 }
 
 IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
 
     bypassButtonAttachment = std::make_unique<ButtonAttachment>(
-        audioProcessor.apvts, paramInfos[IR_ACTIVE].id.toString(), bypassToggle
+        audioProcessor.apvts, paramInfos[DO_IR].id.toString(), bypassToggle
     );
 
     irLoadButton.onClick = [&audioProcessor, this]() {
@@ -809,7 +822,7 @@ EQPage::EQPage(Editor *editor, Processor &p) :
     addAndMakeVisible(resetButton);
 
     EQToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[EQ_ACTIVE].id.toString(), EQToggle
+        p.apvts, paramInfos[DO_EQ].id.toString(), EQToggle
     );
 
 
@@ -854,7 +867,7 @@ void EQPage::resized() {
     EQToggle.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
     resetButton.setBounds(EQToggle.getBounds() + juce::Point(0, EQToggle.getHeight() + verticalSpacing));
     
-    placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing, verticalMargin, eqKnobSize);
+    placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing + 20, verticalMargin, eqKnobSize);
     placeKnob(&lowShelfGainKnob, lowShelfFreqKnob.getX(), lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
     placeKnob(&lowcutFreqKnob,   lowShelfFreqKnob.getX(), lowShelfGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
     
