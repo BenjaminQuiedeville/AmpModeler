@@ -58,6 +58,7 @@ enum Params {
     TIGHT,
 
     GATE_ACTIVE,
+    BOOST_ACTIVE,
     PREAMP_ACTIVE,
     TONESTACK_ACTIVE,
     EQ_ACTIVE,
@@ -136,9 +137,10 @@ static const ParameterInfo paramInfos[N_PARAMS] {
     { "TIGHT",                10.0f },
     
     { "GATE_ACTIVE",          1.0f },
+    { "BOOST_ACTIVE",         1.0f },
     { "PREAMP_ACTIVE",        1.0f },
     { "TONESTACK_ACTIVE",     1.0f },
-    { "EQ_ACTIVE",            1.0f },
+    { "EQ_ACTIVE",            0.0f },
     { "IR_ACTIVE",            1.0f },
     
     { "BRIGHT_CAP",           1.0f },
@@ -283,10 +285,11 @@ struct Processor  : public juce::AudioProcessor,
     float *sideChainBuffer = nullptr;
     
     u8 channelConfig = Mono;    
-    bool gateActive = true;
-    bool preampActive = true;
-    bool tonestackActive = true;
-    bool EQActive = true;
+    bool doGate = true;
+    bool doBoost = true;
+    bool doPreamp = true;
+    bool doTonestack = true;
+    bool doEQ = false;
     
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;

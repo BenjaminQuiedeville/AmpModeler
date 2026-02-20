@@ -222,21 +222,24 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     }
 
     /******PROCESS********/
-    if (gateActive) {
+    if (doGate) {
         noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+    }
+    
+    if (doBoost) {
         tightFilter.process(audioPtrL, audioPtrR, numSamples);
         biteFilter.process(audioPtrL, audioPtrR, numSamples);
     }
 
-    if (preampActive) {
+    if (doPreamp) {
         preamp.process(audioPtrL, audioPtrR, numSamples);
     }
 
-    if (tonestackActive) {
+    if (doTonestack) {
         toneStack.process(audioPtrL, audioPtrR, numSamples);
     }
 
-    if (preampActive) {
+    if (doPreamp) {
         resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
         presenceFilter.process(audioPtrL, audioPtrR, numSamples);
     }
@@ -244,7 +247,7 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     if (irLoader.active) {
         irLoader.process(audioPtrL, audioPtrR, numSamples);
     }
-    if (EQActive) {
+    if (doEQ) {
         EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
         EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
         EQ.lowMid.process(audioPtrL, audioPtrR, numSamples);
@@ -407,19 +410,19 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[GATE_ACTIVE].id) {
-        gateActive = (bool)newValue;
+        doGate = (bool)newValue;
     }
 
     if (id == paramInfos[PREAMP_ACTIVE].id) {
-        preampActive = (bool)newValue;
+        doPreamp = (bool)newValue;
     }
 
     if (id == paramInfos[TONESTACK_ACTIVE].id) {
-        tonestackActive = (bool)newValue;
+        doTonestack = (bool)newValue;
     }
 
     if (id == paramInfos[EQ_ACTIVE].id) {
-        EQActive = (bool)newValue;
+        doEQ = (bool)newValue;
     }
 
     if (id == paramInfos[IR_ACTIVE].id) {
@@ -710,6 +713,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[GATE_ACTIVE].id.toString(), "Activate Gate",
         (bool)paramInfos[GATE_ACTIVE].defaultValue
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        paramInfos[BOOST_ACTIVE].id.toString(), "Activate Boost",
+        (bool)paramInfos[BOOST_ACTIVE].defaultValue
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(

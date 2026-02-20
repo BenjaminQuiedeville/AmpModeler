@@ -100,16 +100,11 @@ struct GateBoostPage : public juce::Component {
 
     Knob inputGainKnob;
 
-    juce::TextButton gateToggle {"Activate Gate/Boost"};
-    juce::TextButton preampToggle {"Activate Preamp"};
-    juce::TextButton tonestackToggle {"Activate Tonestack"};
-    juce::TextButton EQToggle {"Activate EQ"};
-
+    juce::TextButton gateToggle {"Bypass Gate"};
     std::unique_ptr<ButtonAttachment> gateToggleAttachment;
-    std::unique_ptr<ButtonAttachment> preampToggleAttachment;
-    std::unique_ptr<ButtonAttachment> tonestackToggleAttachment;
-    std::unique_ptr<ButtonAttachment> EQToggleAttachment;
 
+    juce::TextButton boostToggle {"Bypass Boost"};
+    std::unique_ptr<ButtonAttachment> boostToggleAttachment;
 };
 
 
@@ -122,6 +117,15 @@ struct AmplifierPage : public juce::Component {
     }
 
     Editor *main_editor = nullptr;
+
+    juce::TextButton preampToggle {"Activate Preamp"};
+    std::unique_ptr<ButtonAttachment> preampToggleAttachment;
+
+    juce::TextButton tonestackToggle {"Activate Tonestack"};
+    std::unique_ptr<ButtonAttachment> tonestackToggleAttachment;
+
+    juce::TextButton brightToggle {"Bright Switch"};
+    std::unique_ptr<ButtonAttachment> brightToggleAttachment;
 
     Knob gain1Knob;
     Knob gain2Knob;
@@ -137,9 +141,6 @@ struct AmplifierPage : public juce::Component {
     ComboBox ampChannelBox;
     ComboBox toneStackModelBox;
     ComboBox stereoSettingBox;
-
-    juce::TextButton brightToggle {"Bright Switch"};
-    std::unique_ptr<ButtonAttachment> brightToggleAttachment;
 };
 
 
@@ -158,6 +159,8 @@ struct GainStagesPage : public juce::Component {
     juce::Label stage2Label {"STAGE_2_LABEL", "Stage 2\nChannel 1"};
     juce::Label stage3Label {"STAGE_3_LABEL", "Stage 3\nChannel 2"};
     juce::Label stage4Label {"STAGE_4_LABEL", "Stage 4\nChannel 3"};
+
+    ComboBox ampChannelBox;
     
     Knob stage1LP;
     Knob stage1Bypass;
@@ -199,7 +202,7 @@ struct IRLoaderPage : public juce::Component {
 
     juce::TextButton defaultIRButton {"Load default IR"};
 
-    juce::TextButton bypassToggle {"Activate IRloader"};
+    juce::TextButton bypassToggle {"Bypass IRloader"};
     std::unique_ptr<ButtonAttachment> bypassButtonAttachment;
 };
 
@@ -216,6 +219,9 @@ struct EQPage : public juce::Component {
     Editor *main_editor = nullptr;
 
     juce::TextButton resetButton {"Reset Gains"};
+
+    juce::TextButton EQToggle {"Activate EQ"};
+    std::unique_ptr<ButtonAttachment> EQToggleAttachment;
 
     Knob lowcutFreqKnob;
 

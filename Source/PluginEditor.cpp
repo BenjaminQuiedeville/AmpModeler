@@ -306,90 +306,40 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     inputGainKnob(  "INPUT_GAIN_KNOB_LABEL",   "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
 
 {
+    this->main_editor = editor; 
+
     gateToggleAttachment = std::make_unique<ButtonAttachment>(
         p.apvts, paramInfos[GATE_ACTIVE].id.toString(), gateToggle
     );
-    preampToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[PREAMP_ACTIVE].id.toString(), preampToggle
-    );
-    tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[TONESTACK_ACTIVE].id.toString(), tonestackToggle
-    );
-    EQToggleAttachment = std::make_unique<ButtonAttachment>(
-        p.apvts, paramInfos[EQ_ACTIVE].id.toString(), EQToggle
-    );
-
-    this->main_editor = editor; 
 
     gateToggle.setToggleable(true);
-    preampToggle.setToggleable(true);
-    tonestackToggle.setToggleable(true);
-    EQToggle.setToggleable(true);
-
     gateToggle.setClickingTogglesState(true);
-    preampToggle.setClickingTogglesState(true);
-    tonestackToggle.setClickingTogglesState(true);
-    EQToggle.setClickingTogglesState(true);
 
     // disable/enable the matching knobs on the different pages
     gateToggle.onStateChange = [this]() {
         bool state = gateToggle.getToggleState();
         
         gateKnob.setEnabled(state);
+    };
+        
+    addAndMakeVisible(gateToggle);
+    
+    boostToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[BOOST_ACTIVE].id.toString(), boostToggle
+    );
+    
+    boostToggle.setToggleable(true);
+    boostToggle.setClickingTogglesState(true);
+    
+    boostToggle.onStateChange = [this]() {
+        bool state = boostToggle.getToggleState();
+        
         boostAttackKnob.setEnabled(state);
         boostFreqKnob.setEnabled(state);
-        boostTightKnob.setEnabled(state);
-        inputGainKnob.setEnabled(state);
+        boostTightKnob.setEnabled(state);        
     };
     
-    
-    preampToggle.onStateChange = [this, editor]() {
-        bool state = preampToggle.getToggleState();
-        
-        editor->ampPage.gain1Knob.setEnabled(state);
-        editor->ampPage.gain2Knob.setEnabled(state);
-        editor->ampPage.inputFilterKnob.setEnabled(state);
-        editor->ampPage.preampVolumeKnob.setEnabled(state);
-
-        editor->ampPage.resonanceKnob.setEnabled(state);
-        editor->ampPage.presenceKnob.setEnabled(state);
-
-        editor->ampPage.ampChannelBox.setEnabled(state);
-        editor->ampPage.toneStackModelBox.setEnabled(state);
-    };
-    
-    tonestackToggle.onStateChange = [this, editor]() {
-        bool state = tonestackToggle.getToggleState();
-
-        editor->ampPage.bassEQKnob.setEnabled(state);
-        editor->ampPage.midEQKnob.setEnabled(state);
-        editor->ampPage.trebbleEQKnob.setEnabled(state);
-    };
-    
-    EQToggle.onStateChange = [this, editor]() {
-        bool state = EQToggle.getToggleState();
-
-        editor->eqPage.lowcutFreqKnob.setEnabled(state);
-        editor->eqPage.lowShelfFreqKnob.setEnabled(state);
-        editor->eqPage.lowShelfGainKnob.setEnabled(state);
-        editor->eqPage.lowMidFreqKnob.setEnabled(state);
-        editor->eqPage.lowMidGainKnob.setEnabled(state);
-        editor->eqPage.lowMidQKnob.setEnabled(state);
-        editor->eqPage.midFreqKnob.setEnabled(state);
-        editor->eqPage.midGainKnob.setEnabled(state);
-        editor->eqPage.midQKnob.setEnabled(state);
-        editor->eqPage.highFreqKnob.setEnabled(state);
-        editor->eqPage.highGainKnob.setEnabled(state);
-        editor->eqPage.highQKnob.setEnabled(state);
-        editor->eqPage.highShelfFreqKnob.setEnabled(state);
-        editor->eqPage.highShelfGainKnob.setEnabled(state);
-        editor->eqPage.highCutFreqKnob.setEnabled(state);
-    };
-
-    addAndMakeVisible(gateToggle);
-    addAndMakeVisible(preampToggle);
-    addAndMakeVisible(tonestackToggle);
-    addAndMakeVisible(EQToggle);
+    addAndMakeVisible(boostToggle);
 }
 
 
@@ -416,12 +366,30 @@ void GateBoostPage::resized() {
     placeKnob(&boostFreqKnob, computeXcoord(3, width), computeYcoord(0, height), knobSize);
     placeKnob(&boostTightKnob, computeXcoord(2, width), computeYcoord(1, height), knobSize);
 
-    gateToggle.setBounds(computeXcoord(4, width), computeYcoord(0, height), 200, 30);
-    preampToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 20));
-    tonestackToggle.setBounds(preampToggle.getBounds() + juce::Point(0, preampToggle.getHeight() + 20));
-    EQToggle.setBounds(tonestackToggle.getBounds() + juce::Point(0, tonestackToggle.getHeight() + 20));
+    gateToggle.setBounds(boostFreqKnob.getRight() + 10, boostFreqKnob.getY() + 10, 130, 30);
+    boostToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 10));
 }
 
+
+static void updateGainStageKnobsState(Editor *editor, int channel) {
+    
+    editor->gainStagesPage.stage2LP.setEnabled(channel >= 1);
+    editor->gainStagesPage.stage2Bypass.setEnabled(channel > 1);
+    editor->gainStagesPage.stage2Bias.setEnabled(channel >= 1);
+    editor->gainStagesPage.stage2Gain.setEnabled(channel > 1);
+    
+    editor->gainStagesPage.stage3LP.setEnabled(channel >= 2);
+    editor->gainStagesPage.stage3Bypass.setEnabled(channel > 2);
+    editor->gainStagesPage.stage3Bias.setEnabled(channel >= 2);
+    editor->gainStagesPage.stage3Gain.setEnabled(channel > 2);
+    
+    editor->gainStagesPage.stage4LP.setEnabled(channel >= 3);
+    editor->gainStagesPage.stage4Bypass.setEnabled(channel > 3);
+    editor->gainStagesPage.stage4Bias.setEnabled(channel >= 3);
+    editor->gainStagesPage.stage4Gain.setEnabled(channel > 3);
+    
+    editor->ampPage.gain2Knob.setEnabled(channel > 1);
+}
 
 AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     gain1Knob(         "GAIN1_KNOB_LABEL",         "Gain 1",          this, paramInfos[GAIN1].id.toString(),             p.apvts, ""),
@@ -437,8 +405,54 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     toneStackModelBox( "TONE_MODEL_BOX_LABEL",     "Tonestack Model", this, paramInfos[TONESTACK_MODEL].id.toString(),   p.apvts),
     stereoSettingBox(  "CHANNEL_CONFIG_BOX_LABEL", "Channel config",  this, paramInfos[CHANNEL_CONFIG].id.toString(),    p.apvts)
 {
+    this->main_editor = editor;
+
     gain1Knob.setNumDecimalPlacesToDisplay(2);
     gain2Knob.setNumDecimalPlacesToDisplay(2);
+
+    preampToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[PREAMP_ACTIVE].id.toString(), preampToggle
+    );
+
+    preampToggle.setToggleable(true);
+    preampToggle.setClickingTogglesState(true);
+    
+    preampToggle.onStateChange = [this, editor]() {
+        bool state = preampToggle.getToggleState();
+        
+        editor->ampPage.gain1Knob.setEnabled(state);
+        editor->ampPage.gain2Knob.setEnabled(state);
+        editor->ampPage.inputFilterKnob.setEnabled(state);
+        editor->ampPage.preampVolumeKnob.setEnabled(state);
+
+        editor->ampPage.resonanceKnob.setEnabled(state);
+        editor->ampPage.presenceKnob.setEnabled(state);
+
+        editor->ampPage.ampChannelBox.setEnabled(state);
+        editor->ampPage.toneStackModelBox.setEnabled(state);
+        
+        updateGainStageKnobsState(editor, ampChannelBox.getSelectedId());
+    };
+
+
+    addAndMakeVisible(preampToggle);
+
+    tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[TONESTACK_ACTIVE].id.toString(), tonestackToggle
+    );
+    
+    tonestackToggle.setToggleable(true);
+    tonestackToggle.setClickingTogglesState(true);
+
+    tonestackToggle.onStateChange = [this, editor]() {
+        bool state = tonestackToggle.getToggleState();
+
+        editor->ampPage.bassEQKnob.setEnabled(state);
+        editor->ampPage.midEQKnob.setEnabled(state);
+        editor->ampPage.trebbleEQKnob.setEnabled(state);
+    };
+
+    addAndMakeVisible(tonestackToggle);
 
     ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
     ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
@@ -446,23 +460,8 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     
     ampChannelBox.onChange = [this, editor]() {
         int channel = ampChannelBox.getSelectedId();
-        
-        editor->gainStagesPage.stage2LP.setEnabled(channel >= 1);
-        editor->gainStagesPage.stage2Bypass.setEnabled(channel > 1);
-        editor->gainStagesPage.stage2Bias.setEnabled(channel >= 1);
-        editor->gainStagesPage.stage2Gain.setEnabled(channel > 1);
-        gain2Knob.setEnabled(channel > 1);
-        
-        editor->gainStagesPage.stage3LP.setEnabled(channel >= 2);
-        editor->gainStagesPage.stage3Bypass.setEnabled(channel > 2);
-        editor->gainStagesPage.stage3Bias.setEnabled(channel >= 2);
-        editor->gainStagesPage.stage3Gain.setEnabled(channel > 2);
-        
-        editor->gainStagesPage.stage4LP.setEnabled(channel >= 3);
-        editor->gainStagesPage.stage4Bypass.setEnabled(channel > 3);
-        editor->gainStagesPage.stage4Bias.setEnabled(channel >= 3);
-        editor->gainStagesPage.stage4Gain.setEnabled(channel > 3);
 
+        updateGainStageKnobsState(editor, channel);
     }; 
     
     toneStackModelBox.addItemList({"Normal", "Scooped", "Mids!"}, 1);
@@ -497,11 +496,16 @@ void AmplifierPage::resized() {
     stereoSettingBox.setBounds(horizontalMargin, verticalMargin + labelHeight, 120, 30);
     stereoSettingBox.label.setBounds(stereoSettingBox.getX(), stereoSettingBox.getY() - 20, knobSize, 20);
 
+    updateGainStageKnobsState(this->main_editor, ampChannelBox.getSelectedId());
     ampChannelBox.setBounds(stereoSettingBox.getRight() + 5, stereoSettingBox.getY(), 120, 30);
     ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20, knobSize, 20);
 
     toneStackModelBox.setBounds(ampChannelBox.getRight() + 5, ampChannelBox.getY(), 120, 30);
     toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, knobSize, 20);
+
+    preampToggle.setBounds(toneStackModelBox.getBounds() + juce::Point(toneStackModelBox.getWidth() + 10, 0));
+    tonestackToggle.setBounds(preampToggle.getBounds() + juce::Point(preampToggle.getWidth() + 10, 0));
+
 
     placeKnob(&gain1Knob, ampChannelBox.getX(), ampChannelBox.getBottom() + verticalSpacing + 10, knobSize);
     placeKnob(&gain2Knob, gain1Knob.getX(), gain1Knob.getBottom() + verticalSpacing, knobSize);
@@ -539,8 +543,12 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage4LP(      "STAGE4_LP_SLIDER_LABEL",      "Output filter",   this, paramInfos[STAGE4_LP].id.toString(),     p.apvts, " Hz"),
     stage4Bypass(  "STAGE4_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE4_BYPASS].id.toString(), p.apvts, " dB"),
     stage4Bias(    "STAGE4_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE4_BIAS].id.toString(),   p.apvts, ""),
-    stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, "")
+    stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, ""),
+    ampChannelBox( "AMP_CHANNEL_BOX_LABEL2",      "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),       p.apvts)
+
 {
+    this->main_editor = editor;
+    
     resetButton.onClick = [&p, this]() {
     
         Knob* slider_refs[] = { 
@@ -558,6 +566,17 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     
     addAndMakeVisible(resetButton);
     
+    
+    ampChannelBox.addItemList({"Channel 1", "Channel 2", "Channel 3", "Channel 4"}, 1);
+    ampChannelBox.setSelectedId((int)*p.apvts.getRawParameterValue(paramInfos[CHANNEL].id),
+                                 juce::NotificationType::dontSendNotification);
+    
+    ampChannelBox.onChange = [this, editor]() {
+        int channel = ampChannelBox.getSelectedId();
+
+        updateGainStageKnobsState(editor, channel);
+    }; 
+
     stage1Label.setJustificationType(juce::Justification::centred);
     stage2Label.setJustificationType(juce::Justification::centred);
     stage3Label.setJustificationType(juce::Justification::centred);
@@ -583,8 +602,11 @@ void GainStagesPage::resized() {
     // stage1LPSlider.setBounds(50, verticalMargin, sliderWidth, sliderHeight);
     // stage1LPSlider.label.setBounds(stage1LPSlider.getX(), stage1LPSlider.getY() - 15, sliderWidth, 20);
 
-    resetButton.setBounds(horizontalMargin, verticalMargin + 10, 100, 30);
+    updateGainStageKnobsState(main_editor, ampChannelBox.getSelectedId());
 
+    ampChannelBox.setBounds(horizontalMargin, verticalMargin + 10, 100, 30);
+    resetButton.setBounds(ampChannelBox.getBounds() + juce::Point(0, ampChannelBox.getHeight() + 10)); 
+    
     stage1Label.setBounds(resetButton.getRight() + horizontalSpacing, verticalMargin - 10, labelWidth, 40);
     stage2Label.setBounds(stage1Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
     stage3Label.setBounds(stage2Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
@@ -785,6 +807,37 @@ EQPage::EQPage(Editor *editor, Processor &p) :
     };
 
     addAndMakeVisible(resetButton);
+
+    EQToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[EQ_ACTIVE].id.toString(), EQToggle
+    );
+
+
+    EQToggle.setToggleable(true);
+    EQToggle.setClickingTogglesState(true);
+
+    EQToggle.onStateChange = [this, editor]() {
+        bool state = EQToggle.getToggleState();
+
+        editor->eqPage.lowcutFreqKnob.setEnabled(state);
+        editor->eqPage.lowShelfFreqKnob.setEnabled(state);
+        editor->eqPage.lowShelfGainKnob.setEnabled(state);
+        editor->eqPage.lowMidFreqKnob.setEnabled(state);
+        editor->eqPage.lowMidGainKnob.setEnabled(state);
+        editor->eqPage.lowMidQKnob.setEnabled(state);
+        editor->eqPage.midFreqKnob.setEnabled(state);
+        editor->eqPage.midGainKnob.setEnabled(state);
+        editor->eqPage.midQKnob.setEnabled(state);
+        editor->eqPage.highFreqKnob.setEnabled(state);
+        editor->eqPage.highGainKnob.setEnabled(state);
+        editor->eqPage.highQKnob.setEnabled(state);
+        editor->eqPage.highShelfFreqKnob.setEnabled(state);
+        editor->eqPage.highShelfGainKnob.setEnabled(state);
+        editor->eqPage.highCutFreqKnob.setEnabled(state);
+    };
+
+    addAndMakeVisible(EQToggle);
+
 }
 
 void EQPage::resized() {
@@ -798,7 +851,8 @@ void EQPage::resized() {
     static const int verticalSpacing = 5;
     static const int horizontalSpacing = 0;
     
-    resetButton.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
+    EQToggle.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
+    resetButton.setBounds(EQToggle.getBounds() + juce::Point(0, EQToggle.getHeight() + verticalSpacing));
     
     placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing, verticalMargin, eqKnobSize);
     placeKnob(&lowShelfGainKnob, lowShelfFreqKnob.getX(), lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
