@@ -109,6 +109,7 @@ struct Biquad {
                 a2 = -(float)(((A+1) - (A-1)*cosw0 - beta*sinw0) * a0inv);
                 break;
     
+            case BIQUAD_NFILTERTYPES:
             default:
                 b0 = 1.0f;
                 b1 = 0.0f;

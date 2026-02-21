@@ -126,6 +126,8 @@ struct Tonestack {
                 comps.C3 = 20e-9;
                 break; 
             }
+            case N_MODELS:
+            default: {}
         }
         
         model = newModel;

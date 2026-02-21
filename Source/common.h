@@ -36,7 +36,7 @@ typedef uint64_t u64;
 typedef int64_t  s64;
 
 #define min(x, y) (x) < (y) ? (x) : (y)
-#define max(x, y) (x) > (y) ? (x) : (y)   
+#define max(x, y) (x) > (y) ? (x) : (y)
 
 inline float dbtoa(float value) {
     return std::pow(10.0f, value/20.0f);
@@ -46,7 +46,7 @@ inline float atodb(float value) {
     return 20.0f * std::log10(value);
 }
 
-#define clip(x, min, max) ((x) > (max) ? (max) : (x) < (min) ? (min) : (x))
+#define CLIP(x, min, max) ((x) > (max) ? (max) : (x) < (min) ? (min) : (x))
 
 #define copyFloat(dest, source, nsamples)      memcpy(dest, source, (nsamples) * sizeof(float))
 #define memsetZeroFloat(ptr, nsamples)         memset(ptr, 0, (nsamples) * sizeof(float))
