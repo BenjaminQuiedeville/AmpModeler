@@ -7,111 +7,112 @@
 #pragma once
 
 #include "common.h"
-#include "SmoothParam.h"
 
-#define GATE_BUFFER_LENGTH_SECONDS 0.01
 
 struct NoiseGate {
     
     ~NoiseGate() {
-    
-        free(gateBuffer);
+        free(buffer.data);
     }
 
-
-    void prepareToPlay(float _samplerate) {
-
-        bool reallocBuffer = _samplerate != samplerate;
-
-        samplerate = _samplerate;
-        gateBufferLength = (u32)(samplerate * GATE_BUFFER_LENGTH_SECONDS);
-        gateBufferIndex = 0;
-        absoluteSum = 0.0;
-        threshold = (float)dbtoa(-75.0);
+    void prepareToPlay(float samplerate) {
+        local_const float gateBufferLengthMs = 10.0f;
+        
+        buffer.length = (u32)(samplerate * gateBufferLengthMs * 0.001f);
+        buffer.inv_length = 1.0f/(float)buffer.length;
+        buffer.index = 0;
+        runningSum = 0.0;
+        threshold = dbtoa(-75.0f);
         returnGain = threshold;
+        holdCounter = 0;
         isOpen = false;
 
-        if (gateBuffer == nullptr) {
-            gateBuffer = (float *)calloc(gateBufferLength, sizeof(float));
-
-        } else {
-            
-            if (reallocBuffer) {
-                free(gateBuffer);
-                gateBuffer = (float*)calloc(gateBufferLength, sizeof(float));
-            }
-            FLOAT_CLEAR(gateBuffer, gateBufferLength);            
-        }
+        if (buffer.data) { free(buffer.data); }
+        buffer.data = allocFloat(buffer.length);
+        memsetZeroFloat(buffer.data, buffer.length);            
         
-        gateGain.init(0.0);
+        attackCoeff = 1.0f;
+        releaseCoeff = 1.0f;
+        gateGain = 0.0f;
     }
 
-    void process(float *bufferL, float *bufferR, float *sidechain, u32 nSamples) {
+    void process(float *bufferL, float *bufferR, float *sideChain, u32 nSamples) {
         ZoneScoped;
         
         for (u32 i = 0; i < nSamples; i++) {
             
-            absoluteSum -= std::abs(gateBuffer[gateBufferIndex]);
+            runningSum -= buffer.data[buffer.index];
             
-            gateBuffer[gateBufferIndex] = sidechain[i];
-            absoluteSum += std::abs(gateBuffer[gateBufferIndex]);
-            
-            gateBufferIndex++;
-            if (gateBufferIndex == gateBufferLength) { gateBufferIndex = 0; }
+            buffer.data[buffer.index] = sideChain[i] * sideChain[i];
+            runningSum += buffer.data[buffer.index];
+            if (runningSum < 0.0f) { runningSum = 0.0f; };            
+
+            buffer.index++;
+            if (buffer.index == buffer.length) { buffer.index = 0; }
 
             // if close && > thresh -> open 
             // if close && < thresh -> close
             // if open && > thresh - hyst -> open 
             // if open && < thresh -hyst -> close
             
+            float rms = sqrtf(runningSum * buffer.inv_length);
+            
             bool shouldOpen = false;
-            float amplitude = absoluteSum / (float)gateBufferLength;
-            
-            if (amplitude > threshold) { 
-                shouldOpen = true;  
+            if (rms > threshold) { 
+                shouldOpen = true; 
+                holdCounter = 0;
+            } else if (isOpen && rms > returnGain) { 
+                shouldOpen = true;
+                holdCounter = 0; 
+            } else if (isOpen && rms < returnGain) {
+                holdCounter++;
+                shouldOpen = true;
+                if (holdCounter >= holdCounterMax) { 
+                    holdCounter = 0;
+                    shouldOpen = false; 
+                }
+            } else {
+                holdCounter = 0;
             }
-            
-            if (isOpen && amplitude > returnGain) { 
-                shouldOpen = true;  
-            }
-            
-            if (amplitude < returnGain) { 
-                shouldOpen = false; 
-            }
-            
-            if (shouldOpen && !isOpen) {
-                gateGain.newTarget(1.0f, attackTimeMs, samplerate);
-                isOpen = true;
-                
-            } else if (!shouldOpen && isOpen) {
-                gateGain.newTarget(0.0f, releaseTimeMs, samplerate);
+                                    
+            float gainCoeff = 0.0f;
+            float target = 0.0f;
+            if (shouldOpen) {
+                gainCoeff = attackCoeff;
+                target = 1.0f;
+                isOpen = true;                                
+            } else {
+                gainCoeff = releaseCoeff;
+                target = 0.0f;
                 isOpen = false;
             }
-            
-            float gateGainValue = gateGain.nextValue(); 
-            
-            bufferL[i] *= gateGainValue;
+                        
+            gateGain = (1.0f - gainCoeff) * gateGain + gainCoeff * target;
+                        
+            bufferL[i] *= gateGain;
             
             if (bufferR) {
-                bufferR[i] *= gateGainValue;
+                bufferR[i] *= gateGain;
             }
         }
     }
 
-    float samplerate = 0.0;
     float threshold = 0.0;
-    
-    float *gateBuffer = nullptr;
-    u32 gateBufferLength = 0;
-    u32 gateBufferIndex = 0;
-    
-    float absoluteSum = 0.0;
-    
-    SmoothParamIIR gateGain;
-    
-    float attackTimeMs = 1.0;
-    float releaseTimeMs = 15.0;
-    float hysteresis = 0.0;
     float returnGain = 0.0;
-    bool   isOpen = false;
+    u32 holdCounter = 0;
+    u32 holdCounterMax = 48 * 5;
+    
+    float attackCoeff = 0.0f;
+    float releaseCoeff = 0.0f;
+    float gateGain = 0.0;
+    
+    bool isOpen = false;
+
+    float runningSum = 0.0f;
+    struct {
+        float *data = nullptr;
+        u32 index = 0;
+        u32 length = 0;
+        float inv_length = 0.0f;
+    } buffer;
 };

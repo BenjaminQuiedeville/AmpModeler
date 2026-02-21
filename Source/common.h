@@ -23,6 +23,9 @@
 
 // #define noinline __attribute__ ((noinline))
 
+#define local_const static const
+#define global_const static const
+
 typedef uint8_t  u8;
 typedef int8_t   s8;
 typedef uint16_t u16;
@@ -43,11 +46,12 @@ inline float atodb(float value) {
     return 20.0f * std::log10(value);
 }
 
-#define CLIP(x, min, max) (x > max ? max : x < min ? min : x)
+#define clip(x, min, max) ((x) > (max) ? (max) : (x) < (min) ? (min) : (x))
 
-#define FLOAT_COPY(dest, source, nsamples) memcpy(dest, source, nsamples * sizeof(float))
-#define FLOAT_CLEAR(ptr, nsamples)         memset(ptr, 0, nsamples * sizeof(float))
+#define copyFloat(dest, source, nsamples)      memcpy(dest, source, (nsamples) * sizeof(float))
+#define memsetZeroFloat(ptr, nsamples)         memset(ptr, 0, (nsamples) * sizeof(float))
 
+#define allocFloat(nelems) (float*)calloc((nelems), sizeof(float))
 
 static inline float scale(float x, float min, float max, float newmin, float newmax, float curve) {
     return std::pow((x - min) / (max - min), curve) * (newmax - newmin) + newmin;

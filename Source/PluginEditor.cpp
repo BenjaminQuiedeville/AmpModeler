@@ -175,8 +175,7 @@ void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width,
     // g.fillEllipse(juce::Rectangle<float>(static_cast<float>(thumbWidth), static_cast<float>(thumbWidth)).withCentre(maxPoint));
 }
 
-juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
-{
+juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider) {
     // 1. compute the actually visible textBox size from the slider textBox size and some additional constraints
 
     int minXSpace = 0;
@@ -189,8 +188,8 @@ juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
     auto localBounds = slider.getLocalBounds();
     auto sliderBounds = slider.getBounds();
 
-    static const int textBoxWidth = 120;
-    static const int textBoxHeight = 30;
+    local_const int textBoxWidth = 120;
+    local_const int textBoxHeight = 30;
 
     juce::Slider::SliderLayout layout;
     
@@ -296,14 +295,15 @@ void AmpModelerLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button,
 
 
 GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
-    gateKnob(       "GATE_KNOB_LABEL",         "Gate Thresh",     this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
-    // gateAttackKnob( "GATE_Attack_LABEL",       "Gate Attack",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
-    // gateReleaseKnob("GATE_RELEASE_LABEL",      "Gate Release",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
-    // gateReturnKnob( "GATE_RETURN_LABEL",       "Gate Hysteresis", this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
-    boostAttackKnob("BOOST_ATTACK_KNOB_LABEL", "Boost Top",       this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
-    boostFreqKnob(  "BOOST_FREQ_KNOB_LABEL",   "Boost Freq",      this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
-    boostTightKnob( "BOOST_TIGHT_KNOB_LABEL",  "Boost Tight",     this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
-    inputGainKnob(  "INPUT_GAIN_KNOB_LABEL",   "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
+    gateKnob(            "GATE_KNOB_LABEL",         "Threshold",       this, paramInfos[GATE_THRESH].id.toString(),     p.apvts, " dB"),
+    gateAttackKnob(      "GATE_Attack_LABEL",       "Attack Time",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
+    gateReleaseKnob(     "GATE_RELEASE_LABEL",      "Release Time",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
+    gateHysteresisKnob(  "GATE_RETURN_LABEL",       "Hysteresis",      this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
+    gateHoldKnob(        "GATE_HOLD_LABEL",         "Hold Time ",      this, paramInfos[GATE_HOLD].id.toString(),     p.apvts, " ms"),
+    boostVolumeKnob(     "BOOST_ATTACK_KNOB_LABEL", "Volume",          this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
+    boostFreqKnob(       "BOOST_FREQ_KNOB_LABEL",   "Frequency",       this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
+    boostTightKnob(      "BOOST_TIGHT_KNOB_LABEL",  "Tight",           this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
+    inputGainKnob(       "INPUT_GAIN_KNOB_LABEL",   "Input Gain",      this, paramInfos[INPUT_GAIN].id.toString(),      p.apvts, " dB")
 
 {
     this->main_editor = editor; 
@@ -320,6 +320,10 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
         bool state = gateToggle.getToggleState();
         
         gateKnob.setEnabled(state);
+        gateAttackKnob.setEnabled(state);
+        gateReleaseKnob.setEnabled(state);
+        gateHysteresisKnob.setEnabled(state);
+        gateHoldKnob.setEnabled(state);
     };
         
     addAndMakeVisible(gateToggle);
@@ -334,7 +338,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     boostToggle.onStateChange = [this]() {
         bool state = boostToggle.getToggleState();
         
-        boostAttackKnob.setEnabled(state);
+        boostVolumeKnob.setEnabled(state);
         boostFreqKnob.setEnabled(state);
         boostTightKnob.setEnabled(state);        
     };
@@ -348,26 +352,22 @@ void GateBoostPage::resized() {
 
     int width = getWidth();
     int height = getHeight();
+    
+    local_const int horizontalSpacing = 10;
+    
+    placeKnob(&inputGainKnob, horizontalMargin, verticalMargin, knobSize);
 
-    placeKnob(&inputGainKnob, computeXcoord(0, width), computeYcoord(0, height), knobSize);
-    placeKnob(&gateKnob, computeXcoord(0, width), computeYcoord(1, height), knobSize);
+    gateToggle.setBounds(inputGainKnob.getRight() + 10, inputGainKnob.getY(), 130, 30);
+    placeKnob(&gateKnob, gateToggle.getX(), gateToggle.getBottom() + 20, knobSize);
+    placeKnob(&gateHysteresisKnob, gateKnob.getX(), gateKnob.getBottom(), knobSize);
+    placeKnob(&gateAttackKnob, gateKnob.getRight() + horizontalSpacing, gateKnob.getY(), knobSize);
+    placeKnob(&gateReleaseKnob, gateAttackKnob.getX(), gateAttackKnob.getBottom(), knobSize);
+    placeKnob(&gateHoldKnob, gateReleaseKnob.getX(), gateReleaseKnob.getBottom(), knobSize);
+    boostToggle.setBounds(gateToggle.getRight() + 120, gateToggle.getY(), 130, 30);  
+    placeKnob(&boostVolumeKnob, boostToggle.getX(), boostToggle.getBottom() + 20, knobSize);
+    placeKnob(&boostFreqKnob, boostVolumeKnob.getRight() + horizontalSpacing, boostVolumeKnob.getY(), knobSize);
+    placeKnob(&boostTightKnob, boostVolumeKnob.getX(),  boostVolumeKnob.getBottom(), knobSize);
 
-    // gateAttackKnob.setBounds(computeXcoord(1, width), computeYcoord(0, height), knobSize, knobSize);
-    // gateAttackKnob.label.setBounds(gateAttackKnob.getX(), gateAttackKnob.getY() - 15, knobSize, 20);
-
-    // gateReleaseKnob.setBounds(computeXcoord(1, width), computeYcoord(1, height), knobSize, knobSize);
-    // gateReleaseKnob.label.setBounds(gateReleaseKnob.getX(), gateReleaseKnob.getY() - 15, knobSize, 20);
-
-    // gateReturnKnob.setBounds(computeXcoord(0, width), computeYcoord(1, height), knobSize, knobSize);
-    // gateReturnKnob.label.setBounds(gateReturnKnob.getX(), gateReturnKnob.getY() - 15, knobSize, 20);
-
-
-    placeKnob(&boostAttackKnob, computeXcoord(2, width), computeYcoord(0, height), knobSize);
-    placeKnob(&boostFreqKnob, computeXcoord(3, width), computeYcoord(0, height), knobSize);
-    placeKnob(&boostTightKnob, computeXcoord(2, width), computeYcoord(1, height), knobSize);
-
-    gateToggle.setBounds(boostFreqKnob.getRight() + 10, boostFreqKnob.getY() + 10, 130, 30);
-    boostToggle.setBounds(gateToggle.getBounds() + juce::Point(0, gateToggle.getHeight() + 10));
 }
 
 
@@ -492,9 +492,9 @@ void AmplifierPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    static const int labelHeight = 20;
-    static const int horizontalSpacing = 0;
-    static const int verticalSpacing = 20;
+    local_const int labelHeight = 20;
+    local_const int horizontalSpacing = 0;
+    local_const int verticalSpacing = 20;
         
     stereoSettingBox.setBounds(horizontalMargin, verticalMargin + labelHeight, 120, 30);
     stereoSettingBox.label.setBounds(stereoSettingBox.getX(), stereoSettingBox.getY() - 20, knobSize, 20);
@@ -600,12 +600,12 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    static const int horizontalSpacing = 20;
-    static const int verticalSpacing = 10;
-    static const int stageKnobSize = 95;
-    static const int labelWidth = stageKnobSize;
+    local_const int horizontalSpacing = 20;
+    local_const int verticalSpacing = 10;
+    local_const int stageKnobSize = 95;
+    local_const int labelWidth = stageKnobSize;
 
-    static const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
+    local_const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
     
     updateGainStageKnobsState(main_editor, ampChannelBox.getSelectedId());
 
@@ -773,8 +773,8 @@ void IRLoaderPage::resized() {
     int width = getWidth();
     int height = getHeight();
     
-    static const int horizontalSpacing = 10;
-    static const int verticalSpacing = 10;
+    local_const int horizontalSpacing = 10;
+    local_const int verticalSpacing = 10;
 
     irLoadButton.setBounds(horizontalMargin, verticalMargin, 100, 50);
 
@@ -859,10 +859,10 @@ void EQPage::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    static const int eqKnobSize = 100;
-    static const int labelHeight = 20;
-    static const int verticalSpacing = 5;
-    static const int horizontalSpacing = 0;
+    local_const int eqKnobSize = 100;
+    local_const int labelHeight = 20;
+    local_const int verticalSpacing = 5;
+    local_const int horizontalSpacing = 0;
     
     EQToggle.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
     resetButton.setBounds(EQToggle.getBounds() + juce::Point(0, EQToggle.getHeight() + verticalSpacing));

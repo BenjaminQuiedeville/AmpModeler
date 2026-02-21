@@ -10,21 +10,21 @@
 
 #include "PluginProcessor.h"
 
-const juce::Colour backgroundColor {0xFF0F0F0F}; // noir sombre
-const juce::Colour widgetColor     {0xFF232D3F}; // gris bleuté
-const juce::Colour accentColor1    {0XFF005B41}; // vert bouteille
-const juce::Colour accentColor2    {0XFF008170}; // bleu plus clair
+global_const juce::Colour backgroundColor {0xFF0F0F0F}; // noir sombre
+global_const juce::Colour widgetColor     {0xFF232D3F}; // gris bleuté
+global_const juce::Colour accentColor1    {0XFF005B41}; // vert bouteille
+global_const juce::Colour accentColor2    {0XFF008170}; // bleu plus clair
 
-static const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
+global_const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
 
-static const int knobSize = 100;
-static const int horizontalMargin = 25;
-static const int verticalMargin = 20;
-static const int nRows = 3;
-static const int nCols = 6;
+global_const int knobSize = 100;
+global_const int horizontalMargin = 25;
+global_const int verticalMargin = 20;
+global_const int nRows = 3;
+global_const int nCols = 6;
 
-static const int windoWidth = 850;
-static const int windowHeight = 450;
+global_const int windoWidth = 850;
+global_const int windowHeight = 450;
 
 struct AmpModelerLAF : public juce::LookAndFeel_V4 {
     
@@ -90,11 +90,12 @@ struct GateBoostPage : public juce::Component {
     Editor *main_editor = nullptr;
 
     Knob gateKnob;
-    // Knob gateAttackKnob;
-    // Knob gateReleaseKnob;
-    // Knob gateReturnKnob;
+    Knob gateAttackKnob;
+    Knob gateReleaseKnob;
+    Knob gateHysteresisKnob;
+    Knob gateHoldKnob;
 
-    Knob boostAttackKnob;
+    Knob boostVolumeKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
 

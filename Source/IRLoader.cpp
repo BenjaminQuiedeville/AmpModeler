@@ -200,7 +200,7 @@ IRLoaderError IRLoader::loadIR() {
         }
         
         free(irBuffer);
-        irBuffer = (float*)calloc(wav.totalPCMFrameCount, sizeof(float));
+        irBuffer = allocFloat(wav.totalPCMFrameCount);
         numFramesRead = drwav_read_pcm_frames_f32(&wav, wav.totalPCMFrameCount, irBuffer);
 
         assert(numFramesRead == wav.totalPCMFrameCount && "Error in decoding the wav file");
@@ -234,12 +234,12 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
         // for (u32 index = 0; index < fftSize-nSamples; index++) {
         //     fftInputBuffers[channelIndex][index] = fftInputBuffers[channelIndex][index + nSamples];
         // }
-        FLOAT_COPY(fftInputBuffers[channelIndex], fftInputBuffers[channelIndex]+nSamples, (fftSize-nSamples));
+        copyFloat(fftInputBuffers[channelIndex], fftInputBuffers[channelIndex]+nSamples, (fftSize-nSamples));
 
         // for (u32 index = 0; index < nSamples; index++) {
         //     fftInputBuffers[channelIndex][fftSize-nSamples + index] = inputBuffers[channelIndex][index];
         // }
-        FLOAT_COPY(fftInputBuffers[channelIndex]+fftSize-nSamples, inputBuffers[channelIndex], nSamples);
+        copyFloat(fftInputBuffers[channelIndex]+fftSize-nSamples, inputBuffers[channelIndex], nSamples);
 
 
         //shift the FDL
@@ -252,7 +252,7 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
 
         pffft_transform(fftSetup, fftInputBuffers[channelIndex], FDLs[channelIndex][0], nullptr, PFFFT_FORWARD);
 
-        FLOAT_CLEAR(convolutionDftResult, dftSize);
+        memsetZeroFloat(convolutionDftResult, dftSize);
 
         for (u32 part_index = 0; part_index < numIRParts; part_index++) {
             pffft_zconvolve_accumulate(fftSetup,

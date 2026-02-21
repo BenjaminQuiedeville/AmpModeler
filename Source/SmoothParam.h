@@ -27,7 +27,7 @@ struct SmoothParamLinear {
         isSmoothing = false;
         
         if (value_buffer_size != 0) {
-            value_buffer = (float*)calloc(value_buffer_size, sizeof(float));
+            value_buffer = allocFloat(value_buffer_size);
         }
     }
 

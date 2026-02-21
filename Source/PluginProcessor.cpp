@@ -139,7 +139,7 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     irLoader.init(samplerate, (u32)bufferSize);
 
     if (sideChainBuffer) { free(sideChainBuffer); }
-    sideChainBuffer = (float *)calloc((u32)bufferSize, sizeof(float));
+    sideChainBuffer = allocFloat((u32)bufferSize);
 
     initParameters();
 }
@@ -264,12 +264,12 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
 
     #if 0 // safety clip
     for (u32 index = 0; index < numSamples; index++) {
-        audioPtrL[index] = CLIP(audioPtrL[index], -1.0f, 1.0f);
+        audioPtrL[index] = clip(audioPtrL[index], -1.0f, 1.0f);
     }
 
     if (audioPtrR) {
         for (u32 index = 0; index < numSamples; index++) {
-            audioPtrR[index] = CLIP(audioPtrR[index], -1.0f, 1.0f);
+            audioPtrR[index] = clip(audioPtrR[index], -1.0f, 1.0f);
         }
     }
     #endif
@@ -357,35 +357,36 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     const auto id = juce::Identifier(parameterId);
 
-    if (id == paramInfos[GATE_THRESH].id
-        || id == paramInfos[GATE_RETURN].id)
-    {
-        float thresh     = *apvts.getRawParameterValue(paramInfos[GATE_THRESH].id);
-        float hysteresis = *apvts.getRawParameterValue(paramInfos[GATE_RETURN].id);
-
-        noiseGate.threshold  = (float)dbtoa(thresh);
-        noiseGate.hysteresis = newValue;
-        noiseGate.returnGain = dbtoa(thresh - hysteresis);
-
-        return;
-    }
 
     if (id == paramInfos[INPUT_GAIN].id) {
         inputGain.newTarget(dbtoa(newValue), SMOOTH_PARAM_TIME, samplerate);
         return;
     }
 
+    if (id == paramInfos[GATE_THRESH].id
+        || id == paramInfos[GATE_RETURN].id)
+    {
+        float thresh     = *apvts.getRawParameterValue(paramInfos[GATE_THRESH].id);
+        float hysteresis = *apvts.getRawParameterValue(paramInfos[GATE_RETURN].id);
+
+        noiseGate.threshold  = dbtoa(thresh);
+        noiseGate.returnGain = dbtoa(thresh - hysteresis);
+        return;
+    }
 
     if (id == paramInfos[GATE_ATTACK].id) {
-        noiseGate.attackTimeMs = newValue;
+        noiseGate.attackCoeff = std::sin((float)M_PI /(samplerate * newValue * 0.001f));
         return;
     }
 
     if (id == paramInfos[GATE_RELEASE].id) {
-        noiseGate.releaseTimeMs = newValue;
+        noiseGate.releaseCoeff = std::sin((float)M_PI /(samplerate * newValue * 0.001f));
         return;
     }
 
+    if (id == paramInfos[GATE_HOLD].id) {
+        noiseGate.holdCounterMax = (u32)(newValue * 0.001 * samplerate);
+    }
 
     if (id == paramInfos[SCREAMER_AMOUNT].id || id == paramInfos[SCREAMER_FREQ].id) {
 
@@ -690,8 +691,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[GATE_RETURN].id.toString(), "Hysteresis (not implemented)",
+        paramInfos[GATE_RETURN].id.toString(), "Hysteresis",
         juce::NormalisableRange<float>(0.0f, 20.0f, 0.1f, 1.0f), paramInfos[GATE_RETURN].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[GATE_HOLD].id.toString(), "Hold Time",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[GATE_HOLD].defaultValue, attributes
     ));
 
     // Input Boost params

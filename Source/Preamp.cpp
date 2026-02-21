@@ -63,13 +63,9 @@ void Preamp::prepareToPlay(float samplerate, u32 blockSize) {
     overSampler.downSampleFilter1.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
     overSampler.downSampleFilter2.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
 
-    if (upSampledBufferL) {
-        upSampledBufferL = (float *)realloc(upSampledBufferL, upBlockSize * sizeof(float) * 2);
-        upSampledBufferR = upSampledBufferL + upBlockSize;
-    } else {
-        upSampledBufferL = (float *)calloc(upBlockSize * 2,  sizeof(float));
-        upSampledBufferR = upSampledBufferL + upBlockSize;
-    }
+    if (upSampledBufferL) { free(upSampledBufferL); }
+    upSampledBufferL = allocFloat(upBlockSize * 2);
+    upSampledBufferR = upSampledBufferL + upBlockSize;
 }
 
 void Preamp::setBias(float bias, int tube_index) {
@@ -85,7 +81,7 @@ void Preamp::setBias(float bias, int tube_index) {
         default: { assert(false && "setBias: wrong tube_index"); }
     }
 
-    static const float positiveLinRange = 0.2f;
+    local_const float positiveLinRange = 0.2f;
 
     selected_stage_bias[0] = bias;
 
@@ -187,13 +183,13 @@ void Preamp::process(float *bufferL, float *bufferR, u32 nSamples) {
     {
         ZoneScopedN("Upsampling");
 
-        FLOAT_CLEAR(upBufferL, upNumSamples);
+        memsetZeroFloat(upBufferL, upNumSamples);
         for (u32 i = 0; i < nSamples; i++) {
             upBufferL[PREAMP_UP_SAMPLE_FACTOR*i] = bufferL[i];
         }
     
         if (bufferR) {
-            FLOAT_CLEAR(upBufferR, upNumSamples);
+            memsetZeroFloat(upBufferR, upNumSamples);
             for (u32 i = 0; i < nSamples; i++) {
                 upBufferR[PREAMP_UP_SAMPLE_FACTOR*i] = bufferR[i];
             }

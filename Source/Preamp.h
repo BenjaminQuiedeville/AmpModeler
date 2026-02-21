@@ -14,8 +14,8 @@
 #include <assert.h>
 #include <memory>
 
-static const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
-static const float tube_gain = 70.0f;
+global_const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
+global_const float tube_gain = 70.0f;
 
 struct Preamp {
     ~Preamp();

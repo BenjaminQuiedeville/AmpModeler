@@ -24,9 +24,9 @@
     #define JucePlugin_Name "AmpModeler"
 #endif
 
-static const float BOOST_BITE_Q        = 0.25f;
-static const float RESONANCE_FREQUENCY = 120.0f;
-static const float PRESENCE_FREQUENCY  = 500.0f;
+global_const float BOOST_BITE_Q        = 0.25f;
+global_const float RESONANCE_FREQUENCY = 120.0f;
+global_const float PRESENCE_FREQUENCY  = 500.0f;
 
 /*
 TODO : 
@@ -52,6 +52,7 @@ enum Params {
     GATE_ATTACK,
     GATE_RELEASE,
     GATE_RETURN,
+    GATE_HOLD,
     
     SCREAMER_AMOUNT,
     SCREAMER_FREQ,
@@ -122,29 +123,32 @@ enum Params {
     N_PARAMS
 };
 
+// ajouter les labels de display des params
+// le gui et les parametre generiques sont pas raccord
 struct ParameterInfo {
     juce::Identifier id;
     float defaultValue = 0.0f;
 };
 
-static const ParameterInfo paramInfos[N_PARAMS] {
+global_const ParameterInfo paramInfos[N_PARAMS] {
     { "INPUT_GAIN",           0.0f },
     
     { "GATE_THRESH",          -75.0f },
     { "GATE_ATTACK",          1.0f },
     { "GATE_RELEASE",         15.0f },
     { "GATE_RETURN",          0.0f },
+    { "GATE_HOLD",          0.0f },
     
     { "SCREAMER_AMOUNT",      0.0f },
     { "SCEAMER_FREQ",         1300.0f },
     { "TIGHT",                10.0f },
     
-    { "DO_GATE",          1.0f },
-    { "DO_BOOST",         1.0f },
-    { "DO_PREAMP",        1.0f },
-    { "DO_TONESTACK",     1.0f },
-    { "DO_EQ",            0.0f },
-    { "DO_IR",            1.0f },
+    { "DO_GATE",              1.0f },
+    { "DO_BOOST",             1.0f },
+    { "DO_PREAMP",            1.0f },
+    { "DO_TONESTACK",         1.0f },
+    { "DO_EQ",                0.0f },
+    { "DO_IR",                1.0f },
     
     { "BRIGHT_CAP",           1.0f },
     { "CHANNEL",              3.0f },
