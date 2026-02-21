@@ -12,68 +12,74 @@
 struct NoiseGate {
     
     ~NoiseGate() {
-        free(rmsBuffer.data);
+        free(rms.buffer.dataL);
     }
 
     void prepareToPlay(float samplerate, u32 bufferSize) {
         local_const float gateBufferLengthMs = 10.0f;
         
-        rmsBuffer.length = (u32)(samplerate * gateBufferLengthMs * 0.001f);
-        rmsBuffer.inv_length = 1.0f/(float)rmsBuffer.length;
-        rmsBuffer.index = 0;
         runningSum = 0.0;
         threshold = dbtoa(-75.0f);
         returnGain = threshold;
         holdCounter = 0;
         isOpen = false;
 
-        if (rmsBuffer.data) { free(rmsBuffer.data); }
-        rmsBuffer.data = allocFloat(rmsBuffer.length);
-        memsetZeroFloat(rmsBuffer.data, rmsBuffer.length);
+        reallocMonoBuffer(&rms.buffer, (u32)(samplerate * gateBufferLengthMs * 0.001f));
         
-        if (gainBuffer.data) { free(gainBuffer.data); }
-        gainBuffer.size = bufferSize;
-        gainBuffer.data = allocFloat(gainBuffer.size);
-        memsetZeroFloat(gainBuffer.data, gainBuffer.size);
+        rms.inv_length = 1.0f/(float)rms.buffer.size;
+        rms.index = 0;
+
+        reallocMonoBuffer(&gainBuffer, bufferSize);
+        reallocMonoBuffer(&sideChain, bufferSize);
         
         attackCoeff = 1.0f;
         releaseCoeff = 1.0f;
         gateGain = 0.0f;
     }
 
-    void process(float *bufferL, float *bufferR, float *sideChain, u32 nSamples) {
+    void process(Slice buffer, ChannelConfig config) {
         ZoneScoped;
+           
+        if (config == Stereo) {
+            for (u32 index = 0; index < buffer.size; index++) {
+                sideChain.dataL[index] = (buffer.dataL[index] + buffer.dataR[index]) * 0.5f;
+            }
+        } else {
+            for (u32 index = 0; index < buffer.size; index++) {
+                sideChain.dataL[index] = buffer.dataL[index];
+            }
+        }
         
         // optimisations
         // calculer toutes les valeurs de rms et de gain dans un rmsBuffer
         // multiplier avec bufferL/bufferR à la fin (plus rapide)
         
-        for (u32 sampleIndex = 0; sampleIndex < nSamples; sampleIndex++) {
+        for (u32 sampleIndex = 0; sampleIndex < buffer.size; sampleIndex++) {
             
-            runningSum -= rmsBuffer.data[rmsBuffer.index];
+            runningSum -= rms.buffer.dataL[rms.index];
             
-            rmsBuffer.data[rmsBuffer.index] = sideChain[sampleIndex] * sideChain[sampleIndex];
-            runningSum += rmsBuffer.data[rmsBuffer.index];
+            rms.buffer.dataL[rms.index] = sideChain.dataL[sampleIndex] * sideChain.dataL[sampleIndex];
+            runningSum += rms.buffer.dataL[rms.index];
             if (runningSum < 0.0f) { runningSum = 0.0f; };            
 
-            rmsBuffer.index++;
-            if (rmsBuffer.index == rmsBuffer.length) { rmsBuffer.index = 0; }
+            rms.index++;
+            if (rms.index == rms.buffer.size) { rms.index = 0; }
 
             // if close && > thresh -> open 
             // if close && < thresh -> close
             // if open && > thresh - hyst -> open 
             // if open && < thresh -hyst -> close
             
-            float rms = sqrtf(runningSum * rmsBuffer.inv_length);
+            float rmsValue = sqrtf(runningSum * rms.inv_length);
             
             bool shouldOpen = false;
-            if (rms > threshold) { 
+            if (rmsValue > threshold) { 
                 shouldOpen = true; 
                 holdCounter = 0;
-            } else if (isOpen && rms > returnGain) { 
+            } else if (isOpen && rmsValue > returnGain) { 
                 shouldOpen = true;
                 holdCounter = 0; 
-            } else if (isOpen && rms < returnGain) {
+            } else if (isOpen && rmsValue < returnGain) {
                 holdCounter++;
                 shouldOpen = true;
                 if (holdCounter >= holdCounterMax) { 
@@ -98,16 +104,16 @@ struct NoiseGate {
                         
             gateGain = (1.0f - gainCoeff) * gateGain + gainCoeff * target;
                         
-            gainBuffer.data[sampleIndex] = gateGain;
+            gainBuffer.dataL[sampleIndex] = gateGain;
         }
         
-        for (u32 index = 0; index < nSamples; index++) {
-            bufferL[index] *= gainBuffer.data[index];
+        for (u32 index = 0; index < buffer.size; index++) {
+            buffer.dataL[index] *= gainBuffer.dataL[index];
         }        
     
-        if (bufferR) {
-            for (u32 index = 0; index < nSamples; index++) {
-                bufferR[index] *= gainBuffer.data[index];
+        if (buffer.dataR) {
+            for (u32 index = 0; index < buffer.size; index++) {
+                buffer.dataR[index] *= gainBuffer.dataL[index];
             }        
         }
     }
@@ -123,16 +129,13 @@ struct NoiseGate {
     
     bool isOpen = false;
 
-    struct {
-        float *data = nullptr;
-        u32 size = 0;
-    } gainBuffer;
+    Slice gainBuffer = {};
+    Slice sideChain = {};
 
     float runningSum = 0.0f;
     struct {
-        float *data = nullptr;
+        Slice buffer = {};
         u32 index = 0;
-        u32 length = 0;
         float inv_length = 0.0f;
-    } rmsBuffer;
+    } rms;
 };

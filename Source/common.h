@@ -72,16 +72,38 @@ static inline u64 nextPowTwo(u64 n) {
     return n;
 }
 
-static inline void applyGainLinear(float gain, float *bufferL, float *bufferR, u32 nSamples) {
+enum ChannelConfig : u8 {
+    Mono, 
+    FakeStereo, 
+    Stereo
+};
+
+
+
+struct Slice {
+    float *dataL = nullptr;
+    float *dataR = nullptr;
+    u32 size = 0;
+};
+
+static void reallocMonoBuffer(Slice *buffer, u32 size) {
+    if (buffer->dataL) { free(buffer->dataL); }
+    buffer->size = size;
+    buffer->dataL = allocFloat(buffer->size);
+    memsetZeroFloat(buffer->dataL, buffer->size);
+}
+
+static inline void applyGainLinear(Slice buffer,float gain) {
     ZoneScoped;
-    for (u32 index = 0; index < nSamples; index++) {
-        bufferL[index] *= gain;
+    for (u32 index = 0; index < buffer.size; index++) {
+        buffer.dataL[index] *= gain;
     }
-    if (bufferR) {
-        for (u32 index = 0; index < nSamples; index++) {
-            bufferR[index] *= gain;
+    if (buffer.dataR) {
+        for (u32 index = 0; index < buffer.size; index++) {
+            buffer.dataR[index] *= gain;
         }
     }
 }
+
 
 #endif  // AMP_MODELER_COMMON

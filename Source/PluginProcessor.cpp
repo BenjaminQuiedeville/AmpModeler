@@ -176,7 +176,7 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 }
 #endif
 
-void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBuffer& midiMessages) {
     ZoneScoped;
 
     midiMessages;
@@ -185,104 +185,94 @@ void Processor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    u32 numSamples = (u32)buffer.getNumSamples();
+    u32 numSamples = (u32)juceBuffer.getNumSamples();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
-        buffer.clear (i, 0, (int)numSamples);
+        juceBuffer.clear (i, 0, (int)numSamples);
     }
 
-    float *audioPtrL = buffer.getWritePointer(0);
-    float *audioPtrR = buffer.getWritePointer(1);
-    assert(audioPtrL && "processBlock() : audioPtrL is Null");
-    assert(audioPtrR && "processBlock() : audioPtrR is Null");
+    Slice buffer = { juceBuffer.getWritePointer(0), juceBuffer.getWritePointer(1), numSamples };
 
-    u8 currentChannelConfig = channelConfig;
+    assert(buffer.dataL && "processBlock() : buffer.dataL is Null");
+    assert(buffer.dataR && "processBlock() : buffer.dataR is Null");
+
+    ChannelConfig currentChannelConfig = this->channelConfig;
 
     if (currentChannelConfig == Mono) {
-        audioPtrR = nullptr;
+        buffer.dataR = nullptr;
     }
 
     if (currentChannelConfig == FakeStereo) {
-        for (u32 i = 0; i < numSamples; i++) {
-            audioPtrR[i] = -audioPtrL[i];
+        for (u32 i = 0; i < buffer.size; i++) {
+            buffer.dataR[i] = -buffer.dataL[i];
         }
     }
 
 
-    inputGain.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
-
-    if (currentChannelConfig == Stereo) {
-        for (u32 i = 0; i < numSamples; i++) {
-            sideChainBuffer[i] = (audioPtrL[i] + audioPtrR[i]) * 0.5f;
-        }
-    } else {
-        for (u32 i = 0; i < numSamples; i++) {
-            sideChainBuffer[i] = audioPtrL[i];
-        }
-    }
+    inputGain.applySmoothGainLinear(buffer);
 
     /******PROCESS********/
     if (doGate) {
-        noiseGate.process(audioPtrL, audioPtrR, sideChainBuffer, numSamples);
+        noiseGate.process(buffer, currentChannelConfig);
     }
     
     if (doBoost) {
-        tightFilter.process(audioPtrL, audioPtrR, numSamples);
-        biteFilter.process(audioPtrL, audioPtrR, numSamples);
+        tightFilter.process(buffer);
+        biteFilter.process(buffer);
     }
 
     if (doPreamp) {
-        preamp.process(audioPtrL, audioPtrR, numSamples);
+        preamp.process(buffer);
     }
 
     if (doTonestack) {
-        toneStack.process(audioPtrL, audioPtrR, numSamples);
+        toneStack.process(buffer);
     }
 
     if (doPreamp) {
-        resonanceFilter.process(audioPtrL, audioPtrR, numSamples);
-        presenceFilter.process(audioPtrL, audioPtrR, numSamples);
+        resonanceFilter.process(buffer);
+        presenceFilter.process(buffer);
     }
 
     if (irLoader.active) {
-        irLoader.process(audioPtrL, audioPtrR, numSamples);
+        irLoader.process(buffer);
     }
     if (doEQ) {
-        EQ.lowCut.process(audioPtrL, audioPtrR, numSamples);
-        EQ.lowShelf.process(audioPtrL, audioPtrR, numSamples);
-        EQ.lowMid.process(audioPtrL, audioPtrR, numSamples);
-        EQ.mid.process(audioPtrL, audioPtrR, numSamples);
-        EQ.high.process(audioPtrL, audioPtrR, numSamples);
-        EQ.highShelf.process(audioPtrL, audioPtrR, numSamples);
-        EQ.highCut.process(audioPtrL, audioPtrR, numSamples);
+        EQ.lowCut.process(buffer);
+        EQ.lowShelf.process(buffer);
+        EQ.lowMid.process(buffer);
+        EQ.mid.process(buffer);
+        EQ.high.process(buffer);
+        EQ.highShelf.process(buffer);
+        EQ.highCut.process(buffer);
     }
     
     
-    applyGainLinear(dbtoa(-6.0), audioPtrL, audioPtrR, numSamples);
-    masterVolume.applySmoothGainLinear(audioPtrL, audioPtrR, numSamples);
+    applyGainLinear(buffer, dbtoa(-6.0));
+    masterVolume.applySmoothGainLinear(buffer);
 
 
     #if 0 // safety clip
-    for (u32 index = 0; index < numSamples; index++) {
-        audioPtrL[index] = clip(audioPtrL[index], -1.0f, 1.0f);
+    for (u32 index = 0; index < buffer.size; index++) {
+        buffer.dataL[index] = clip(buffer.dataL[index], -1.0f, 1.0f);
     }
 
-    if (audioPtrR) {
-        for (u32 index = 0; index < numSamples; index++) {
-            audioPtrR[index] = clip(audioPtrR[index], -1.0f, 1.0f);
+    if (buffer.dataR) {
+        for (u32 index = 0; index < buffer.size; index++) {
+            buffer.dataR[index] = clip(buffer.dataR[index], -1.0f, 1.0f);
         }
     }
     #endif
 
     if (currentChannelConfig == FakeStereo) {
-        for (u32 i = 0; i < numSamples; i++) {
-            audioPtrR[i] *= -1.0f;
+        for (u32 i = 0; i < buffer.size; i++) {
+            buffer.dataR[i] *= -1.0f;
         }
     }
 
     if (currentChannelConfig == Mono) {
-        // copy left channel into right channel if processing is in mono
-        buffer.copyFrom(1, 0, buffer, 0, 0, (int)numSamples);
+        float *rightChannel = juceBuffer.getWritePointer(1);
+        copyFloat(rightChannel, buffer.dataL, buffer.size);
     }
 
     FrameMark;
@@ -656,7 +646,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[CHANNEL_CONFIG].id) {
-        channelConfig = (u8)newValue;
+        channelConfig = (ChannelConfig)newValue;
         return;
     }
 }

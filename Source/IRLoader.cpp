@@ -218,29 +218,21 @@ IRLoaderError IRLoader::loadIR() {
 }
 
 
-void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
+void IRLoader::process(Slice buffer) {
     ZoneScoped;
 
     float fftSizeInv = 1.0f/(float)(fftSize);
 
-    u32 nChannels = bufferR ? 2 : 1;
+    u32 nChannels = buffer.dataR ? 2 : 1;
 
     float* fftInputBuffers[2] = {fftTimeInputBufferLeft, fftTimeInputBufferRight};
-    float* inputBuffers[2] =    {bufferL, bufferR};
+    float* inputBuffers[2] =    {buffer.dataL, buffer.dataR};
     float** FDLs[2] =           {FDLLeft, FDLRight};
 
     for (u32 channelIndex = 0; channelIndex < nChannels; channelIndex++) {
     
-        // for (u32 index = 0; index < fftSize-nSamples; index++) {
-        //     fftInputBuffers[channelIndex][index] = fftInputBuffers[channelIndex][index + nSamples];
-        // }
-        copyFloat(fftInputBuffers[channelIndex], fftInputBuffers[channelIndex]+nSamples, (fftSize-nSamples));
-
-        // for (u32 index = 0; index < nSamples; index++) {
-        //     fftInputBuffers[channelIndex][fftSize-nSamples + index] = inputBuffers[channelIndex][index];
-        // }
-        copyFloat(fftInputBuffers[channelIndex]+fftSize-nSamples, inputBuffers[channelIndex], nSamples);
-
+        copyFloat(fftInputBuffers[channelIndex], fftInputBuffers[channelIndex]+buffer.size, (fftSize-buffer.size));
+        copyFloat(fftInputBuffers[channelIndex]+fftSize-buffer.size, inputBuffers[channelIndex], buffer.size);
 
         //shift the FDL
         float* tempPtr = FDLs[channelIndex][numIRParts-1];
@@ -264,8 +256,8 @@ void IRLoader::process(float *bufferL, float *bufferR, size_t nSamples) {
 
         pffft_transform(fftSetup, convolutionDftResult, fftTimeOutputBuffer, nullptr, PFFFT_BACKWARD);
 
-        for (u32 index = 0; index < nSamples; index++) {
-            inputBuffers[channelIndex][index] = fftTimeOutputBuffer[fftSize - nSamples + index] * fftSizeInv;
+        for (u32 index = 0; index < buffer.size; index++) {
+            inputBuffers[channelIndex][index] = fftTimeOutputBuffer[fftSize - buffer.size + index] * fftSizeInv;
         }
     }
 

@@ -119,7 +119,7 @@ struct Biquad {
         }
     }
 
-    void process(float *bufferL, float *bufferR, size_t nSamples) {
+    void process(Slice buffer) {
         ZoneScoped;
     
         float lb0 = b0;
@@ -134,21 +134,21 @@ struct Biquad {
         float y1 = y1L;
         float y2 = y2L;
 
-        for (size_t index = 0; index < nSamples; index++) {
+        for (size_t index = 0; index < buffer.size; index++) {
 
-            float input_sample = bufferL[index];
-            float result = input_sample * lb0 
+            float inputSample = buffer.dataL[index];
+            float result = inputSample * lb0 
                          + x1 * lb1
                          + x2 * lb2
                          + y1 * la1
                          + y2 * la2;
             
             x2 = x1;
-            x1 = input_sample;
+            x1 = inputSample;
             y2 = y1;
             y1 = result;
             
-            bufferL[index] = result;    
+            buffer.dataL[index] = result;    
         }
         
         x1L = x1;
@@ -156,27 +156,27 @@ struct Biquad {
         y1L = y1;    
         y2L = y2;
         
-        if (bufferR) {
+        if (buffer.dataR) {
             x1 = x1R;
             x2 = x2R;
             y1 = y1R;
             y2 = y2R;
 
-            for (size_t index = 0; index < nSamples; index++) {
+            for (size_t index = 0; index < buffer.size; index++) {
 
-                float input_sample = bufferR[index];
-                float result = input_sample * lb0 
+                float inputSample = buffer.dataR[index];
+                float result = inputSample * lb0 
                              + x1 * lb1
                              + x2 * lb2
                              + y1 * la1
                              + y2 * la2;
                 
                 x2 = x1;
-                x1 = input_sample;
+                x1 = inputSample;
                 y2 = y1;
                 y1 = result;
                 
-                bufferR[index] = result;    
+                buffer.dataR[index] = result;    
             }
             
             x1R = x1;

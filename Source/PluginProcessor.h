@@ -206,11 +206,6 @@ global_const ParameterInfo paramInfos[N_PARAMS] {
     { "CHANNEL_CONFIG",       0.0f }
 };
 
-enum ChannelConfig {
-    Mono, 
-    FakeStereo, 
-    Stereo
-};
 
 static juce::Identifier irPathTree("IR_PATHS");
 static juce::Identifier irPath1 ("IR1");
@@ -294,7 +289,7 @@ struct Processor  : public juce::AudioProcessor,
 
     float *sideChainBuffer = nullptr;
     
-    u8 channelConfig = Mono;    
+    ChannelConfig channelConfig = Mono;    
     bool doGate = true;
     bool doBoost = true;
     bool doPreamp = true;

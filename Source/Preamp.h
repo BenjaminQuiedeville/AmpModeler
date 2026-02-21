@@ -22,7 +22,7 @@ struct Preamp {
     
     void prepareToPlay(float samplerate, u32 blockSize); 
     void setBias(float value, int tube_index);  
-    void process(float *bufferL, float *bufferR, u32 nSamples);
+    void process(Slice buffer);
 
     FirstOrderFilter cathodeBypassFilter1;
     float stage1_bias[2] = {0};
@@ -67,10 +67,8 @@ struct Preamp {
         Biquad downSampleFilter1;
         Biquad downSampleFilter2;
     } overSampler;
-    
-    float *upSampledBufferL = nullptr;
-    float *upSampledBufferR = nullptr;
 
+    Slice upSampledBuffer = {};
 
     float outputAttenuationdB = -34.0f;
     u8 channel = 0;

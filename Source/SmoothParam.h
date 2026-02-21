@@ -16,9 +16,9 @@
 
 struct SmoothParamLinear {
 
-    ~SmoothParamLinear() { free(value_buffer); }
+    ~SmoothParamLinear() { free(valueBuffer.dataL); }
 
-    void init(float initValue, u32 value_buffer_size) {
+    void init(float initValue, u32 valueBufferSize) {
         target = initValue;
         currentValue = initValue;
         prevTarget = target;
@@ -26,8 +26,8 @@ struct SmoothParamLinear {
         normValue = 0.0;
         isSmoothing = false;
         
-        if (value_buffer_size != 0) {
-            value_buffer = allocFloat(value_buffer_size);
+        if (valueBufferSize != 0) {
+            reallocMonoBuffer(&valueBuffer, valueBufferSize);
         }
     }
 
@@ -59,11 +59,11 @@ struct SmoothParamLinear {
 
     void generateBufferOfValues(u32 nsamples) {
         ZoneScoped;
-        assert(value_buffer && "SmoothParamLinear : value_buffer non allocated");        
+        assert(valueBuffer.dataL && "SmoothParamLinear : valueBuffer non allocated");        
         
         for (u32 index = 0; index < nsamples; index++) {
             if (!isSmoothing) { 
-                value_buffer[index] = target;
+                valueBuffer.dataL[index] = target;
                 continue; 
             }
     
@@ -72,12 +72,12 @@ struct SmoothParamLinear {
                 isSmoothing = false;
                 normValue = 1.0;
                 currentValue = target;
-                value_buffer[index] = currentValue;
+                valueBuffer.dataL[index] = currentValue;
                 continue;
             }
     
             currentValue = normValue * (target - prevTarget) + prevTarget;
-            value_buffer[index] = currentValue;
+            valueBuffer.dataL[index] = currentValue;
         }
     }
 
@@ -98,19 +98,18 @@ struct SmoothParamLinear {
     //     }
     // }
 
-    inline void applySmoothGainLinear(float *bufferL, float *bufferR, u32 nSamples) {
+    inline void applySmoothGainLinear(Slice buffer) {
         ZoneScoped;
         
-        generateBufferOfValues(nSamples);
+        generateBufferOfValues(buffer.size);
 
-        for (size_t i = 0; i < nSamples; i++) {
-            bufferL[i] *= value_buffer[i];
+        for (size_t i = 0; i < buffer.size; i++) {
+            buffer.dataL[i] *= valueBuffer.dataL[i];
         }
 
-        if (bufferR) {
-            for (size_t i = 0; i < nSamples; i++) {
-                float gainValue = value_buffer[i];
-                bufferR[i] *= gainValue;
+        if (buffer.dataR) {
+            for (size_t i = 0; i < buffer.size; i++) {
+                buffer.dataR[i] *= valueBuffer.dataL[i];
             }
         }
     }
@@ -121,7 +120,7 @@ struct SmoothParamLinear {
     float stepHeight = 0.0;
     float normValue = 0.0;
     float currentValue = 0.0;
-    float *value_buffer = nullptr;
+    Slice valueBuffer = {};
     bool isSmoothing;
 };
 

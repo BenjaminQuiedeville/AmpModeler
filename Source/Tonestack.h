@@ -47,7 +47,7 @@ struct Tonestack {
     }
 
 
-    void process(float *bufferL, float *bufferR, size_t nSamples) {
+    void process(Slice buffer) {
         ZoneScoped;
         bool update = false;
         
@@ -58,10 +58,10 @@ struct Tonestack {
             update = true;
         }
         
-        float *buffers[2] = {bufferL, bufferR};
-        u32 nChannels = bufferR ? 2 : 1;
+        float *buffers[2] = {buffer.dataL, buffer.dataR};
+        u32 nChannels = buffer.dataR ? 2 : 1;
         
-        for (size_t i = 0; i < nSamples; i++) {
+        for (size_t i = 0; i < buffer.size; i++) {
             if (update) {
                 updateCoefficients(trebbleParam.nextValue(),
                                     midParam.nextValue(),

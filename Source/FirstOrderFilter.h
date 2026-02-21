@@ -95,28 +95,28 @@ struct FirstOrderFilter {
         a1 = -(float)((rho + alpha1)/(1 + rho * alpha1));
     }
 
-    void process(float *bufferL, float *bufferR, u64 nSamples) {
+    void process(Slice buffer) {
         ZoneScoped;
         
-        if (bufferL) {            
-            for (u64 index = 0; index < nSamples; index++) {
-                float inSample = bufferL[index];
+        if (buffer.dataL) {
+            for (u64 index = 0; index < buffer.size; index++) {
+                float inSample = buffer.dataL[index];
                 float outSample = inSample*b0 + x1L*b1 + y1L*a1;
                 
                 x1L = inSample;
                 y1L = outSample;
-                bufferL[index] = outSample * outGain;
+                buffer.dataL[index] = outSample * outGain;
             }
         }
             
-        if (bufferR) {            
-            for (u64 index = 0; index < nSamples; index++) {
-                float inSample = bufferR[index];
+        if (buffer.dataR) {
+            for (u64 index = 0; index < buffer.size; index++) {
+                float inSample = buffer.dataR[index];
                 float outSample = inSample*b0 + x1R*b1 + y1R*a1;
                 
                 x1R = inSample;
                 y1R = outSample;
-                bufferR[index] = outSample * outGain;
+                buffer.dataR[index] = outSample * outGain;
             }
         }
     }
