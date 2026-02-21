@@ -37,7 +37,6 @@ TODO :
     - double IR mixable, alignement de phase
      
     - pouvoir mettre les 2 premiers etages de gains en parallele à la plexi
-    - ajouter tablesaw
     - flow diagram pour les étages de gain 
 */
 

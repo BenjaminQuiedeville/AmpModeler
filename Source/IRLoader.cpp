@@ -13,16 +13,7 @@
 
 #include <dr_libs/dr_wav.h>
 
-
-#define BASE_IR_441_SIZE 1323
-static float baseIR_441[BASE_IR_441_SIZE] = {
-#include "data/baseIR_441.txt"
-};
-
-#define BASE_IR_48_SIZE 1440
-static float baseIR_48[BASE_IR_48_SIZE] = {
-#include "data/baseIR_48.txt"
-};
+#include "data/baseIRs.h"
 
 void IRLoader::deallocateFFTEngine() {
     if (fftSetup) {
@@ -204,6 +195,18 @@ IRLoaderError IRLoader::loadIR() {
 
         assert(numFramesRead == wav.totalPCMFrameCount && "Error in decoding the wav file");
         irBufferSize = (u32)numFramesRead;
+
+        // normalise the IR
+        float irMax = -1000.0f;
+        for (u32 index = 0; index < irBufferSize; index++) {
+            irMax = std::max(abs(irBuffer[index]), irMax);
+        }
+        
+        float inv_max = abs(1.0f/irMax);
+        for (u32 index = 0; index < irBufferSize; index++) {
+            irBuffer[index] *= inv_max;
+        }
+
 
         // the IR is fully loaded at the end of the process function
         updateIR = true;
