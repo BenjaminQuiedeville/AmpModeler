@@ -125,7 +125,7 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
     tightFilter.reset();
     biteFilter.reset();
 
-    noiseGate.prepareToPlay(samplerate);
+    noiseGate.prepareToPlay(samplerate, (u32)bufferSize);
 
     preamp.prepareToPlay(samplerate, (u32)bufferSize);
 
