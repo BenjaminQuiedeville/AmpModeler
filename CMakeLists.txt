@@ -36,7 +36,7 @@ if (MSVC)
     
     # add_link_options(/NODEFAULTLIB:LIBCMTD)
 else()
-    add_compile_options(-Wall -Wextra -ffast-math -fno-math-errno -Wno-zero-as-null-pointer-constant)
+    add_compile_options(-Wall -Wextra -ffast-math -fno-math-errno -Wno-unused-parameter)
     
     if (NOT APPLE) 
         add_compile_options(-mavx2)
@@ -49,7 +49,7 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE ${OPTI_FLAGS})
     
     add_link_options(-ffast-math -fno-math-errno -fuse-ld=lld)
-endif()
+endif()                   
 
 target_sources(${PROJECT_NAME}
     PRIVATE 
@@ -59,6 +59,7 @@ target_sources(${PROJECT_NAME}
         # Source/Preamp.cpp 
         Source/main.cpp
         libs/pffft/pffft.c
+        Source/dr_wav_impl.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

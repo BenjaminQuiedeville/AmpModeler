@@ -3,22 +3,13 @@
     Author:  Benjamin Quiedeville
   ==============================================================================
 */
-
+#include "common.h"
 #include "PluginEditor.h"
 
-
-static inline int computeXcoord(float col, int width) {
-    int usableWidth = width - 2*horizontalMargin - knobSize;
-    return horizontalMargin + int(usableWidth/nCols * (int)col);
-}
-
-static inline int computeYcoord(float row, int height) {
-    return verticalMargin + int((height - 2*verticalMargin)/nRows * (int)row);
-}
-
-static inline void placeKnob(Knob *knob, int x, int y, int size) {
-    knob->setBounds(x, y, size, size);
-    knob->label.setBounds(knob->getX(), knob->getY() - 15, size, 20);
+static inline void placeKnob(Knob *knob, int x, int y, int width, int height) {
+    ZoneScoped;
+    knob->setBounds(x, y, width, height);
+    knob->label.setBounds(knob->getX(), knob->getY() - 15, width, 20);
 }
 
 AmpModelerLAF::AmpModelerLAF() {
@@ -29,6 +20,7 @@ AmpModelerLAF::AmpModelerLAF() {
     setColour(juce::Slider::backgroundColourId, widgetColor);
     setColour(juce::Slider::trackColourId, accentColor1);
     setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    
     
     setColour(juce::ComboBox::backgroundColourId, widgetColor);
     setColour(juce::ComboBox::outlineColourId, widgetColor);
@@ -53,6 +45,8 @@ AmpModelerLAF::AmpModelerLAF() {
 }
 
 void AmpModelerLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
+    ZoneScoped;
+    
     g.fillAll(label.findColour(juce::Label::backgroundColourId));
 
     if (!label.isBeingEdited()) {
@@ -65,7 +59,7 @@ void AmpModelerLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
         auto textArea = getLabelBorderSize(label).subtractedFrom(label.getLocalBounds());
 
         g.drawFittedText(label.getText(), textArea, label.getJustificationType(),
-                          max(1, (int)((float)textArea.getHeight() / font.getHeight())),
+                          std::max(1, (int)((float)textArea.getHeight() / font.getHeight())),
                           label.getMinimumHorizontalScale());
 
         g.setColour(label.findColour(juce::Label::outlineColourId).withMultipliedAlpha(alpha));
@@ -79,8 +73,9 @@ void AmpModelerLAF::drawLabel(juce::Graphics& g, juce::Label& label) {
 }
 
 
-void AmpModelerLAF::drawComboBox(juce::Graphics& g, int width, int height, bool, int, int, int, int, juce::ComboBox& box)
-{
+void AmpModelerLAF::drawComboBox(juce::Graphics& g, int width, int height, bool, int, int, int, int, juce::ComboBox& box) {
+    ZoneScoped;
+
     auto cornerSize = box.findParentComponentOfClass<juce::ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
     juce::Rectangle<int> boxBounds(0, 0, width, height);
 
@@ -105,15 +100,20 @@ void AmpModelerLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width,
                                      float sliderPos, float rotaryStartAngle,
                                      float rotaryEndAngle, juce::Slider& slider)
 {
+    ZoneScoped;
+    
     auto outline = slider.findColour(juce::Slider::rotarySliderOutlineColourId);
     auto fill    = slider.findColour(juce::Slider::rotarySliderFillColourId);
 
     auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
 
-    auto radius = min(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto radius = std::min(bounds.getWidth(), bounds.getHeight()) / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
-    auto lineW = min(8.0f, radius * 0.5f);
+    auto lineW = std::min(8.0f, radius * 0.5f);
     auto arcRadius = radius - lineW * 0.5f;
+    
+    // g.setColour(juce::Colours::white);
+    // g.drawRect (x, y, width, height);
 
     juce::Path backgroundArc;
     backgroundArc.addCentredArc(bounds.getCentreX(), bounds.getCentreY(),
@@ -129,7 +129,7 @@ void AmpModelerLAF::drawRotarySlider(juce::Graphics& g, int x, int y, int width,
                            arcRadius, arcRadius,
                            0.0f, rotaryStartAngle, toAngle, true);
 
-    g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0 : 0.3));
+    g.setColour(fill.withMultipliedAlpha(slider.isEnabled() ? 1.0f : 0.3f));
     g.strokePath(valueArc, juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 }
     
@@ -137,7 +137,8 @@ void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width,
                                      float sliderPos, float minSliderPos, float maxSliderPos,
                                      const juce::Slider::SliderStyle style, juce::Slider& slider)
 {
-
+    ZoneScoped;
+    
     assert(!slider.isBar());
 
     // auto trackWidth = min(6.0f, slider.isHorizontal() ? (float)height * 0.25f : (float)width * 0.25f);
@@ -156,7 +157,7 @@ void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width,
     g.strokePath(backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded});
 
     juce::Path valueTrack;
-    juce::Point<float> minPoint, maxPoint, thumbPoint;
+    juce::Point<float> minPoint, maxPoint;
 
     auto kx = slider.isHorizontal() ? sliderPos : ((float)x + (float)width * 0.5f);
     auto ky = slider.isHorizontal() ? ((float)y + (float)height * 0.5f) : sliderPos;
@@ -176,17 +177,12 @@ void AmpModelerLAF::drawLinearSlider(juce::Graphics& g, int x, int y, int width,
 }
 
 juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider) {
+    ZoneScoped;
+
     // 1. compute the actually visible textBox size from the slider textBox size and some additional constraints
 
-    int minXSpace = 0;
-    int minYSpace = 0;
-
     auto textBoxPos = slider.getTextBoxPosition();
-
-    minYSpace = 5;
-
     auto localBounds = slider.getLocalBounds();
-    auto sliderBounds = slider.getBounds();
 
     local_const int textBoxWidth = 120;
     local_const int textBoxHeight = 30;
@@ -230,6 +226,7 @@ juce::Slider::SliderLayout AmpModelerLAF::getSliderLayout (juce::Slider& slider)
 void AmpModelerLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
                                          bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
+    ZoneScoped;
     auto cornerSize = 6.0f;
     auto bounds = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
 
@@ -272,18 +269,19 @@ void AmpModelerLAF::drawButtonBackground(juce::Graphics& g, juce::Button& button
 void AmpModelerLAF::drawButtonText(juce::Graphics& g, juce::TextButton& button,
                      bool /*shouldDrawButtonAsHighlighted*/, bool /*shouldDrawButtonAsDown*/)
 {
+    ZoneScoped;
     juce::Font font(getTextButtonFont(button, button.getHeight()));
     g.setFont(font);
     g.setColour(button.findColour(button.getToggleState() ? juce::TextButton::textColourOnId
                                                           : juce::TextButton::textColourOffId)
                        .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
 
-    const int yIndent = min(4, button.proportionOfHeight (0.3f));
-    const int cornerSize = min(button.getHeight(), button.getWidth()) / 2;
+    const int yIndent = std::min(4, button.proportionOfHeight (0.3f));
+    const int cornerSize = std::min(button.getHeight(), button.getWidth()) / 2;
 
     const int fontHeight = juce::roundToInt(font.getHeight() * 0.6f);
-    const int leftIndent  = min(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
-    const int rightIndent = min(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+    const int leftIndent  = std::min(fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+    const int rightIndent = std::min(fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
     const int textWidth = button.getWidth() - leftIndent - rightIndent;
 
     if (textWidth > 0) {
@@ -299,7 +297,13 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     gateAttackKnob(      "GATE_Attack_LABEL",       "Attack Time",     this, paramInfos[GATE_ATTACK].id.toString(),     p.apvts, " ms"),
     gateReleaseKnob(     "GATE_RELEASE_LABEL",      "Release Time",    this, paramInfos[GATE_RELEASE].id.toString(),    p.apvts, " ms"),
     gateHysteresisKnob(  "GATE_RETURN_LABEL",       "Hysteresis",      this, paramInfos[GATE_RETURN].id.toString(),     p.apvts, " dB"),
-    gateHoldKnob(        "GATE_HOLD_LABEL",         "Hold Time ",      this, paramInfos[GATE_HOLD].id.toString(),     p.apvts, " ms"),
+    gateHoldKnob(        "GATE_HOLD_LABEL",         "Hold Time ",      this, paramInfos[GATE_HOLD].id.toString(),       p.apvts, " ms"),
+
+    tablesawGain(        "TABLESAW_GAIN_LABEL",     "Gain",            this, paramInfos[TABLESAW_GAIN].id.toString(),   p.apvts, ""),
+    tablesawHigh(        "TABLESAW_HIGH_LABEL",     "High",            this, paramInfos[TABLESAW_HIGH].id.toString(),   p.apvts, ""),
+    tablesawLow(         "TABLESAW_LOW_LABEL",      "Low",             this, paramInfos[TABLESAW_LOW].id.toString(),    p.apvts, ""),
+    tablesawVolume(      "TABLESAW_VOL_LABEL",      "Volume",          this, paramInfos[TABLESAW_VOL].id.toString(),    p.apvts, ""),
+
     boostVolumeKnob(     "BOOST_ATTACK_KNOB_LABEL", "Volume",          this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
     boostFreqKnob(       "BOOST_FREQ_KNOB_LABEL",   "Frequency",       this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
     boostTightKnob(      "BOOST_TIGHT_KNOB_LABEL",  "Tight",           this, paramInfos[TIGHT].id.toString(),           p.apvts, " Hz"),
@@ -344,35 +348,97 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     };
     
     addAndMakeVisible(boostToggle);
+
+
+    tablesawToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[DO_TABLESAW].id.toString(), tablesawToggle
+    );
+    
+    tablesawToggle.setToggleable(true);
+    tablesawToggle.setClickingTogglesState(true);
+
+    tablesawToggle.onStateChange = [this]() {
+        bool state = tablesawToggle.getToggleState();
+        
+        tablesawGain.setEnabled(state);
+        tablesawVolume.setEnabled(state);
+        tablesawHigh.setEnabled(state);
+        tablesawLow.setEnabled(state);        
+    };
+    
+    addAndMakeVisible(tablesawToggle);
 }
 
 
 void GateBoostPage::resized() {
     ZoneScoped;
-
-    int width = getWidth();
-    int height = getHeight();
     
     local_const int horizontalSpacing = 10;
+    local_const int knobHeight = 100;
+    local_const int knobWidth = 70;
     
-    placeKnob(&inputGainKnob, horizontalMargin, verticalMargin, knobSize);
+    placeKnob(&inputGainKnob, horizontalMargin-20, verticalMargin, knobWidth, knobHeight);
 
-    gateToggle.setBounds(inputGainKnob.getRight() + 10, inputGainKnob.getY(), 130, 30);
-    placeKnob(&gateKnob, gateToggle.getX(), gateToggle.getBottom() + 20, knobSize);
-    placeKnob(&gateHysteresisKnob, gateKnob.getX(), gateKnob.getBottom(), knobSize);
-    placeKnob(&gateAttackKnob, gateKnob.getRight() + horizontalSpacing, gateKnob.getY(), knobSize);
-    placeKnob(&gateReleaseKnob, gateAttackKnob.getX(), gateAttackKnob.getBottom(), knobSize);
-    placeKnob(&gateHoldKnob, gateReleaseKnob.getX(), gateReleaseKnob.getBottom(), knobSize);
-    boostToggle.setBounds(gateToggle.getRight() + 120, gateToggle.getY(), 130, 30);  
-    placeKnob(&boostVolumeKnob, boostToggle.getX(), boostToggle.getBottom() + 20, knobSize);
-    placeKnob(&boostFreqKnob, boostVolumeKnob.getRight() + horizontalSpacing, boostVolumeKnob.getY(), knobSize);
-    placeKnob(&boostTightKnob, boostVolumeKnob.getX(),  boostVolumeKnob.getBottom(), knobSize);
-
+    gateToggle.setBounds(inputGainKnob.getRight() + horizontalSpacing + 5, inputGainKnob.getY(), 130, 30);
+    placeKnob(&gateKnob,           gateToggle.getX(),                       gateToggle.getBottom() + 20,   knobWidth, knobHeight);
+    placeKnob(&gateHysteresisKnob, gateKnob.getX(),                         gateKnob.getBottom(),          knobWidth, knobHeight);
+    placeKnob(&gateAttackKnob,     gateKnob.getRight() + horizontalSpacing, gateKnob.getY(),               knobWidth, knobHeight);
+    placeKnob(&gateReleaseKnob,    gateAttackKnob.getX(),                   gateAttackKnob.getBottom(),    knobWidth, knobHeight);
+    placeKnob(&gateHoldKnob,       gateReleaseKnob.getX(),                  gateReleaseKnob.getBottom(),   knobWidth, knobHeight);
+    
+    boostToggle.setBounds(gateToggle.getRight() + knobWidth, gateToggle.getY(), 130, 30);  
+    placeKnob(&boostVolumeKnob, boostToggle.getX(),                             boostToggle.getBottom() + 20, knobWidth, knobHeight);
+    placeKnob(&boostFreqKnob,   boostVolumeKnob.getRight() + horizontalSpacing, boostVolumeKnob.getY(),       knobWidth, knobHeight);
+    placeKnob(&boostTightKnob,  boostVolumeKnob.getX(),                         boostVolumeKnob.getBottom(),  knobWidth, knobHeight);
+    
+    tablesawToggle.setBounds(boostToggle.getRight() + knobWidth, boostToggle.getY(), 130, 30);
+    placeKnob(&tablesawGain,    tablesawToggle.getX(),                       tablesawToggle.getBottom() + 20, knobWidth, knobHeight);
+    placeKnob(&tablesawVolume,  tablesawGain.getX(),                         tablesawGain.getBottom(),        knobWidth, knobHeight);
+    placeKnob(&tablesawHigh,    tablesawGain.getRight() + horizontalSpacing, tablesawGain.getY(),             knobWidth, knobHeight);
+    placeKnob(&tablesawLow,     tablesawHigh.getX(),                         tablesawHigh.getBottom(),        knobWidth, knobHeight);
 }
 
 
 static void updateGainStageKnobsState(Editor *editor, int channel) {
+    ZoneScoped;
+
+    bool isPreampActive = editor->ampPage.preampToggle.getToggleState();
+
+    if (!isPreampActive) {
+
+        editor->gainStagesPage.stage1LP.setEnabled(false);
+        editor->gainStagesPage.stage1Bypass.setEnabled(false);
+        editor->gainStagesPage.stage1Bias.setEnabled(false);
+        editor->gainStagesPage.stage1Gain.setEnabled(false);
+
+        editor->gainStagesPage.stage2LP.setEnabled(false);
+        editor->gainStagesPage.stage2Bypass.setEnabled(false);
+        editor->gainStagesPage.stage2Bias.setEnabled(false);
+        editor->gainStagesPage.stage2Gain.setEnabled(false);
+        
+        editor->gainStagesPage.stage3LP.setEnabled(false);
+        editor->gainStagesPage.stage3Bypass.setEnabled(false);
+        editor->gainStagesPage.stage3Bias.setEnabled(false);
+        editor->gainStagesPage.stage3Gain.setEnabled(false);
+        
+        editor->gainStagesPage.stage4LP.setEnabled(false);
+        editor->gainStagesPage.stage4Bypass.setEnabled(false);
+        editor->gainStagesPage.stage4Bias.setEnabled(false);
+        editor->gainStagesPage.stage4Gain.setEnabled(false);
     
+        editor->gainStagesPage.stage5LP.setEnabled(false);
+        editor->gainStagesPage.stage5Bias.setEnabled(false);
+        
+        editor->ampPage.gain2Knob.setEnabled(false);
+        editor->ampPage.gain1Knob.setEnabled(false);
+        return;
+    }
+
+    editor->gainStagesPage.stage1LP.setEnabled(true);
+    editor->gainStagesPage.stage1Bypass.setEnabled(true);
+    editor->gainStagesPage.stage1Bias.setEnabled(true);
+    editor->gainStagesPage.stage1Gain.setEnabled(true);
+
     editor->gainStagesPage.stage2LP.setEnabled(channel >= 1);
     editor->gainStagesPage.stage2Bypass.setEnabled(channel > 1);
     editor->gainStagesPage.stage2Bias.setEnabled(channel >= 1);
@@ -434,7 +500,7 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
         editor->ampPage.ampChannelBox.setEnabled(state);
         editor->ampPage.toneStackModelBox.setEnabled(state);
         
-        updateGainStageKnobsState(editor, ampChannelBox.getSelectedId());
+        updateGainStageKnobsState(editor, state ? ampChannelBox.getSelectedId() : 0);
     };
 
 
@@ -489,45 +555,46 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
 void AmplifierPage::resized() {
     ZoneScoped;
 
-    int width = getWidth();
-    int height = getHeight();
-
     local_const int labelHeight = 20;
-    local_const int horizontalSpacing = 0;
     local_const int verticalSpacing = 20;
+    local_const int horizontalSpacing = 20;
+
+    local_const int knobHeight = 100;
+    local_const int knobWidth = 70;
         
     stereoSettingBox.setBounds(horizontalMargin, verticalMargin + labelHeight, 120, 30);
-    stereoSettingBox.label.setBounds(stereoSettingBox.getX(), stereoSettingBox.getY() - 20, knobSize, 20);
+    stereoSettingBox.label.setBounds(stereoSettingBox.getX(), stereoSettingBox.getY() - 20, stereoSettingBox.getWidth(), 20);
 
     updateGainStageKnobsState(this->main_editor, ampChannelBox.getSelectedId());
     ampChannelBox.setBounds(stereoSettingBox.getRight() + 5, stereoSettingBox.getY(), 120, 30);
-    ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20, knobSize, 20);
+    ampChannelBox.label.setBounds(ampChannelBox.getX(), ampChannelBox.getY() - 20, ampChannelBox.getWidth(), 20);
 
     toneStackModelBox.setBounds(ampChannelBox.getRight() + 5, ampChannelBox.getY(), 120, 30);
-    toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, knobSize, 20);
+    toneStackModelBox.label.setBounds(toneStackModelBox.getX(), toneStackModelBox.getY() - 20, toneStackModelBox.getWidth(), 20);
 
     preampToggle.setBounds(toneStackModelBox.getBounds() + juce::Point(toneStackModelBox.getWidth() + 10, 0));
     tonestackToggle.setBounds(preampToggle.getBounds() + juce::Point(preampToggle.getWidth() + 10, 0));
 
 
-    placeKnob(&gain1Knob, ampChannelBox.getX(), ampChannelBox.getBottom() + verticalSpacing + 10, knobSize);
-    placeKnob(&gain2Knob, gain1Knob.getX(), gain1Knob.getBottom() + verticalSpacing, knobSize);
-    placeKnob(&inputFilterKnob, gain1Knob.getX() - knobSize - horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&gain1Knob,        ampChannelBox.getX() + horizontalSpacing,         ampChannelBox.getBottom() + verticalSpacing + 10, knobWidth, knobHeight);
+    placeKnob(&gain2Knob,        gain1Knob.getX(),                                 gain1Knob.getBottom() + verticalSpacing,          knobWidth, knobHeight);
+    placeKnob(&inputFilterKnob,  gain1Knob.getX() - horizontalSpacing - knobWidth, gain1Knob.getY() + knobHeight/2,                  knobWidth, knobHeight);
     
-    placeKnob(&bassEQKnob, gain1Knob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
-    placeKnob(&midEQKnob, bassEQKnob.getRight() + horizontalSpacing, gain1Knob.getY() + knobSize/2, knobSize);
-    placeKnob(&trebbleEQKnob, midEQKnob.getRight() + horizontalSpacing,  gain1Knob.getY() + knobSize/2, knobSize);
+    placeKnob(&bassEQKnob,       gain1Knob.getRight() + horizontalSpacing,         gain1Knob.getY() + knobHeight/2,                  knobWidth, knobHeight);
+    placeKnob(&midEQKnob,        bassEQKnob.getRight() + horizontalSpacing,        gain1Knob.getY() + knobHeight/2,                  knobWidth, knobHeight);
+    placeKnob(&trebbleEQKnob,    midEQKnob.getRight() + horizontalSpacing,         gain1Knob.getY() + knobHeight/2,                  knobWidth, knobHeight);
 
-    placeKnob(&presenceKnob, trebbleEQKnob.getRight() + horizontalSpacing, gain1Knob.getY(), knobSize);
-    placeKnob(&resonanceKnob, trebbleEQKnob.getRight() + horizontalSpacing, gain2Knob.getY(), knobSize);
+    placeKnob(&presenceKnob,     trebbleEQKnob.getRight() + horizontalSpacing,     gain1Knob.getY(),                                 knobWidth, knobHeight);
+    placeKnob(&resonanceKnob,    trebbleEQKnob.getRight() + horizontalSpacing,     gain2Knob.getY(),                                 knobWidth, knobHeight);
 
-    placeKnob(&preampVolumeKnob, presenceKnob.getRight() + horizontalSpacing, trebbleEQKnob.getY(),  knobSize);
+    placeKnob(&preampVolumeKnob, presenceKnob.getRight() + horizontalSpacing,      trebbleEQKnob.getY(),                             knobWidth, knobHeight);
 
-    brightToggle.setBounds(inputFilterKnob.getX(), inputFilterKnob.getY() - labelHeight*2 - 10, knobSize, 30);
+    brightToggle.setBounds(inputFilterKnob.getX() - 20, inputFilterKnob.getY() - labelHeight*2 - 10, 100, 30);
 }
 
 
 GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
+    ampChannelBox( "AMP_CHANNEL_BOX_LABEL2",      "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),       p.apvts),
     stage1LP(      "STAGE1_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE1_LP].id.toString(),     p.apvts, " Hz"),
     stage1Bypass(  "STAGE1_BYPASS_SLIDER_LABEL",  "Cathode bypass",  this, paramInfos[STAGE1_BYPASS].id.toString(), p.apvts, " dB"),
     stage1Bias(    "STAGE1_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE1_BIAS].id.toString(),   p.apvts, ""),
@@ -549,9 +616,7 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
     stage4Gain(    "STAGE4_GAIN_SLIDER_LABEL",    "Gain 4",          this, paramInfos[GAIN4].id.toString(),         p.apvts, ""),
     
     stage5LP(      "STAGE5_LP_SLIDER_LABEL",      "LP filter",       this, paramInfos[STAGE5_LP].id.toString(),     p.apvts, " Hz"),
-    stage5Bias(    "STAGE5_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE5_BIAS].id.toString(),   p.apvts, ""),
-    ampChannelBox( "AMP_CHANNEL_BOX_LABEL2",      "Amp Channel",     this, paramInfos[CHANNEL].id.toString(),       p.apvts)
-
+    stage5Bias(    "STAGE5_BIAS_SLIDER_LABEL",    "Tube bias",       this, paramInfos[STAGE5_BIAS].id.toString(),   p.apvts, "")
 {
     this->main_editor = editor;
     
@@ -600,12 +665,14 @@ GainStagesPage::GainStagesPage(Editor *editor, Processor &p) :
 void GainStagesPage::resized() {
     ZoneScoped;
 
-    local_const int horizontalSpacing = 20;
+    local_const int horizontalSpacing = 10;
     local_const int verticalSpacing = 10;
-    local_const int stageKnobSize = 95;
-    local_const int labelWidth = stageKnobSize;
+    local_const int labelWidth = 100;
 
-    local_const int knobCenterOffset = (labelWidth - stageKnobSize) / 2;
+    local_const int knobHeight = 95;
+    local_const int knobWidth = 80;
+
+    local_const int knobCenterOffset = (labelWidth - knobWidth) / 2;
     
     updateGainStageKnobsState(main_editor, ampChannelBox.getSelectedId());
 
@@ -618,28 +685,28 @@ void GainStagesPage::resized() {
     stage4Label.setBounds(stage3Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
     stage5Label.setBounds(stage4Label.getRight() + horizontalSpacing, stage1Label.getY(), labelWidth, 40);
     
-    placeKnob(&stage1LP,     stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing, stageKnobSize);
-    placeKnob(&stage1Bypass, stage1LP.getX(),                       stage1LP.getBottom(),                       stageKnobSize);
-    placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom(), stageKnobSize);
-    placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom(), stageKnobSize);
+    placeKnob(&stage1LP,     stage1Label.getX() + knobCenterOffset, stage1Label.getBottom() + verticalSpacing,  knobWidth, knobHeight);
+    placeKnob(&stage1Bypass, stage1LP.getX(),                       stage1LP.getBottom(),                       knobWidth, knobHeight);
+    placeKnob(&stage1Bias,   stage1Bypass.getX(),                   stage1Bypass.getBottom(),                   knobWidth, knobHeight);
+    placeKnob(&stage1Gain,   stage1Bias.getX(),                     stage1Bias.getBottom(),                     knobWidth, knobHeight);
 
-    placeKnob(&stage2LP,     stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing, stageKnobSize);
-    placeKnob(&stage2Bypass, stage2LP.getX(),                       stage2LP.getBottom(),                       stageKnobSize);
-    placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom(), stageKnobSize);
-    placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom(), stageKnobSize);
+    placeKnob(&stage2LP,     stage2Label.getX() + knobCenterOffset, stage2Label.getBottom() + verticalSpacing,  knobWidth, knobHeight);
+    placeKnob(&stage2Bypass, stage2LP.getX(),                       stage2LP.getBottom(),                       knobWidth, knobHeight);
+    placeKnob(&stage2Bias,   stage2Bypass.getX(),                   stage2Bypass.getBottom(),                   knobWidth, knobHeight);
+    placeKnob(&stage2Gain,   stage2Bias.getX(),                     stage2Bias.getBottom(),                     knobWidth, knobHeight);
 
-    placeKnob(&stage3LP,     stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing, stageKnobSize);
-    placeKnob(&stage3Bypass, stage3LP.getX(),                       stage3LP.getBottom(),                       stageKnobSize);
-    placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom(), stageKnobSize);
-    placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom(), stageKnobSize);
+    placeKnob(&stage3LP,     stage3Label.getX() + knobCenterOffset, stage3Label.getBottom() + verticalSpacing,  knobWidth, knobHeight);
+    placeKnob(&stage3Bypass, stage3LP.getX(),                       stage3LP.getBottom(),                       knobWidth, knobHeight);
+    placeKnob(&stage3Bias,   stage3Bypass.getX(),                   stage3Bypass.getBottom(),                   knobWidth, knobHeight);
+    placeKnob(&stage3Gain,   stage3Bias.getX(),                     stage3Bias.getBottom(),                     knobWidth, knobHeight);
 
-    placeKnob(&stage4LP,     stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing, stageKnobSize);
-    placeKnob(&stage4Bypass, stage4LP.getX(),                       stage4LP.getBottom(),                       stageKnobSize);
-    placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom(), stageKnobSize);
-    placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom(), stageKnobSize);
+    placeKnob(&stage4LP,     stage4Label.getX() + knobCenterOffset, stage4Label.getBottom() + verticalSpacing,  knobWidth, knobHeight);
+    placeKnob(&stage4Bypass, stage4LP.getX(),                       stage4LP.getBottom(),                       knobWidth, knobHeight);
+    placeKnob(&stage4Bias,   stage4Bypass.getX(),                   stage4Bypass.getBottom(),                   knobWidth, knobHeight);
+    placeKnob(&stage4Gain,   stage4Bias.getX(),                     stage4Bias.getBottom(),                     knobWidth, knobHeight);
     
-    placeKnob(&stage5LP,     stage5Label.getX() + knobCenterOffset, stage5Label.getBottom() + verticalSpacing, stageKnobSize);
-    placeKnob(&stage5Bias,   stage5LP.getX(),                       stage4Bias.getY(),                         stageKnobSize);
+    placeKnob(&stage5LP,     stage5Label.getX() + knobCenterOffset, stage5Label.getBottom() + verticalSpacing,  knobWidth, knobHeight);
+    placeKnob(&stage5Bias,   stage5LP.getX(),                       stage4Bias.getY(),                          knobWidth, knobHeight);
 }
 
 IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
@@ -649,6 +716,8 @@ IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
     );
 
     irLoadButton.onClick = [&audioProcessor, this]() {
+        ZoneScopedN("Load IR button");
+        
         auto chooser = std::make_unique<juce::FileChooser>("Choose a .wav File to open", juce::File(), "*.wav");
 
         bool fileChoosed = chooser->browseForFileToOpen();
@@ -687,6 +756,7 @@ IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
     addAndMakeVisible(irLoadButton);
 
     nextIRButton.onClick = [&audioProcessor, this]() {
+        ZoneScopedN("Load next IR button");
 
         // if the defualt ir is loader, ignore the button
         if (audioProcessor.irLoader.defaultIR) { return; }
@@ -706,7 +776,8 @@ IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
     };
 
     prevIRButton.onClick = [&audioProcessor, this]() {
-
+        ZoneScopedN("Load prev IR button");
+        
         if (audioProcessor.irLoader.defaultIR) { return; }
 
         audioProcessor.irLoader.indexOfCurrentFile--;
@@ -744,6 +815,8 @@ IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
     addAndMakeVisible(irNameLabel);
 
     defaultIRButton.onClick = [&audioProcessor, this]() {
+        ZoneScopedN("Default IR Button");
+        
         audioProcessor.irLoader.defaultIR = true;
         IRLoaderError error = audioProcessor.irLoader.loadIR();
 
@@ -770,9 +843,6 @@ IRLoaderPage::IRLoaderPage(Editor *editor, Processor &audioProcessor) {
 void IRLoaderPage::resized() {
     ZoneScoped;
 
-    int width = getWidth();
-    int height = getHeight();
-    
     local_const int horizontalSpacing = 10;
     local_const int verticalSpacing = 10;
 
@@ -856,36 +926,32 @@ EQPage::EQPage(Editor *editor, Processor &p) :
 void EQPage::resized() {
     ZoneScoped;
 
-    int width = getWidth();
-    int height = getHeight();
-
-    local_const int eqKnobSize = 100;
     local_const int labelHeight = 20;
     local_const int verticalSpacing = 5;
-    local_const int horizontalSpacing = 0;
+    local_const int horizontalSpacing = 10;
+    
+    local_const int knobHeight = 100;
+    local_const int knobWidth = 80;
+
     
     EQToggle.setBounds(horizontalMargin, verticalMargin + 20, 100, 30);
     resetButton.setBounds(EQToggle.getBounds() + juce::Point(0, EQToggle.getHeight() + verticalSpacing));
     
-    placeKnob(&lowShelfFreqKnob, resetButton.getRight() + horizontalSpacing + 20, verticalMargin, eqKnobSize);
-    placeKnob(&lowShelfGainKnob, lowShelfFreqKnob.getX(), lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    placeKnob(&lowcutFreqKnob,   lowShelfFreqKnob.getX(), lowShelfGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    
-    placeKnob(&lowMidFreqKnob, lowShelfFreqKnob.getRight() + horizontalSpacing, lowShelfFreqKnob.getY(), eqKnobSize);
-    placeKnob(&lowMidGainKnob, lowMidFreqKnob.getX(), lowMidFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    placeKnob(&lowMidQKnob,    lowMidFreqKnob.getX(), lowMidGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-
-    placeKnob(&midFreqKnob, lowMidFreqKnob.getRight() + horizontalSpacing, lowMidFreqKnob.getY(), eqKnobSize);
-    placeKnob(&midGainKnob, midFreqKnob.getX(), midFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    placeKnob(&midQKnob,    midFreqKnob.getX(), midGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-
-    placeKnob(&highFreqKnob, midFreqKnob.getRight() + horizontalSpacing, midFreqKnob.getY(), eqKnobSize);
-    placeKnob(&highGainKnob, highFreqKnob.getX(), highFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    placeKnob(&highQKnob,    highFreqKnob.getX(), highGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-
-    placeKnob(&highShelfFreqKnob, highFreqKnob.getRight() + horizontalSpacing, highFreqKnob.getY(), eqKnobSize);
-    placeKnob(&highShelfGainKnob, highShelfFreqKnob.getX(), highShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
-    placeKnob(&highCutFreqKnob,   highShelfFreqKnob.getX(), highShelfGainKnob.getBottom() + verticalSpacing + labelHeight, eqKnobSize);
+    placeKnob(&lowShelfFreqKnob,  resetButton.getRight() + 20,                     verticalMargin + 20,                                           knobWidth, knobHeight);
+    placeKnob(&lowShelfGainKnob,  lowShelfFreqKnob.getX(),                         lowShelfFreqKnob.getBottom() + verticalSpacing + labelHeight,  knobWidth, knobHeight);
+    placeKnob(&lowcutFreqKnob,    lowShelfFreqKnob.getX(),                         lowShelfGainKnob.getBottom() + verticalSpacing + labelHeight,  knobWidth, knobHeight);    
+    placeKnob(&lowMidFreqKnob,    lowShelfFreqKnob.getRight() + horizontalSpacing, lowShelfFreqKnob.getY(),                                       knobWidth, knobHeight);
+    placeKnob(&lowMidGainKnob,    lowMidFreqKnob.getX(),                           lowMidFreqKnob.getBottom() + verticalSpacing + labelHeight,    knobWidth, knobHeight);
+    placeKnob(&lowMidQKnob,       lowMidFreqKnob.getX(),                           lowMidGainKnob.getBottom() + verticalSpacing + labelHeight,    knobWidth, knobHeight);
+    placeKnob(&midFreqKnob,       lowMidFreqKnob.getRight() + horizontalSpacing,   lowMidFreqKnob.getY(),                                         knobWidth, knobHeight);
+    placeKnob(&midGainKnob,       midFreqKnob.getX(),                              midFreqKnob.getBottom() + verticalSpacing + labelHeight,       knobWidth, knobHeight);
+    placeKnob(&midQKnob,          midFreqKnob.getX(),                              midGainKnob.getBottom() + verticalSpacing + labelHeight,       knobWidth, knobHeight);
+    placeKnob(&highFreqKnob,      midFreqKnob.getRight() + horizontalSpacing,      midFreqKnob.getY(),                                            knobWidth, knobHeight);
+    placeKnob(&highGainKnob,      highFreqKnob.getX(),                             highFreqKnob.getBottom() + verticalSpacing + labelHeight,      knobWidth, knobHeight);
+    placeKnob(&highQKnob,         highFreqKnob.getX(),                             highGainKnob.getBottom() + verticalSpacing + labelHeight,      knobWidth, knobHeight);
+    placeKnob(&highShelfFreqKnob, highFreqKnob.getRight() + horizontalSpacing,     highFreqKnob.getY(),                                           knobWidth, knobHeight);
+    placeKnob(&highShelfGainKnob, highShelfFreqKnob.getX(),                        highShelfFreqKnob.getBottom() + verticalSpacing + labelHeight, knobWidth, knobHeight);
+    placeKnob(&highCutFreqKnob,   highShelfFreqKnob.getX(),                        highShelfGainKnob.getBottom() + verticalSpacing + labelHeight, knobWidth, knobHeight);
 }
 
 
@@ -896,8 +962,8 @@ Editor::Editor (Processor& p)
     gateBoostPage(this, p),
     ampPage(this, p),
     gainStagesPage(this, p),
-    irLoaderPage(this, p),
     eqPage(this, p),
+    irLoaderPage(this, p),
     volumePanel(p)
 {
 

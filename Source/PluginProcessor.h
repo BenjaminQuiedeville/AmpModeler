@@ -28,6 +28,8 @@ global_const float BOOST_BITE_Q        = 0.25f;
 global_const float RESONANCE_FREQUENCY = 120.0f;
 global_const float PRESENCE_FREQUENCY  = 500.0f;
 
+global_const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
+
 /*
 TODO : 
 
@@ -36,11 +38,6 @@ TODO :
      
     - pouvoir mettre les 2 premiers etages de gains en parallele à la plexi
     - ajouter tablesaw
-    - désactiver le boost et la gate indépendament  
-    - refaire la gate 
-    - mieux indiquer la correspondance entre les gains 1, 2 du panneaux principal et les 
-    gain 1, 2 du panneau de gain stage
-    - les boutons de désactivation sur leur panneau respectif
     - flow diagram pour les étages de gain 
 */
 
@@ -58,8 +55,14 @@ enum Params {
     SCREAMER_FREQ,
     TIGHT,
 
+    TABLESAW_GAIN,
+    TABLESAW_HIGH,
+    TABLESAW_LOW,
+    TABLESAW_VOL,
+
     DO_GATE,
     DO_BOOST,
+    DO_TABLESAW,
     DO_PREAMP,
     DO_TONESTACK,
     DO_EQ,
@@ -123,8 +126,7 @@ enum Params {
     N_PARAMS
 };
 
-// ajouter les labels de display des params
-// le gui et les parametre generiques sont pas raccord
+
 struct ParameterInfo {
     juce::Identifier id;
     float defaultValue = 0.0f;
@@ -142,9 +144,15 @@ global_const ParameterInfo paramInfos[N_PARAMS] {
     { "SCREAMER_AMOUNT",      0.0f },
     { "SCEAMER_FREQ",         1300.0f },
     { "TIGHT",                10.0f },
+
+    { "TABLESAW_GAIN",        5.0f },
+    { "TABLESAW_HIGH",        5.0f },
+    { "TABLESAW_LOW",         5.0f },
+    { "TABLESAW_VOL",         5.0f },
     
     { "DO_GATE",              1.0f },
-    { "DO_BOOST",             1.0f },
+    { "DO_BOOST",             0.0f },
+    { "DO_TABLESAW",          0.0f },
     { "DO_PREAMP",            1.0f },
     { "DO_TONESTACK",         1.0f },
     { "DO_EQ",                0.0f },
@@ -259,10 +267,25 @@ struct Processor  : public juce::AudioProcessor,
 
     Biquad inputNoiseFilter;
 
+    NoiseGate noiseGate;
     FirstOrderFilter tightFilter;
     Biquad biteFilter;
+    
+    struct {
+        Biquad upSampleFilter1;
+        Biquad upSampleFilter2;
+        
+        Biquad downSampleFilter1;
+        Biquad downSampleFilter2;
+    } overSampler;
 
-    NoiseGate noiseGate;
+    Slice upSampledBuffer = {};
+    
+    struct {
+        TablesawDSP dsp;
+        UI ui;
+    } tablesaw[2];
+    
     Preamp preamp;
     Tonestack toneStack;
     IRLoader irLoader;
@@ -295,7 +318,7 @@ struct Processor  : public juce::AudioProcessor,
     bool doPreamp = true;
     bool doTonestack = true;
     bool doEQ = false;
-    
+    bool doTablesaw = false;    
     void initParameters();
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 

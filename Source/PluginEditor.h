@@ -17,7 +17,6 @@ global_const juce::Colour accentColor2    {0XFF008170}; // bleu plus clair
 
 global_const juce::String defaultIRText = "Default IR, made by JuanPabloZed with IR Maker \nhttps://github.com/JuanPabloZed/IR_Maker_Cpp";
 
-global_const int knobSize = 100;
 global_const int horizontalMargin = 25;
 global_const int verticalMargin = 20;
 global_const int nRows = 3;
@@ -34,7 +33,7 @@ struct AmpModelerLAF : public juce::LookAndFeel_V4 {
     void drawComboBox(juce::Graphics& g, int width, int height, bool, int, int, int, int, juce::ComboBox& box) override;
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider) override;
     void drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) override;
-    juce::Slider::SliderLayout getSliderLayout (juce::Slider& slider);
+    juce::Slider::SliderLayout getSliderLayout (juce::Slider& slider) override;
     void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
     void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
 };
@@ -95,6 +94,11 @@ struct GateBoostPage : public juce::Component {
     Knob gateHysteresisKnob;
     Knob gateHoldKnob;
 
+    Knob tablesawGain;
+    Knob tablesawHigh;
+    Knob tablesawLow;
+    Knob tablesawVolume;
+
     Knob boostVolumeKnob;
     Knob boostFreqKnob;
     Knob boostTightKnob;
@@ -106,6 +110,9 @@ struct GateBoostPage : public juce::Component {
 
     juce::TextButton boostToggle {"Bypass Boost"};
     std::unique_ptr<ButtonAttachment> boostToggleAttachment;
+
+    juce::TextButton tablesawToggle {"Bypass Tablesaw"};
+    std::unique_ptr<ButtonAttachment> tablesawToggleAttachment;
 };
 
 
@@ -263,7 +270,7 @@ struct MasterVolPanel : public juce::Component {
         g.fillAll(backgroundColor);
     }
 
-    void resized() {
+    void resized() override {
         volumeSlider.setBounds(0, 50, getWidth(), 300);
         volumeSlider.label.setBounds(volumeSlider.getX(),volumeSlider.getY() - 15,
                                     volumeSlider.getWidth(), 20);
@@ -276,7 +283,7 @@ struct MasterVolPanel : public juce::Component {
 struct Editor : public juce::AudioProcessorEditor
 {
     Editor(Processor&);
-    ~Editor();
+    ~Editor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
@@ -286,6 +293,8 @@ struct Editor : public juce::AudioProcessorEditor
     juce::Component statusBar;
     AmpModelerLAF lookAndFeel;
     
+    Processor& audioProcessor;
+    
     GateBoostPage gateBoostPage;
     AmplifierPage ampPage;
     GainStagesPage gainStagesPage;
@@ -293,8 +302,6 @@ struct Editor : public juce::AudioProcessorEditor
     IRLoaderPage irLoaderPage;
 
     MasterVolPanel volumePanel;
-
-    Processor& audioProcessor;
 
     void createKnob(Knob *knob, const juce::String& paramID);
     void createComboBox(ComboBox *comboBox, const juce::String& paramID);

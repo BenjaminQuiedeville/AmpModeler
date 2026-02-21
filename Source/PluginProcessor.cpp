@@ -25,6 +25,9 @@ valueTree(irPathTree),
 apvts(*this, nullptr, juce::Identifier("Params"), createParameterLayout())
 {
 
+    tablesaw[0].dsp.buildUserInterface(&tablesaw[0].ui);
+    tablesaw[1].dsp.buildUserInterface(&tablesaw[1].ui);
+
     for (u8 i = 0; i < N_PARAMS; i++) {
         apvts.addParameterListener(paramInfos[i].id, this);
     }
@@ -40,10 +43,7 @@ Processor::~Processor() {
     for (u8 i = 0; i < N_PARAMS; i++) {
         apvts.removeParameterListener(paramInfos[i].id, this);
     }
-
-    if (sideChainBuffer) {
-        free(sideChainBuffer);
-    }
+    free(upSampledBuffer.dataL);
 }
 
 //==============================================================================
@@ -95,21 +95,15 @@ int Processor::getCurrentProgram()
     return 0;
 }
 
-void Processor::setCurrentProgram (int index)
-{
-    index;
+void Processor::setCurrentProgram (int) {
     return;
 }
 
-const juce::String Processor::getProgramName (int index)
-{
-    index;
-    return {};
+const juce::String Processor::getProgramName (int) {
+    return JucePlugin_Name;
 }
 
-void Processor::changeProgramName (int index, const juce::String& newName)
-{
-    newName; index;
+void Processor::changeProgramName (int, const juce::String&) {
     return;
 }
 
@@ -127,7 +121,29 @@ void Processor::prepareToPlay (double sampleRate, int samplesPerBlock) {
 
     noiseGate.prepareToPlay(samplerate, (u32)bufferSize);
 
-    preamp.prepareToPlay(samplerate, (u32)bufferSize);
+    float upSamplerate = samplerate * PREAMP_UP_SAMPLE_FACTOR;
+    u32 upBufferSize = (u32)(bufferSize * PREAMP_UP_SAMPLE_FACTOR);
+
+    overSampler.upSampleFilter1.reset();
+    overSampler.upSampleFilter2.reset();
+    overSampler.downSampleFilter1.reset();
+    overSampler.downSampleFilter2.reset();
+
+    // earlevel.com/main/2016/09/29/cascading-filters
+    overSampler.upSampleFilter1.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
+    overSampler.upSampleFilter2.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
+    overSampler.downSampleFilter1.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 0.54119610, 0.0, upSamplerate);
+    overSampler.downSampleFilter2.setCoefficients(BIQUAD_LOWPASS, samplerate/2 * 0.9, 1.3065630, 0.0, upSamplerate);
+
+    if (upSampledBuffer.dataL) { free(upSampledBuffer.dataL); }
+    upSampledBuffer.size = upBufferSize;
+    upSampledBuffer.dataL = allocFloat(upSampledBuffer.size * 2);
+    upSampledBuffer.dataR = upSampledBuffer.dataL + upBufferSize;
+
+    tablesaw[0].dsp.init((int)upSamplerate);
+    tablesaw[1].dsp.init((int)upSamplerate);
+
+    preamp.prepareToPlay(upSamplerate, (u32)upBufferSize);
 
     inputGain.init(0.0f, (u32)bufferSize);
     masterVolume.init(0.0f, (u32)bufferSize);
@@ -176,10 +192,8 @@ bool Processor::isBusesLayoutSupported (const BusesLayout& layouts) const
 }
 #endif
 
-void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBuffer& midiMessages) {
+void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBuffer&) {
     ZoneScoped;
-
-    midiMessages;
 
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -221,9 +235,58 @@ void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBu
         biteFilter.process(buffer);
     }
 
-    if (doPreamp) {
-        preamp.process(buffer);
+    Slice upBuffer = upSampledBuffer;
+    upBuffer.size = buffer.size*PREAMP_UP_SAMPLE_FACTOR;
+    if (buffer.dataR == nullptr) { upBuffer.dataR = nullptr; }
+
+    {
+        ZoneScopedN("Upsampling");
+
+        memsetZeroFloat(upBuffer.dataL, upBuffer.size);
+        for (u32 i = 0; i < buffer.size; i++) {
+            upBuffer.dataL[PREAMP_UP_SAMPLE_FACTOR*i] = buffer.dataL[i];
+        }
+    
+        if (buffer.dataR) {
+            memsetZeroFloat(upBuffer.dataR, upBuffer.size);
+            for (u32 i = 0; i < buffer.size; i++) {
+                upBuffer.dataR[PREAMP_UP_SAMPLE_FACTOR*i] = buffer.dataR[i];
+            }
+        }
+    
+        overSampler.upSampleFilter1.process(upBuffer);
+        overSampler.upSampleFilter2.process(upBuffer);
+        applyGainLinear(upBuffer, PREAMP_UP_SAMPLE_FACTOR);
     }
+
+
+    if (doTablesaw) {
+        ZoneScopedN("TableSaw process");
+        tablesaw[0].dsp.compute((int)upBuffer.size, &upBuffer.dataL, &upBuffer.dataL);
+        if (upBuffer.dataR) {
+            tablesaw[1].dsp.compute((int)upBuffer.size, &upBuffer.dataR, &upBuffer.dataR);
+        }
+    }
+
+    if (doPreamp) {
+        preamp.process(upBuffer);
+    }
+
+    {
+        ZoneScopedN("DownSampling");        
+        overSampler.downSampleFilter1.process(upBuffer);
+        overSampler.downSampleFilter2.process(upBuffer);
+    
+        for (u32 i = 0; i < buffer.size; i++) {
+            buffer.dataL[i] = upBuffer.dataL[i*PREAMP_UP_SAMPLE_FACTOR];
+        }
+        if (buffer.dataR) {
+            for (u32 i = 0; i < buffer.size; i++) {
+                buffer.dataR[i] = upBuffer.dataR[i*PREAMP_UP_SAMPLE_FACTOR];
+            }
+        }
+    }
+
 
     if (doTonestack) {
         toneStack.process(buffer);
@@ -252,14 +315,14 @@ void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBu
     masterVolume.applySmoothGainLinear(buffer);
 
 
-    #if 0 // safety clip
+    #if 0 // safety CLIP
     for (u32 index = 0; index < buffer.size; index++) {
-        buffer.dataL[index] = clip(buffer.dataL[index], -1.0f, 1.0f);
+        buffer.dataL[index] = CLIP(buffer.dataL[index], -1.0f, 1.0f);
     }
 
     if (buffer.dataR) {
         for (u32 index = 0; index < buffer.size; index++) {
-            buffer.dataR[index] = clip(buffer.dataR[index], -1.0f, 1.0f);
+            buffer.dataR[index] = CLIP(buffer.dataR[index], -1.0f, 1.0f);
         }
     }
     #endif
@@ -376,6 +439,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
 
     if (id == paramInfos[GATE_HOLD].id) {
         noiseGate.holdCounterMax = (u32)(newValue * 0.001 * samplerate);
+        return;
     }
 
     if (id == paramInfos[SCREAMER_AMOUNT].id || id == paramInfos[SCREAMER_FREQ].id) {
@@ -395,36 +459,70 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
-    if (id == paramInfos[INPUT_FILTER].id) {
-        preamp.inputFilter.makeHighpass(newValue, preampSamplerate);
+
+    if (id == paramInfos[TABLESAW_GAIN].id) {
+        *(tablesaw[0].ui.zones[(int)FaustParams::Gain]) = newValue * 0.1f;
+        *(tablesaw[1].ui.zones[(int)FaustParams::Gain]) = newValue * 0.1f;
         return;
     }
+    
+    if (id == paramInfos[TABLESAW_HIGH].id) {
+        *(tablesaw[0].ui.zones[(int)FaustParams::High]) = newValue * 0.1f;
+        *(tablesaw[1].ui.zones[(int)FaustParams::High]) = newValue * 0.1f;
+        return;
+    }
+    
+    if (id == paramInfos[TABLESAW_LOW].id) {
+        *(tablesaw[0].ui.zones[(int)FaustParams::Low]) = newValue * 0.1f;        
+        *(tablesaw[1].ui.zones[(int)FaustParams::Low]) = newValue * 0.1f;        
+        return;
+    }
+    
+    if (id == paramInfos[TABLESAW_VOL].id) {
+        *(tablesaw[0].ui.zones[(int)FaustParams::Volume]) = newValue * 0.1f;
+        *(tablesaw[1].ui.zones[(int)FaustParams::Volume]) = newValue * 0.1f;
+        return;
+     }
+    
 
     if (id == paramInfos[DO_GATE].id) {
         doGate = (bool)newValue;
+        return;
     }
     
     if (id == paramInfos[DO_BOOST].id) {
         doBoost = (bool)newValue;
+        return;
     }
+
     if (id == paramInfos[DO_PREAMP].id) {
         doPreamp = (bool)newValue;
+        return;
     }
 
     if (id == paramInfos[DO_TONESTACK].id) {
         doTonestack = (bool)newValue;
+        return;
     }
 
     if (id == paramInfos[DO_EQ].id) {
         doEQ = (bool)newValue;
+        return;
+    }
+
+    if (id == paramInfos[DO_TABLESAW].id) {
+        doTablesaw = (bool)newValue;
+        return;
     }
 
     if (id == paramInfos[DO_IR].id) {
         irLoader.active = (bool)newValue;
+        return;
     }
 
     if (id == paramInfos[BRIGHT_CAP].id) {
         preamp.bright = (bool)newValue;
+        return;
     }
 
     if (id == paramInfos[CHANNEL].id) {
@@ -432,12 +530,15 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         return;
     }
 
+    if (id == paramInfos[INPUT_FILTER].id) {
+        preamp.inputFilter.makeHighpass(newValue, preampSamplerate);
+        return;
+    }
+    
     if (id == paramInfos[PREAMP_VOLUME].id) {
         preamp.volume.newTarget(dbtoa(newValue + preamp.outputAttenuationdB), SMOOTH_PARAM_TIME, preampSamplerate);
         return;
     }
-
-
     
     if (id == paramInfos[STAGE1_LP].id
         || id == paramInfos[STAGE1_BYPASS].id
@@ -692,7 +793,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
 
     // Input Boost params
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[SCREAMER_AMOUNT].id.toString(), "Screamer",
+        paramInfos[SCREAMER_AMOUNT].id.toString(), "Screamer Boost",
         juce::NormalisableRange<float>(0.0f, 20.0f, 0.1f, 1.0f), paramInfos[SCREAMER_AMOUNT].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
@@ -700,8 +801,29 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         juce::NormalisableRange<float>(500.0f, 4000.0f, 1.0f, 0.7f), paramInfos[SCREAMER_FREQ].defaultValue, attributes
     ));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        paramInfos[TIGHT].id.toString(), "Tight",
+        paramInfos[TIGHT].id.toString(), "Tight Freq",
         juce::NormalisableRange<float>(0.0f, 500.0f, 1.0f, 0.7f), paramInfos[TIGHT].defaultValue, attributes
+    ));
+
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[TABLESAW_GAIN].id.toString(), "Tablesaw Gain",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[TABLESAW_GAIN].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[TABLESAW_HIGH].id.toString(), "Tablesaw High",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[TABLESAW_HIGH].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[TABLESAW_LOW].id.toString(), "Tablesaw Low",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[TABLESAW_LOW].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[TABLESAW_VOL].id.toString(), "Tablesaw Volume",
+        juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[TABLESAW_VOL].defaultValue, attributes
     ));
 
 
@@ -713,6 +835,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         paramInfos[DO_BOOST].id.toString(), "Activate Boost",
         (bool)paramInfos[DO_BOOST].defaultValue
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        paramInfos[DO_TABLESAW].id.toString(), "Activate Boost",
+        (bool)paramInfos[DO_TABLESAW].defaultValue
     ));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(

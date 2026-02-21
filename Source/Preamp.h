@@ -14,7 +14,6 @@
 #include <assert.h>
 #include <memory>
 
-global_const u8 PREAMP_UP_SAMPLE_FACTOR = 8;
 global_const float tube_gain = 70.0f;
 
 struct Preamp {
@@ -59,16 +58,6 @@ struct Preamp {
     FirstOrderFilter stage5LP;
     
     SmoothParamLinear volume;
-
-    struct {
-        Biquad upSampleFilter1;
-        Biquad upSampleFilter2;
-        
-        Biquad downSampleFilter1;
-        Biquad downSampleFilter2;
-    } overSampler;
-
-    Slice upSampledBuffer = {};
 
     float outputAttenuationdB = -34.0f;
     u8 channel = 0;

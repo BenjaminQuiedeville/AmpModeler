@@ -13,6 +13,7 @@ struct NoiseGate {
     
     ~NoiseGate() {
         free(rms.buffer.dataL);
+        free(sideChain.dataL);
     }
 
     void prepareToPlay(float samplerate, u32 bufferSize) {
