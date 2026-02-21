@@ -11,8 +11,8 @@
 #include <math.h>
 #include <assert.h>
 
-#define DR_WAV_IMPLEMENTATION
 #include <dr_libs/dr_wav.h>
+
 
 #define BASE_IR_441_SIZE 1323
 static float baseIR_441[BASE_IR_441_SIZE] = {
@@ -23,7 +23,6 @@ static float baseIR_441[BASE_IR_441_SIZE] = {
 static float baseIR_48[BASE_IR_48_SIZE] = {
 #include "data/baseIR_48.txt"
 };
-
 
 void IRLoader::deallocateFFTEngine() {
     if (fftSetup) {
