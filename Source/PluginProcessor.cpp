@@ -560,7 +560,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
                                   SMOOTH_PARAM_TIME, preampSamplerate);
         preamp.brightCapFilter.makeLowShelf(
             550.0,
-            scale_linear(newValue, paramRange.start, paramRange.end, -15.0f, 0.0f),
+            scale_linear(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, -15.0f, 0.0f),
             preampSamplerate
         );
 
