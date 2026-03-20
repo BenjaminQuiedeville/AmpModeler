@@ -11,6 +11,8 @@ set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
  
 add_subdirectory(${JUCE_SOURCE_DIR})
 
+# juce_set_aax_sdk_path()
+
 juce_add_plugin(${PROJECT_NAME}
     COMPANY_NAME                FDN_Seeker
     IS_SYNTH                    FALSE
