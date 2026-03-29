@@ -549,6 +549,13 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
     brightToggle.setToggleable(true);    
     brightToggle.setClickingTogglesState(true);    
     addAndMakeVisible(brightToggle);
+    
+    parallelToggleAttachment = std::make_unique<ButtonAttachment>(
+        p.apvts, paramInfos[PARALLEL_STAGES].id.toString(), parallelToggle
+    );
+    parallelToggle.setToggleable(true);
+    parallelToggle.setClickingTogglesState(true);    
+    addAndMakeVisible(parallelToggle);
 }
 
 
@@ -590,6 +597,7 @@ void AmplifierPage::resized() {
     placeKnob(&preampVolumeKnob, presenceKnob.getRight() + horizontalSpacing,      trebbleEQKnob.getY(),                             knobWidth, knobHeight);
 
     brightToggle.setBounds(inputFilterKnob.getX() - 20, inputFilterKnob.getY() - labelHeight*2 - 10, 100, 30);
+    parallelToggle.setBounds(gain2Knob.getX() - 20, gain2Knob.getBottom(), 100, 30);
 }
 
 

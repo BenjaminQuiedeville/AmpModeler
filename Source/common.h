@@ -38,6 +38,8 @@ typedef int64_t  s64;
 #define min(x, y) (x) < (y) ? (x) : (y)
 #define max(x, y) (x) > (y) ? (x) : (y)
 
+#define isEven(x) !((x) & 1)
+
 inline float dbtoa(float value) {
     return std::pow(10.0f, value/20.0f);
 }

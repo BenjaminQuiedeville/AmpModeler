@@ -135,6 +135,9 @@ struct AmplifierPage : public juce::Component {
     juce::TextButton brightToggle {"Bright Switch"};
     std::unique_ptr<ButtonAttachment> brightToggleAttachment;
 
+    juce::TextButton parallelToggle {"Parallel Input Stages"};
+    std::unique_ptr<ButtonAttachment> parallelToggleAttachment;
+
     Knob gain1Knob;
     Knob gain2Knob;
     Knob inputFilterKnob;

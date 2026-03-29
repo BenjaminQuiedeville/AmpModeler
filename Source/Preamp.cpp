@@ -45,6 +45,15 @@ void Preamp::prepareToPlay(float samplerate, u32 blockSize) {
     cathodeBypassFilter2.reset();
     cathodeBypassFilter3.reset();
     cathodeBypassFilter4.reset();
+    
+    parallelStagesTempBuffer1.size = blockSize;
+    parallelStagesTempBuffer1.dataL = allocFloat(2*parallelStagesTempBuffer1.size);
+    parallelStagesTempBuffer1.dataR = &parallelStagesTempBuffer1.dataL[parallelStagesTempBuffer1.size];
+
+    parallelStagesTempBuffer2.size = blockSize;
+    parallelStagesTempBuffer2.dataL = allocFloat(2*parallelStagesTempBuffer2.size);
+    parallelStagesTempBuffer2.dataR = &parallelStagesTempBuffer2.dataL[parallelStagesTempBuffer2.size];
+
 }
 
 void Preamp::setBias(float bias, int tube_index) {
@@ -147,42 +156,106 @@ static void tubeSim(Slice buffer, float bias[2]) {
 }
 
 
-void Preamp::process(Slice buffer) {
+void Preamp::process(Slice buffer, u32 channel, bool bright, bool firstStagesParallel) {
     ZoneScopedN("Preamp");
-        
-    // ------------ Stage 1 ------------
-    gridConduction(buffer, 2.0f);        
-    cathodeBypassFilter1.process(buffer);        
-    tubeSim(buffer, stage1_bias);
-
-    inputFilter.process(buffer);
-    stage1LP.process(buffer);
-
-    stage1Gain.applySmoothGainLinear(buffer);
-    inputMudFilter.process(buffer);
-    midBoost.process(buffer);
-
-    if (bright) {
-        brightCapFilter.process(buffer);
-    }
-
-
-    // ------------ Stage 2 ------------
-    gridConduction(buffer, 4.0f);
-    if (channel != 1) { 
-        cathodeBypassFilter2.process(buffer); 
-    }
-    tubeSim(buffer, stage2_bias);
     
-    couplingFilter2.process(buffer);
-    stage2LP.process(buffer);
+    if (firstStagesParallel && channel != 1) {
+        
+        Slice tempBuffer1 = parallelStagesTempBuffer1;
+        Slice tempBuffer2 = parallelStagesTempBuffer2;
+        tempBuffer1.size = buffer.size;
+        tempBuffer2.size = buffer.size;
+        
+        memsetZeroFloat(tempBuffer1.dataL, tempBuffer1.size);
+        memsetZeroFloat(tempBuffer2.dataL, tempBuffer2.size);
+        if (buffer.dataR) {
+            memsetZeroFloat(tempBuffer1.dataR, tempBuffer1.size);
+            memsetZeroFloat(tempBuffer2.dataR, tempBuffer2.size);
+        }
 
-    if (channel == 1) {
-        goto gain_stages_end_of_scope;
+        copyFloat(tempBuffer1.dataL, buffer.dataL, buffer.size);
+        copyFloat(tempBuffer2.dataL, buffer.dataL, buffer.size);
+        if (buffer.dataR) {
+            copyFloat(tempBuffer1.dataR, buffer.dataR, buffer.size);
+            copyFloat(tempBuffer2.dataR, buffer.dataR, buffer.size);
+        }
+    
+        // ------------ Stage 1 ------------
+        gridConduction(tempBuffer1, 2.0f);        
+        cathodeBypassFilter1.process(tempBuffer1);        
+        tubeSim(tempBuffer1, stage1_bias);
+    
+        inputFilter.process(tempBuffer1);
+        stage1LP.process(tempBuffer1);
+    
+        stage1Gain.applySmoothGainLinear(tempBuffer1);
+        inputMudFilter.process(tempBuffer1);
+        midBoost.process(tempBuffer1);
+    
+        if (bright) {
+            brightCapFilter.process(tempBuffer1);
+        }
+    
+    
+        // ------------ Stage 2 ------------
+        gridConduction(tempBuffer2, 4.0f);
+        cathodeBypassFilter2.process(tempBuffer2); 
+        tubeSim(tempBuffer2, stage2_bias);
+        
+        couplingFilter2.process(tempBuffer2);
+        stage2LP.process(tempBuffer2);
+    
+        stage2Gain.applySmoothGainLinear(tempBuffer2);
+        
+        
+        memsetZeroFloat(buffer.dataL, buffer.size);
+        copyFloat(buffer.dataL, tempBuffer1.dataL, tempBuffer1.size);
+        for (u32 index = 0; index < buffer.size; index++) {
+            buffer.dataL[index] += tempBuffer2.dataL[index];
+        }
+        
+        if (buffer.dataR) {
+            memsetZeroFloat(buffer.dataR, buffer.size);
+            copyFloat(buffer.dataR, tempBuffer1.dataR, tempBuffer1.size);
+            for (u32 index = 0; index < buffer.size; index++) {
+                buffer.dataR[index] += tempBuffer2.dataR[index];
+            }
+        }
+    
+    } else {
+        // ------------ Stage 1 ------------
+        gridConduction(buffer, 2.0f);        
+        cathodeBypassFilter1.process(buffer);        
+        tubeSim(buffer, stage1_bias);
+    
+        inputFilter.process(buffer);
+        stage1LP.process(buffer);
+    
+        stage1Gain.applySmoothGainLinear(buffer);
+        inputMudFilter.process(buffer);
+        midBoost.process(buffer);
+    
+        if (bright) {
+            brightCapFilter.process(buffer);
+        }
+    
+    
+        // ------------ Stage 2 ------------
+        gridConduction(buffer, 4.0f);
+        if (channel != 1) { 
+            cathodeBypassFilter2.process(buffer); 
+        }
+        tubeSim(buffer, stage2_bias);
+        
+        couplingFilter2.process(buffer);
+        stage2LP.process(buffer);
+    
+        if (channel == 1) {
+            goto gain_stages_end_of_scope;
+        }
+    
+        stage2Gain.applySmoothGainLinear(buffer);
     }
-
-    stage2Gain.applySmoothGainLinear(buffer);
-
 
     // ------------ Stage 3 ------------
     gridConduction(buffer, 4.0f);
@@ -223,5 +296,15 @@ void Preamp::process(Slice buffer) {
 
     gain_stages_end_of_scope: {}
 
+    float phase = 1.0f;
+    if (isEven(channel)) {
+        phase = -1.0f;
+    }
+    
+    if (channel > 1 && firstStagesParallel) {
+        phase *= -1.0f;
+    }
+    
+    applyGainLinear(buffer, phase);
     volume.applySmoothGainLinear(buffer);
 }

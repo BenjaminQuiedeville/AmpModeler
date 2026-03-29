@@ -21,7 +21,10 @@ struct Preamp {
     
     void prepareToPlay(float samplerate, u32 blockSize); 
     void setBias(float value, int tube_index);  
-    void process(Slice buffer);
+    void process(Slice buffer, u32 channel, bool bright, bool firstStagesParallel);
+    
+    Slice parallelStagesTempBuffer1 = {nullptr, nullptr, 0};
+    Slice parallelStagesTempBuffer2 = {nullptr, nullptr, 0};
 
     FirstOrderFilter cathodeBypassFilter1;
     float stage1_bias[2] = {0};
@@ -60,8 +63,6 @@ struct Preamp {
     SmoothParamLinear volume;
 
     float outputAttenuationdB = -34.0f;
-    u8 channel = 0;
-    bool bright = true;
 };
 
 #endif // PREAMP_H

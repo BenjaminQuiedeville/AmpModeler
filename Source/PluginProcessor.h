@@ -70,6 +70,7 @@ enum Params {
     BRIGHT_CAP,
     CHANNEL,
     INPUT_FILTER,
+    PARALLEL_STAGES,
     PREAMP_VOLUME,
     
     STAGE1_LP,
@@ -160,6 +161,7 @@ global_const ParameterInfo paramInfos[N_PARAMS] {
     { "BRIGHT_CAP",           1.0f },
     { "CHANNEL",              3.0f },
     { "INPUT_FILTER",         100.0f },
+    { "PARALLEL_STAGES",      0.0f },
     { "PREAMP_VOLUME",        0.0f },
     
     { "STAGE1_LP",            15000.0f },

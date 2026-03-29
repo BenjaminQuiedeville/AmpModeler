@@ -269,7 +269,11 @@ void Processor::processBlock (juce::AudioBuffer<float>& juceBuffer, juce::MidiBu
     }
 
     if (doPreamp) {
-        preamp.process(upBuffer);
+    
+        u32 channel = (u32)*apvts.getRawParameterValue(paramInfos[CHANNEL].id);
+        bool bright = (bool)*apvts.getRawParameterValue(paramInfos[BRIGHT_CAP].id);
+        bool firstStagesParallel = (bool)*apvts.getRawParameterValue(paramInfos[PARALLEL_STAGES].id);
+        preamp.process(upBuffer, channel, bright, firstStagesParallel);
     }
 
     {
@@ -521,12 +525,12 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
     }
 
     if (id == paramInfos[BRIGHT_CAP].id) {
-        preamp.bright = (bool)newValue;
+        // preamp.bright = (bool)newValue;
         return;
     }
 
     if (id == paramInfos[CHANNEL].id) {
-        preamp.channel = (u8)newValue;
+        // preamp.channel = (u8)newValue;
         return;
     }
 
@@ -869,6 +873,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
         (bool)paramInfos[BRIGHT_CAP].defaultValue
     ));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        paramInfos[PARALLEL_STAGES].id.toString(), "Parallel Input Stages",
+        (bool)paramInfos[PARALLEL_STAGES].defaultValue
+    ));
+    
 
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[INPUT_FILTER].id.toString(), "Input Filter",
