@@ -98,6 +98,7 @@ struct GateBoostPage : public juce::Component {
     Knob tablesawHigh;
     Knob tablesawLow;
     Knob tablesawVolume;
+    Knob tablesawMix;
 
     Knob boostVolumeKnob;
     Knob boostFreqKnob;

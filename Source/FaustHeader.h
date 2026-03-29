@@ -9,9 +9,10 @@ struct Meta {
 };
 
 
-global_const u32 nFaustParams = 4;
+global_const u32 nFaustParams = 5;
 
 enum class FaustParams : u8 {
+    Mix,
     Gain,
     High,
     Low,

@@ -79,6 +79,7 @@ class TablesawDSP final : public dsp {
 	float fConst23;
 	float fRec0_perm[4];
 	FAUSTFLOAT fHslider3;
+	FAUSTFLOAT fHslider4;
 	
  public:
 	TablesawDSP() {
@@ -109,6 +110,9 @@ class TablesawDSP final : public dsp {
 		m->declare("maths.lib/license", "LGPL with exception");
 		m->declare("maths.lib/name", "Faust Math Library");
 		m->declare("maths.lib/version", "2.8.1");
+		m->declare("misceffects.lib/dryWetMixerConstantPower:author", "David Braun, revised by Stéphane Letz");
+		m->declare("misceffects.lib/name", "Misc Effects Library");
+		m->declare("misceffects.lib/version", "2.5.1");
 		m->declare("music.lib/author", "GRAME");
 		m->declare("music.lib/copyright", "GRAME");
 		m->declare("music.lib/deprecated", "This library is deprecated and is not maintained anymore. It will be removed in August 2017.");
@@ -116,6 +120,8 @@ class TablesawDSP final : public dsp {
 		m->declare("music.lib/name", "Music Library");
 		m->declare("music.lib/version", "1.0");
 		m->declare("name", "TableSaw");
+		m->declare("signals.lib/name", "Faust Signal Routing Library");
+		m->declare("signals.lib/version", "1.6.0");
 		m->declare("version", "0.0.1");
 	}
 
@@ -167,7 +173,8 @@ class TablesawDSP final : public dsp {
 		fHslider0 = FAUSTFLOAT(0.5f);
 		fHslider1 = FAUSTFLOAT(0.5f);
 		fHslider2 = FAUSTFLOAT(0.5f);
-		fHslider3 = FAUSTFLOAT(0.5f);
+		fHslider3 = FAUSTFLOAT(1.0f);
+		fHslider4 = FAUSTFLOAT(0.5f);
 	}
 	
 	void instanceClear() {
@@ -218,10 +225,11 @@ class TablesawDSP final : public dsp {
 	
 	void buildUserInterface(UI* ui_interface) {
 		ui_interface->openVerticalBox("TableSaw");
+		ui_interface->addHorizontalSlider("drywet", &fHslider3, FAUSTFLOAT(1.0f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.01f));
 		ui_interface->addHorizontalSlider("gain", &fHslider0, FAUSTFLOAT(0.5f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.1f));
 		ui_interface->addHorizontalSlider("high", &fHslider2, FAUSTFLOAT(0.5f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.1f));
 		ui_interface->addHorizontalSlider("low", &fHslider1, FAUSTFLOAT(0.5f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.1f));
-		ui_interface->addHorizontalSlider("vol", &fHslider3, FAUSTFLOAT(0.5f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.1f));
+		ui_interface->addHorizontalSlider("vol", &fHslider4, FAUSTFLOAT(0.5f), FAUSTFLOAT(0.0f), FAUSTFLOAT(1.0f), FAUSTFLOAT(0.1f));
 		ui_interface->closeBox();
 	}
 	
@@ -272,10 +280,12 @@ class TablesawDSP final : public dsp {
 		float fSlow23 = fConst18 * (fConst18 + fSlow21) + 1.0f;
 		float fRec0_tmp[36];
 		float* fRec0 = &fRec0_tmp[4];
-		float fSlow24 = ((iSlow8) ? fSlow17 : fConst20);
-		float fSlow25 = fConst22 * (fConst22 - fSlow24) + 1.0f;
-		float fSlow26 = fConst22 * (fConst22 + fSlow24) + 1.0f;
-		float fSlow27 = 0.31622776f * TablesawDSP_faustpower2_f(float(fHslider3));
+		float fSlow24 = 1.5707964f * float(fHslider3);
+		float fSlow25 = 0.70710677f * std::cos(fSlow24);
+		float fSlow26 = ((iSlow8) ? fSlow17 : fConst20);
+		float fSlow27 = fConst22 * (fConst22 - fSlow26) + 1.0f;
+		float fSlow28 = fConst22 * (fConst22 + fSlow26) + 1.0f;
+		float fSlow29 = 0.2236068f * std::sin(fSlow24) * TablesawDSP_faustpower2_f(float(fHslider4));
 		int vindex = 0;
 		/* Main loop */
 		for (vindex = 0; vindex <= (count - 32); vindex = vindex + 32) {
@@ -397,7 +407,7 @@ class TablesawDSP final : public dsp {
 			/* Vectorizable loop 9 */
 			/* Compute code */
 			for (int i = 0; i < vsize; i = i + 1) {
-				output0[i] = FAUSTFLOAT(fSlow27 * ((fZec3[i] + fRec0[i] * fSlow26 + fRec0[i - 2] * fSlow25) / fSlow19));
+				output0[i] = FAUSTFLOAT(fSlow29 * ((fZec3[i] + fRec0[i] * fSlow28 + fRec0[i - 2] * fSlow27) / fSlow19) + fSlow25 * float(input0[i]));
 			}
 		}
 		/* Remaining frames */
@@ -520,7 +530,7 @@ class TablesawDSP final : public dsp {
 			/* Vectorizable loop 9 */
 			/* Compute code */
 			for (int i = 0; i < vsize; i = i + 1) {
-				output0[i] = FAUSTFLOAT(fSlow27 * ((fZec3[i] + fRec0[i] * fSlow26 + fRec0[i - 2] * fSlow25) / fSlow19));
+				output0[i] = FAUSTFLOAT(fSlow29 * ((fZec3[i] + fRec0[i] * fSlow28 + fRec0[i - 2] * fSlow27) / fSlow19) + fSlow25 * float(input0[i]));
 			}
 		}
 	}

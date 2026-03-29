@@ -14,7 +14,7 @@
 #include <assert.h>
 #include <memory>
 
-global_const float tube_gain = 70.0f;
+global_const float tube_gain = 100.0f;
 
 struct Preamp {
     ~Preamp();

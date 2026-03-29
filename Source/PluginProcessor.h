@@ -58,6 +58,7 @@ enum Params {
     TABLESAW_HIGH,
     TABLESAW_LOW,
     TABLESAW_VOL,
+    TABLESAW_MIX,
 
     DO_GATE,
     DO_BOOST,
@@ -149,6 +150,7 @@ global_const ParameterInfo paramInfos[N_PARAMS] {
     { "TABLESAW_HIGH",        5.0f },
     { "TABLESAW_LOW",         5.0f },
     { "TABLESAW_VOL",         5.0f },
+    { "TABLESAW_MIX",         1.0f },
     
     { "DO_GATE",              1.0f },
     { "DO_BOOST",             0.0f },

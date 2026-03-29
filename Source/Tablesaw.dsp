@@ -13,6 +13,7 @@ gain = hslider("gain", 0.5, 0.0, 1.0, 0.1);
 eq_low = hslider("low", 0.5, 0.0, 1.0, 0.1);
 eq_high = hslider("high", 0.5, 0.0, 1.0, 0.1);
 volume = hslider("vol", 0.5, 0.0, 1.0, 0.1);
+drywet = hslider("drywet", 1.0, 0.0, 1.0, 0.01);
 
 // peak_eq_cq(boost_db, frequence, Q)
 // highpass/lowpass(ordre, frequence)
@@ -20,7 +21,7 @@ volume = hslider("vol", 0.5, 0.0, 1.0, 0.1);
 // bypass(circuit, param) = _ <: circuit, _ : *(param) * (1 - param) : +;
 // write_left_to_right(param) = (_ <: _, _), _ : _, (*(param), *(1-param) : +)
 
-process = hm2
+process = ef.dryWetMixerConstantPower(drywet, hm2)
 with {
 
     ceiling = 1.5;

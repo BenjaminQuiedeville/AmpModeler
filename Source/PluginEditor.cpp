@@ -303,6 +303,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
     tablesawHigh(        "TABLESAW_HIGH_LABEL",     "High",            this, paramInfos[TABLESAW_HIGH].id.toString(),   p.apvts, ""),
     tablesawLow(         "TABLESAW_LOW_LABEL",      "Low",             this, paramInfos[TABLESAW_LOW].id.toString(),    p.apvts, ""),
     tablesawVolume(      "TABLESAW_VOL_LABEL",      "Volume",          this, paramInfos[TABLESAW_VOL].id.toString(),    p.apvts, ""),
+    tablesawMix(         "TABLESAW_MIX_LABEL",      "Mix",             this, paramInfos[TABLESAW_MIX].id.toString(),    p.apvts, ""),
 
     boostVolumeKnob(     "BOOST_ATTACK_KNOB_LABEL", "Volume",          this, paramInfos[SCREAMER_AMOUNT].id.toString(), p.apvts, " dB"),
     boostFreqKnob(       "BOOST_FREQ_KNOB_LABEL",   "Frequency",       this, paramInfos[SCREAMER_FREQ].id.toString(),   p.apvts, " Hz"),
@@ -329,6 +330,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
         gateHysteresisKnob.setEnabled(state);
         gateHoldKnob.setEnabled(state);
     };
+    gateToggle.onStateChange();
         
     addAndMakeVisible(gateToggle);
     
@@ -346,6 +348,7 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
         boostFreqKnob.setEnabled(state);
         boostTightKnob.setEnabled(state);        
     };
+    boostToggle.onStateChange();
     
     addAndMakeVisible(boostToggle);
 
@@ -363,8 +366,10 @@ GateBoostPage::GateBoostPage(Editor *editor, Processor &p) :
         tablesawGain.setEnabled(state);
         tablesawVolume.setEnabled(state);
         tablesawHigh.setEnabled(state);
-        tablesawLow.setEnabled(state);        
+        tablesawLow.setEnabled(state);
+        tablesawMix.setEnabled(state);
     };
+    tablesawToggle.onStateChange();
     
     addAndMakeVisible(tablesawToggle);
 }
@@ -396,6 +401,7 @@ void GateBoostPage::resized() {
     placeKnob(&tablesawVolume,  tablesawGain.getX(),                         tablesawGain.getBottom(),        knobWidth, knobHeight);
     placeKnob(&tablesawHigh,    tablesawGain.getRight() + horizontalSpacing, tablesawGain.getY(),             knobWidth, knobHeight);
     placeKnob(&tablesawLow,     tablesawHigh.getX(),                         tablesawHigh.getBottom(),        knobWidth, knobHeight);
+    placeKnob(&tablesawMix,     tablesawVolume.getX(),                       tablesawVolume.getBottom(),      knobWidth, knobHeight);
 }
 
 
@@ -503,7 +509,6 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
         updateGainStageKnobsState(editor, state ? ampChannelBox.getSelectedId() : 0);
     };
 
-
     addAndMakeVisible(preampToggle);
 
     tonestackToggleAttachment = std::make_unique<ButtonAttachment>(
@@ -520,6 +525,7 @@ AmplifierPage::AmplifierPage(Editor *editor, Processor &p) :
         editor->ampPage.midEQKnob.setEnabled(state);
         editor->ampPage.trebbleEQKnob.setEnabled(state);
     };
+    tonestackToggle.onStateChange();
 
     addAndMakeVisible(tonestackToggle);
 
@@ -926,6 +932,7 @@ EQPage::EQPage(Editor *editor, Processor &p) :
         editor->eqPage.highShelfGainKnob.setEnabled(state);
         editor->eqPage.highCutFreqKnob.setEnabled(state);
     };
+    EQToggle.onStateChange();
 
     addAndMakeVisible(EQToggle);
 

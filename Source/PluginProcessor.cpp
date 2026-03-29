@@ -486,7 +486,13 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         *(tablesaw[0].ui.zones[(int)FaustParams::Volume]) = newValue * 0.1f;
         *(tablesaw[1].ui.zones[(int)FaustParams::Volume]) = newValue * 0.1f;
         return;
-     }
+    }
+    
+    if (id == paramInfos[TABLESAW_MIX].id) {
+        *(tablesaw[0].ui.zones[(int)FaustParams::Mix]) = newValue * 0.1f;
+        *(tablesaw[1].ui.zones[(int)FaustParams::Mix]) = newValue * 0.1f;
+        return;
+    }
     
 
     if (id == paramInfos[DO_GATE].id) {
@@ -828,6 +834,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout Processor::createParameterLa
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
         paramInfos[TABLESAW_VOL].id.toString(), "Tablesaw Volume",
         juce::NormalisableRange<float>(0.0f, 10.0f, 0.1f, 1.0f), paramInfos[TABLESAW_VOL].defaultValue, attributes
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        paramInfos[TABLESAW_MIX].id.toString(), "Tablesaw Mix",
+        juce::NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f), paramInfos[TABLESAW_MIX].defaultValue, attributes
     ));
 
 
