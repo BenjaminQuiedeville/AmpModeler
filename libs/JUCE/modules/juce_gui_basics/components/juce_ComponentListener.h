@@ -1,30 +1,82 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
 
 namespace juce
 {
+
+/** Holds timing and cache usage information for a Component's paint operation.
+
+    @see ComponentListener::componentPainted
+
+    @tags{GUI}
+*/
+struct JUCE_API ComponentPaintDiagnostics
+{
+    /** Total duration of the component's paint cycle. */
+    TimedDiagnostic totalPaintDuration{};
+
+    /** Duration spent executing the component's paint() method.
+
+        @see Component::paint
+    */
+    TimedDiagnostic paintDuration{};
+
+    /** Duration spent executing the component's paintOverChildren() method.
+
+        @see Component::paintOverChildren
+    */
+    TimedDiagnostic paintOverChildrenDuration{};
+
+    /** Duration spent executing ImageEffectFilter::applyEffect() as part of any
+        component effect.
+
+        @see Component::setComponentEffect, ImageEffectFilter::applyEffect
+    */
+    TimedDiagnostic applyEffectDuration{};
+
+    /** True if the component wrote its painted content to a cache.
+
+        @see Component::setBufferedToImage, Component::setCachedComponentImage
+    */
+    bool wroteToCache{};
+
+    /** True if the component read its painted content from a cache.
+
+        @see Component::setBufferedToImage, Component::setCachedComponentImage
+    */
+    bool readFromCache{};
+};
 
 //==============================================================================
 /**
@@ -39,7 +91,7 @@ namespace juce
 
     @tags{GUI}
 */
-class JUCE_API  ComponentListener
+class JUCE_API ComponentListener
 {
 public:
     /** Destructor. */
@@ -117,6 +169,31 @@ public:
        @see Component::setEnabled, Component::isEnabled, Component::enablementChanged
     */
     virtual void componentEnablementChanged (Component& component);
+
+    /** Called each time the component is painted into a context.
+
+        This will be called once, each time the component is painted into a
+        graphics context. This might be to paint the component directly or to
+        paint a cached image of the component. To get more detailed information
+        regarding user overridable paint methods see componentPaintMethodsCalled().
+
+        This callback may be called while trying to paint components. This means
+        the time taken in this callback may be taken into account as part of
+        any parent components ComponentPaintDiagnostics. Therefore, an effort
+        should be made to keep any work in this callback to a bare minimum in
+        order to prevent distorting any results.
+
+        It's important not to rely on the precise timing of this callback. The
+        only guarantees are that the callback will occur some time after the
+        component is painted (although the contents of that paint call may not
+        have been updated to the screen).
+
+        @param component    the component that was painted
+        @param diagnostics  general diagnostics for painting the component
+
+        @see componentPaintMethodsCalled
+    */
+    virtual void componentPainted (Component& component, const ComponentPaintDiagnostics& diagnostics);
 };
 
 } // namespace juce

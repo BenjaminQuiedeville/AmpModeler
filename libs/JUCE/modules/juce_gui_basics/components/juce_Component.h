@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -455,6 +464,19 @@ public:
     */
     void setTopRightPosition (int x, int y);
 
+    /** Moves the component to a new position.
+
+        Changes the position of the component's top-right corner (keeping it the same size).
+        The position is relative to the top-left of the component's parent.
+
+        If the component actually moves, this method will make a synchronous call to moved().
+
+        Note that if you've used setTransform() to apply a transform, then the component's
+        bounds will no longer be a direct reflection of the position at which it appears within
+        its parent, as the transform will be applied to whatever bounds you set for it.
+    */
+    void setTopRightPosition (Point<int>);
+
     /** Changes the size of the component.
 
         A synchronous call to resized() will occur if the size actually changes.
@@ -867,8 +889,8 @@ public:
         Components with custom shapes will probably want to override it to perform
         some more complex hit-testing.
 
-        The default implementation of this method returns either true or false,
-        depending on the value that was set by calling setInterceptsMouseClicks() (true
+        The default implementation of this method returns either 'client' or 'none',
+        depending on the value that was set by calling setInterceptsMouseClicks() ('client'
         is the default return value).
 
         Note that the hit-test region is not related to the opacity with which
@@ -891,6 +913,61 @@ public:
         @see setInterceptsMouseClicks, contains
     */
     virtual bool hitTest (int x, int y);
+
+    /** Types of control that are commonly found in windows, especially title-bars. */
+    enum class WindowControlKind
+    {
+        client,             ///< Parts of the component that are not transparent and also don't have any of the following control functions
+        caption,            ///< The part of a title bar that may be dragged by the mouse to move the window
+        minimise,           ///< The minimise/iconify button
+        maximise,           ///< The maximise/zoom button
+        close,              ///< The button that dismisses the component
+        sizeTop,            ///< The area that may be dragged to move the top edge of the window
+        sizeLeft,           ///< The area that may be dragged to move the left edge of the window
+        sizeRight,          ///< The area that may be dragged to move the right edge of the window
+        sizeBottom,         ///< The area that may be dragged to move the bottom edge of the window
+        sizeTopLeft,        ///< The area that may be dragged to move the top-left corner of the window
+        sizeTopRight,       ///< The area that may be dragged to move the top-right corner of the window
+        sizeBottomLeft,     ///< The area that may be dragged to move the bottom-left corner of the window
+        sizeBottomRight,    ///< The area that may be dragged to move the bottom-right corner of the window
+    };
+
+    /** For components that are added to the desktop, this may be called to determine what kind of
+        control is at particular locations in the window. On Windows, this is used to provide
+        functionality like Aero Snap (snapping the window to half of the screen after dragging the
+        window's caption area to the edge of the screen), double-clicking a horizontal border to
+        stretch a window vertically, and the window tiling flyout that appears when hovering the
+        mouse over the maximise button.
+
+        It's dangerous to call Component::contains from an overriding function, because this might
+        call into the peer to do system hit-testing - but the system hit-test could in turn call
+        findControlAtPoint, leading to infinite recursion. It's better to use functions like
+        Rectangle::contains or Path::contains to test for the window control areas.
+
+        This is called by the peer. Component subclasses may override this but should not call it directly.
+     */
+    virtual WindowControlKind findControlAtPoint (Point<float>) const { return WindowControlKind::client; }
+
+    /** For components that are added to the desktop, this may be called to indicate that the mouse
+        was clicked inside the area of the "close" control. This is currently only called on Windows.
+
+        This is called by the peer. Component subclasses may override this but should not call it directly.
+    */
+    virtual void windowControlClickedClose() {}
+
+    /** For components that are added to the desktop, this may be called to indicate that the mouse
+        was clicked inside the area of the "minimise" control. This is currently only called on Windows.
+
+        This is called by the peer. Component subclasses may override this but should not call it directly.
+    */
+    virtual void windowControlClickedMinimise() {}
+
+    /** For components that are added to the desktop, this may be called to indicate that the mouse
+        was clicked inside the area of the "maximise" control. This is currently only called on Windows.
+
+        This is called by the peer. Component subclasses may override this but should not call it directly.
+    */
+    virtual void windowControlClickedMaximise() {}
 
     /** Changes the default return value for the hitTest() method.
 
@@ -1070,7 +1147,7 @@ public:
 
     /** Generates a snapshot of part of this component.
 
-        This will return a new Image, the size of the rectangle specified,
+        This will return a new Image of type imageType, the size of the rectangle specified,
         containing a snapshot of the specified area of the component and all
         its children.
 
@@ -1085,7 +1162,8 @@ public:
     */
     Image createComponentSnapshot (Rectangle<int> areaToGrab,
                                    bool clipImageToComponentBounds = true,
-                                   float scaleFactor = 1.0f);
+                                   float scaleFactor = 1.0f,
+                                   const ImageType& imageType = NativeImageType{});
 
     /** Draws this component and all its subcomponents onto the specified graphics
         context.
@@ -1116,7 +1194,7 @@ public:
 
         If you enable this mode, you'll need to make sure your paint method doesn't call anything like
         Graphics::fillAll(), and doesn't draw beyond the component's bounds, because that'll produce
-        artifacts. This option will have no effect on components that contain any child components.
+        artifacts.
     */
     void setPaintingIsUnclipped (bool shouldPaintWithoutClipping) noexcept;
 
@@ -1144,7 +1222,7 @@ public:
     /** Returns the current component effect.
         @see setComponentEffect
     */
-    ImageEffectFilter* getComponentEffect() const noexcept              { return effect; }
+    ImageEffectFilter* getComponentEffect() const noexcept;
 
     //==============================================================================
     /** Finds the appropriate look-and-feel to use for this component.
@@ -1172,6 +1250,9 @@ public:
     */
     void setLookAndFeel (LookAndFeel* newLookAndFeel);
 
+    /** Returns a copy of the FontOptions with the default metrics kind from the component's LookAndFeel. */
+    FontOptions withDefaultMetrics (FontOptions opt) const;
+
     /** Called to let the component react to a change in the look-and-feel setting.
 
         When the look-and-feel is changed for a component, this method, repaint(), and
@@ -1195,14 +1276,20 @@ public:
     /** Indicates whether any parts of the component might be transparent.
 
         Components that always paint all of their contents with solid colour and
-        thus completely cover any components behind them should use this method
+        thus completely cover any components behind them, can use this method to
         to tell the repaint system that they are opaque.
 
         This information is used to optimise drawing, because it means that
-        objects underneath opaque windows don't need to be painted.
+        objects underneath opaque components or windows don't need to be painted
+        or can have their clip bounds reduced to a smaller size.
 
-        By default, components are considered transparent, unless this is used to
-        make it otherwise.
+        Note however that there is a cost for every other component to check if
+        it is being obscured by opaque components. This cost should be carefully
+        weighed up against the benefits before deciding to enable this.
+
+        The default value of this property is false, which means that a
+        component will be considered transparent unless setOpaque (true) is
+        called on that component.
 
         @see isOpaque
     */
@@ -2277,9 +2364,9 @@ public:
 
     /** This method is called when a colour is changed by the setColour() method,
         or when the look-and-feel is changed by the setLookAndFeel() or
-        sendLookAndFeelChanged() methods.
+        sendLookAndFeelChange() methods.
 
-        @see setColour, findColour, setLookAndFeel, sendLookAndFeelChanged
+        @see setColour, findColour, setLookAndFeel, sendLookAndFeelChange
     */
     virtual void colourChanged();
 
@@ -2332,7 +2419,10 @@ public:
         ComponentType* operator->() const noexcept            { return getComponent(); }
 
         /** If the component is valid, this deletes it and sets this pointer to null. */
-        void deleteAndZero()                                  { delete getComponent(); }
+        void deleteAndZero()                                  { delete std::exchange (weakRef, nullptr); }
+
+        bool operator== (SafePointer other) const noexcept    { return weakRef == other.weakRef; }
+        bool operator!= (SafePointer other) const noexcept    { return ! operator== (other); }
 
         bool operator== (ComponentType* component) const noexcept   { return weakRef == component; }
         bool operator!= (ComponentType* component) const noexcept   { return weakRef != component; }
@@ -2418,7 +2508,10 @@ public:
     /** Returns the object that was set by setCachedComponentImage().
         @see setCachedComponentImage
     */
-    CachedComponentImage* getCachedComponentImage() const noexcept      { return cachedImage.get(); }
+    CachedComponentImage* getCachedComponentImage() const noexcept;
+
+    /** Invalidates cached images, both in the CachedComponentImage (if any) and the image effect state. */
+    void invalidateCachedImageResources();
 
     /** Sets a flag to indicate whether mouse drag events on this Component should be ignored when it is inside a
         Viewport with drag-to-scroll functionality enabled. This is useful for Components such as sliders that
@@ -2540,7 +2633,7 @@ public:
     virtual std::unique_ptr<AccessibilityHandler> createAccessibilityHandler();
 
     //==============================================================================
-   #ifndef DOXYGEN
+    /** @cond */
     [[deprecated ("Use the setFocusContainerType that takes a more descriptive enum.")]]
     void setFocusContainer (bool shouldBeFocusContainer) noexcept
     {
@@ -2550,7 +2643,7 @@ public:
 
     [[deprecated ("Use the contains that takes a Point<int>.")]]
     void contains (int, int) = delete;
-   #endif
+    /** @endcond */
 
 private:
 
@@ -2558,31 +2651,27 @@ private:
     friend class ComponentPeer;
     friend class detail::MouseInputSourceImpl;
 
-   #ifndef DOXYGEN
+    /** @cond */
     static Component* currentlyFocusedComponent;
 
     //==============================================================================
     String componentName, componentID, componentTitle, componentDescription, componentHelpText;
     Component* parentComponent = nullptr;
     Rectangle<int> boundsRelativeToParent;
-    std::unique_ptr<Positioner> positioner;
-    std::unique_ptr<AffineTransform> affineTransform;
     Array<Component*> childComponentList;
     WeakReference<LookAndFeel> lookAndFeel;
     MouseCursor cursor;
-    ImageEffectFilter* effect = nullptr;
-    std::unique_ptr<CachedComponentImage> cachedImage;
 
-    class MouseListenerList;
-    std::unique_ptr<MouseListenerList> mouseListeners;
-    std::unique_ptr<Array<KeyListener*>> keyListeners;
     ListenerList<ComponentListener> componentListeners;
     NamedValueSet properties;
 
     friend class WeakReference<Component>;
     WeakReference<Component>::Master masterReference;
 
-    std::unique_ptr<AccessibilityHandler> accessibilityHandler;
+    class EffectState;
+    class MouseListenerList;
+    class Data;
+    std::unique_ptr<Data> componentData;
 
     struct ComponentFlags
     {
@@ -2623,14 +2712,16 @@ private:
     uint8 componentTransparency = 0;
 
     //==============================================================================
-    void internalMouseEnter (MouseInputSource, Point<float>, Time);
-    void internalMouseExit  (MouseInputSource, Point<float>, Time);
-    void internalMouseDown  (MouseInputSource, const detail::PointerState&, Time);
-    void internalMouseUp    (MouseInputSource, const detail::PointerState&, Time, ModifierKeys oldModifiers);
-    void internalMouseDrag  (MouseInputSource, const detail::PointerState&, Time);
-    void internalMouseMove  (MouseInputSource, Point<float>, Time);
-    void internalMouseWheel (MouseInputSource, Point<float>, Time, const MouseWheelDetails&);
-    void internalMagnifyGesture (MouseInputSource, Point<float>, Time, float);
+    class OpaqueLayer;
+
+    static void internalMouseEnter (SafePointer<Component>, MouseInputSource, Point<float>, Time);
+    static void internalMouseExit  (SafePointer<Component>, MouseInputSource, Point<float>, Time);
+    static void internalMouseDown  (SafePointer<Component>, MouseInputSource, const detail::PointerState&, Time);
+    static void internalMouseUp    (SafePointer<Component>, MouseInputSource, const detail::PointerState&, Time, ModifierKeys oldModifiers);
+    static void internalMouseDrag  (SafePointer<Component>, MouseInputSource, const detail::PointerState&, Time);
+    static void internalMouseMove  (SafePointer<Component>, MouseInputSource, Point<float>, Time);
+    static void internalMouseWheel (SafePointer<Component>, MouseInputSource, Point<float>, Time, const MouseWheelDetails&);
+    static void internalMagnifyGesture (SafePointer<Component>, MouseInputSource, Point<float>, Time, float);
     void internalBroughtToFront();
     void internalKeyboardFocusGain (FocusChangeType, const WeakReference<Component>&, FocusChangeDirection);
     void internalKeyboardFocusGain (FocusChangeType);
@@ -2644,8 +2735,9 @@ private:
     void internalRepaintUnchecked (Rectangle<int>, bool);
     Component* removeChildComponent (int index, bool sendParentEvents, bool sendChildEvents);
     void reorderChildInternal (int sourceIndex, int destIndex);
-    void paintComponentAndChildren (Graphics&);
-    void paintWithinParentContext (Graphics&);
+    void paintEntireComponent (Graphics&, bool, OpaqueLayer&, ComponentPaintDiagnostics&);
+    void paintComponentAndChildren (Graphics&, OpaqueLayer&, ComponentPaintDiagnostics&);
+    void paintWithinParentContext (Graphics&, OpaqueLayer&, ComponentPaintDiagnostics&);
     void sendMovedResizedMessages (bool wasMoved, bool wasResized);
     void sendMovedResizedMessagesIfPending();
     void repaintParent();
@@ -2655,8 +2747,8 @@ private:
     void giveAwayKeyboardFocusInternal (bool sendFocusLossEvent);
     void sendEnablementChangeMessage();
     void sendVisibilityChangeMessage();
-
-    friend struct detail::ComponentHelpers;
+    Data& createDataIfNeeded();
+    const Array<KeyListener*>* getKeyListeners() const;
 
     /* Components aren't allowed to have copy constructors, as this would mess up parent hierarchies.
        You might need to give your subclasses a private dummy constructor to avoid compiler warnings.
@@ -2669,7 +2761,7 @@ protected:
     virtual ComponentPeer* createNewPeer (int styleFlags, void* nativeWindowToAttachTo);
     /** @internal */
     static std::unique_ptr<AccessibilityHandler> createIgnoredAccessibilityHandler (Component&);
-   #endif
+    /** @endcond */
 };
 
 } // namespace juce
