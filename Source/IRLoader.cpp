@@ -176,7 +176,8 @@ IRLoaderError IRLoader::loadIR() {
                 "Error during the opening of the wav file, try another one sorry",
                 "Ok");
             error = IRLoaderError::Error;
-            goto wav_opening_scope_end;
+            drwav_uninit(&wav);
+            return error;
         }
 
         if (wav.channels > 1) {
@@ -186,7 +187,8 @@ IRLoaderError IRLoader::loadIR() {
                 "Sorry, I don't support IRs with more than one channels for now, please choose another file",
                 "Ok");
             error = IRLoaderError::Error;
-            goto wav_opening_scope_end;
+            drwav_uninit(&wav);
+            return error;
         }
         
         free(irBuffer);
@@ -210,10 +212,6 @@ IRLoaderError IRLoader::loadIR() {
 
         // the IR is fully loaded at the end of the process function
         updateIR = true;
-
-        wav_opening_scope_end: {
-            drwav_uninit(&wav);
-        }
     }
 
     return error;
