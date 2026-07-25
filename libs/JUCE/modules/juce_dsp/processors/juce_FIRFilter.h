@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -36,12 +45,12 @@ namespace juce::dsp::FIR
         A processing class that can perform FIR filtering on an audio signal, in the
         time domain.
 
-        Using FIRFilter is fast enough for FIRCoefficients with a size lower than 128
-        samples. For longer filters, it might be more efficient to use the class
+        Using FIR::Filter is fast enough for FIR::Coefficients with a size lower than
+        128 samples. For longer filters, it might be more efficient to use the class
         Convolution instead, which does the same processing in the frequency domain
         thanks to FFT.
 
-        @see FIRFilter::Coefficients, Convolution, FFT
+        @see FIR::Coefficients, Convolution, FFT
 
         @tags{DSP}
     */
@@ -100,6 +109,8 @@ namespace juce::dsp::FIR
 
                 for (size_t i = 0; i < size; ++i)
                     fifo[i] = SampleType {0};
+
+                pos = 0;
             }
         }
 
@@ -203,9 +214,9 @@ namespace juce::dsp::FIR
 
     //==============================================================================
     /**
-        A set of coefficients for use in an FIRFilter object.
+        A set of coefficients for use in an FIR::Filter object.
 
-        @see FIRFilter
+        @see FIR::Filter
 
         @tags{DSP}
     */

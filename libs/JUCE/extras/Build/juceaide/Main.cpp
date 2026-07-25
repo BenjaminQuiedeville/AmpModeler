@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -108,47 +117,61 @@ struct IconParseResults
 {
     juce::build_tools::Icons icons;
     juce::File output;
+    juce::String iconName;
 };
 
-IconParseResults parseIconArguments (juce::ArgumentList&& args)
+enum class IconNameSpecified
 {
-    args.checkMinNumArguments (2);
-    const auto output = args.arguments.removeAndReturn (0);
+    no,
+    yes
+};
 
-    const auto popDrawable = [&args]() -> std::unique_ptr<juce::Drawable>
+IconParseResults parseIconArguments (juce::ArgumentList&& args, IconNameSpecified iconNameSpecified)
+{
+    args.checkMinNumArguments (iconNameSpecified == IconNameSpecified::yes ? 3 : 2);
+    const auto output = args.arguments.removeAndReturn (0);
+    const auto iconName = std::invoke ([&]
+    {
+        if (iconNameSpecified == IconNameSpecified::yes)
+            return args.arguments.removeAndReturn (0).text;
+
+        return juce::String{};
+    });
+
+    const auto popFile = [&args]() -> juce::File
     {
         if (args.size() == 0)
             return {};
 
-        const auto firstArgText = args.arguments.removeAndReturn (0).text;
-        return juce::Drawable::createFromImageFile (firstArgText);
+        return args.arguments.removeAndReturn (0).text;
     };
 
-    auto smallIcon = popDrawable();
-    auto bigIcon   = popDrawable();
+    const auto smallIcon = popFile();
+    const auto bigIcon   = popFile();
 
-    return { { std::move (smallIcon), std::move (bigIcon) }, output.text };
+    return { juce::build_tools::Icons::fromFilesSmallAndBig (smallIcon, bigIcon), output.text, iconName };
 }
 
 int writeMacIcon (juce::ArgumentList&& argumentList)
 {
-    const auto parsed = parseIconArguments (std::move (argumentList));
+    const auto parsed = parseIconArguments (std::move (argumentList), IconNameSpecified::yes);
     juce::build_tools::writeMacIcon (parsed.icons, parsed.output);
     return 0;
 }
 
 int writeiOSAssets (juce::ArgumentList&& argumentList)
 {
-    const auto parsed = parseIconArguments (std::move (argumentList));
+    const auto parsed = parseIconArguments (std::move (argumentList), IconNameSpecified::yes);
     juce::build_tools::createXcassetsFolderFromIcons (parsed.icons,
                                                       parsed.output.getParentDirectory(),
-                                                      parsed.output.getFileName());
+                                                      parsed.output.getFileName(),
+                                                      parsed.iconName);
     return 0;
 }
 
 int writeWinIcon (juce::ArgumentList&& argumentList)
 {
-    const auto parsed = parseIconArguments (std::move (argumentList));
+    const auto parsed = parseIconArguments (std::move (argumentList), IconNameSpecified::no);
     juce::build_tools::writeWinIcon (parsed.icons, parsed.output);
     return 0;
 }
@@ -243,6 +266,8 @@ juce::build_tools::PlistOptions parsePlistOptions (const juce::File& file,
     updateField ("CAMERA_PERMISSION_TEXT",               result.cameraPermissionText);
     updateField ("BLUETOOTH_PERMISSION_ENABLED",         result.bluetoothPermissionEnabled);
     updateField ("BLUETOOTH_PERMISSION_TEXT",            result.bluetoothPermissionText);
+    updateField ("LOCAL_NETWORK_PERMISSION_ENABLED",     result.localNetworkPermissionEnabled);
+    updateField ("LOCAL_NETWORK_PERMISSION_TEXT",        result.localNetworkPermissionText);
     updateField ("SEND_APPLE_EVENTS_PERMISSION_ENABLED", result.sendAppleEventsPermissionEnabled);
     updateField ("SEND_APPLE_EVENTS_PERMISSION_TEXT",    result.sendAppleEventsPermissionText);
     updateField ("SHOULD_ADD_STORYBOARD",                result.shouldAddStoryboardToProject);
@@ -274,6 +299,7 @@ juce::build_tools::PlistOptions parsePlistOptions (const juce::File& file,
     updateField ("SUPPRESS_AU_PLIST_RESOURCE_USAGE",     result.suppressResourceUsage);
     updateField ("BUNDLE_ID",                            result.bundleIdentifier);
     updateField ("ICON_FILE",                            result.iconFile);
+    updateField ("ICON_COMPOSER_BUNDLE",                 result.iconComposerIcon);
 
     result.type = type;
 
@@ -289,6 +315,8 @@ juce::build_tools::PlistOptions parsePlistOptions (const juce::File& file,
                 "This app requires access to Bluetooth to function correctly.");
     setIfEmpty (result.sendAppleEventsPermissionText,
                 "This app requires the ability to send Apple events to function correctly.");
+    setIfEmpty (result.localNetworkPermissionText,
+                "This app requires access to the local network to function correctly.");
 
     result.documentExtensions = result.documentExtensions.replace (";", ",");
 
@@ -322,9 +350,6 @@ int writePlist (juce::ArgumentList&& args)
 juce::build_tools::EntitlementOptions parseEntitlementsOptions (const juce::File& file,
                                                                 juce::build_tools::ProjectType::Target::Type type)
 {
-    if (type == juce::build_tools::ProjectType::Target::ConsoleApp)
-        juce::ConsoleApplication::fail ("Deduced project type does not require entitlements", 1);
-
     const auto dict = parseProjectData (file);
 
     UpdateField updateField { dict };
@@ -517,6 +542,12 @@ int writeHeader (juce::ArgumentList&& args)
     return createAndWrite (output.resolveAsFile(), headerText);
 }
 
+int printJUCEVersion (juce::ArgumentList&&)
+{
+    std::cout << juce::SystemStats::getJUCEVersion() << std::endl;
+    return 0;
+}
+
 } // namespace
 
 int main (int argc, char** argv)
@@ -552,6 +583,7 @@ int main (int argc, char** argv)
             { "pkginfo",         writePkgInfo },
             { "plist",           writePlist },
             { "rcfile",          writeRcFile },
+            { "version",         printJUCEVersion },
             { "winicon",         writeWinIcon }
         };
 
@@ -578,5 +610,9 @@ int main (int argc, char** argv)
         {
             juce::ConsoleApplication::fail ("Unhandled exception");
         }
+
+        return 1;
     });
+
+    return 0;
 }

@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -78,7 +87,7 @@ class OpenGLContext::NativeContext
 private:
     struct DummyComponent  : public Component
     {
-        DummyComponent (OpenGLContext::NativeContext& nativeParentContext)
+        explicit DummyComponent (NativeContext& nativeParentContext)
             : native (nativeParentContext)
         {
         }
@@ -89,7 +98,7 @@ private:
                 native.triggerRepaint();
         }
 
-        OpenGLContext::NativeContext& native;
+        NativeContext& native;
     };
 
     template <typename Traits>
@@ -100,7 +109,7 @@ private:
 
         ScopedGLXObject() = default;
 
-        explicit ScopedGLXObject (Type obj, ::Display* d)
+        ScopedGLXObject (Type obj, ::Display* d)
             : object (obj), display (d) {}
 
         ScopedGLXObject (ScopedGLXObject&& other) noexcept
@@ -206,14 +215,14 @@ public:
         swa.border_pixel = 0;
         swa.event_mask = embeddedWindowEventMask;
 
-        auto glBounds = component.getTopLevelComponent()->getLocalArea (&component, component.getLocalBounds());
+        const auto physicalBounds = getPhysicalBounds();
 
-        glBounds = Desktop::getInstance().getDisplays().logicalToPhysical (glBounds);
-
-        embeddedWindow = X11Symbols::getInstance()->xCreateWindow (display, windowH,
-                                                                   glBounds.getX(), glBounds.getY(),
-                                                                   (unsigned int) jmax (1, glBounds.getWidth()),
-                                                                   (unsigned int) jmax (1, glBounds.getHeight()),
+        embeddedWindow = X11Symbols::getInstance()->xCreateWindow (display,
+                                                                   windowH,
+                                                                   physicalBounds.getX(),
+                                                                   physicalBounds.getY(),
+                                                                   (unsigned int) jmax (1, physicalBounds.getWidth()),
+                                                                   (unsigned int) jmax (1, physicalBounds.getHeight()),
                                                                    0, visual->depth,
                                                                    InputOutput,
                                                                    visual->visual,
@@ -263,11 +272,11 @@ public:
         {
             switch (c.versionRequired)
             {
-                case OpenGLVersion::openGL3_2: return Version { 3, 2 };
-                case OpenGLVersion::openGL4_1: return Version { 4, 1 };
-                case OpenGLVersion::openGL4_3: return Version { 4, 3 };
+                case openGL3_2: return Version { 3, 2 };
+                case openGL4_1: return Version { 4, 1 };
+                case openGL4_3: return Version { 4, 3 };
 
-                case OpenGLVersion::defaultGLVersion: break;
+                case defaultGLVersion: break;
             }
 
             return {};
@@ -349,14 +358,27 @@ public:
         glXSwapBuffers (display, glxWindow.get());
     }
 
-    void updateWindowPosition (Rectangle<int> newBounds)
+    Rectangle<int> getPhysicalBounds() const
     {
-        bounds = newBounds;
-        auto physicalBounds = Desktop::getInstance().getDisplays().logicalToPhysical (bounds);
+        if (auto* peer = component.getPeer())
+        {
+            const auto peerBounds = peer->getAreaCoveredBy (component);
+            const auto physicalBounds = peerBounds.toDouble() * peer->getPlatformScaleFactor();
+            return physicalBounds.toNearestInt();
+        }
+
+        return component.getBounds();
+    }
+
+    void updateWindowPosition()
+    {
+        const auto physicalBounds = getPhysicalBounds();
 
         XWindowSystemUtilities::ScopedXLock xLock;
-        X11Symbols::getInstance()->xMoveResizeWindow (display, embeddedWindow,
-                                                      physicalBounds.getX(), physicalBounds.getY(),
+        X11Symbols::getInstance()->xMoveResizeWindow (display,
+                                                      embeddedWindow,
+                                                      physicalBounds.getX(),
+                                                      physicalBounds.getY(),
                                                       (unsigned int) jmax (1, physicalBounds.getWidth()),
                                                       (unsigned int) jmax (1, physicalBounds.getHeight()));
     }
@@ -394,6 +416,9 @@ public:
         explicit Locker (NativeContext& ctx) : lock (ctx.mutex) {}
         const ScopedLock lock;
     };
+
+    void addListener (NativeContextListener&) {}
+    void removeListener (NativeContextListener&) {}
 
 private:
     bool tryChooseVisual (const OpenGLPixelFormat& format, const std::vector<GLint>& optionalAttribs)
@@ -435,7 +460,6 @@ private:
     std::optional<PeerListener> peerListener;
 
     int swapFrames = 0;
-    Rectangle<int> bounds;
     std::unique_ptr<GLXFBConfig, XFreeDeleter> bestConfig;
     void* contextToShareWith;
 

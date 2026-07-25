@@ -14,7 +14,7 @@ add_subdirectory(${JUCE_SOURCE_DIR})
 # juce_set_aax_sdk_path()
 
 juce_add_plugin(${PROJECT_NAME}
-    COMPANY_NAME                "FDN Seeker"
+    COMPANY_NAME                "FDNSeeker"
     IS_SYNTH                    FALSE
     NEEDS_MIDI_INPUT            FALSE 
     NEEDS_MIDI_OUTPUT           FALSE 

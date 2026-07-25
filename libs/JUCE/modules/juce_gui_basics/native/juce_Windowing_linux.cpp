@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -26,7 +35,6 @@
 namespace juce
 {
 
-//==============================================================================
 class LinuxComponentPeer final : public ComponentPeer,
                                  private XWindowSystemUtilities::XSettings::Listener
 {
@@ -35,7 +43,7 @@ public:
         : ComponentPeer (comp, windowStyleFlags),
           isAlwaysOnTop (comp.isAlwaysOnTop())
     {
-        // it's dangerous to create a window on a thread other than the message thread.
+        // it's dangerous to create a window on a thread other than the message thread
         JUCE_ASSERT_MESSAGE_MANAGER_IS_LOCKED
 
         const auto* instance = XWindowSystem::getInstance();
@@ -63,7 +71,7 @@ public:
 
     ~LinuxComponentPeer() override
     {
-        // it's dangerous to delete a window on a thread other than the message thread.
+        // it's dangerous to delete a window on a thread other than the message thread
         JUCE_ASSERT_MESSAGE_MANAGER_IS_LOCKED
 
         auto* instance = XWindowSystem::getInstance();
@@ -90,20 +98,34 @@ public:
     }
 
     //==============================================================================
-    void forceSetBounds (const Rectangle<int>& correctedNewBounds, bool isNowFullScreen)
+    void forceSetBoundsPhysical (const Rectangle<int>& physicalBoundsIn, bool isNowFullScreen)
     {
-        bounds = correctedNewBounds;
+        const auto position = getMultimonitorPositionOverride().value_or (physicalBoundsIn.getPosition());
+        const auto correctedNewBounds = physicalBoundsIn.withSize (jmax (1, physicalBoundsIn.getWidth()),
+                                                                   jmax (1, physicalBoundsIn.getHeight()))
+                                                        .withPosition (position);
 
-        updateScaleFactorFromNewBounds (bounds, false);
+        if (correctedNewBounds == physicalBounds && isNowFullScreen == fullScreen)
+            return;
 
-        auto physicalBounds = parentWindow == 0 ? Desktop::getInstance().getDisplays().logicalToPhysical (bounds)
-                                                : bounds * currentScaleFactor;
-
-        WeakReference<Component> deletionChecker (&component);
-
-        XWindowSystem::getInstance()->setBounds (windowH, physicalBounds, isNowFullScreen);
-
+        updateScaleFactorFromNewBounds (correctedNewBounds, true);
+        physicalBounds = correctedNewBounds;
         fullScreen = isNowFullScreen;
+
+        const WeakReference deletionChecker (&component);
+
+        // If we are in a ConfigureNotify handler then forceSetBounds is being called as a
+        // consequence of X11 telling us what the window size is. There's no need to report this
+        // size back again to X11. By this we are avoiding a pitfall, when we get many subsequent
+        // ConfigureNotify events, many of which has stale size information. By not calling
+        // XWindowSystem::setBounds we are not actualising these old, incorrect sizes.
+        if (! inConfigureNotifyHandler)
+        {
+            const auto optionalSerial = XWindowSystem::getInstance()->setBounds (windowH,
+                                                                                 physicalBounds,
+                                                                                 isNowFullScreen);
+            moveResizeSerial = jmax (moveResizeSerial, optionalSerial.value_or (0));
+        }
 
         if (deletionChecker != nullptr)
         {
@@ -112,34 +134,32 @@ public:
         }
     }
 
-    void setBounds (const Rectangle<int>& newBounds, bool isNowFullScreen) override
+    void forceSetBounds (const Rectangle<int>& correctedNewBounds, bool isNowFullScreen)
     {
-        const auto correctedNewBounds = newBounds.withSize (jmax (1, newBounds.getWidth()),
-                                                            jmax (1, newBounds.getHeight()));
+        updateScaleFactorFromNewBounds (correctedNewBounds, false);
+        const auto scaled = correctedNewBounds.toFloat() * getPlatformScaleFactor();
 
-        if (bounds != correctedNewBounds || fullScreen != isNowFullScreen)
-            forceSetBounds (correctedNewBounds, isNowFullScreen);
+        using SH = detail::ScalingHelpers;
+        const auto physical = SH::convertLogicalScreenPointToPhysical (correctedNewBounds.getPosition().toFloat());
+
+        forceSetBoundsPhysical ((parentWindow == 0 ? scaled.withPosition (physical)
+                                                   : scaled).toNearestInt(),
+                                isNowFullScreen);
     }
 
-    Point<int> getScreenPosition (bool physical) const
+    void setBounds (const Rectangle<int>& newBounds, bool isNowFullScreen) override
     {
-        auto physicalParentPosition = XWindowSystem::getInstance()->getPhysicalParentScreenPosition();
-        auto parentPosition = parentWindow == 0 ? Desktop::getInstance().getDisplays().physicalToLogical (physicalParentPosition)
-                                                : physicalParentPosition / currentScaleFactor;
+        forceSetBounds (newBounds, isNowFullScreen);
+    }
 
-        auto screenBounds = parentWindow == 0 ? bounds
-                                              : bounds.translated (parentPosition.x, parentPosition.y);
-
-        if (physical)
-            return parentWindow == 0 ? Desktop::getInstance().getDisplays().logicalToPhysical (screenBounds.getTopLeft())
-                                     : screenBounds.getTopLeft() * currentScaleFactor;
-
-        return screenBounds.getTopLeft();
+    void setBoundsPhysical (const Rectangle<int>& newBounds)
+    {
+        forceSetBoundsPhysical (newBounds, false);
     }
 
     Rectangle<int> getBounds() const override
     {
-        return bounds;
+        return (physicalBounds.toFloat() / getPlatformScaleFactor()).toNearestInt();
     }
 
     OptionalBorderSize getFrameSizeIfPresent() const override
@@ -153,14 +173,24 @@ public:
         return optionalBorderSize ? (*optionalBorderSize) : BorderSize<int>();
     }
 
-    Point<float> localToGlobal (Point<float> relativePosition) override
+    Point<float> localToMultimonitor (Point<float> x) override
     {
-        return localToGlobal (*this, relativePosition);
+        return localToMultimonitor (*this, x);
     }
 
-    Point<float> globalToLocal (Point<float> screenPosition) override
+    Point<float> multimonitorToLocal (Point<float> x) override
     {
-        return globalToLocal (*this, screenPosition);
+        return multimonitorToLocal (*this, x);
+    }
+
+    Point<float> localToGlobal (Point<float> x) override
+    {
+        return localToGlobal (*this, x);
+    }
+
+    Point<float> globalToLocal (Point<float> x) override
+    {
+        return globalToLocal (*this, x);
     }
 
     using ComponentPeer::localToGlobal;
@@ -195,6 +225,11 @@ public:
         return XWindowSystem::getInstance()->isMinimised (windowH);
     }
 
+    bool isShowing() const override
+    {
+        return ! XWindowSystem::getInstance()->isMinimised (windowH);
+    }
+
     void setFullScreen (bool shouldBeFullScreen) override
     {
         auto r = lastNonFullscreenBounds; // (get a copy of this before de-minimising)
@@ -210,7 +245,7 @@ public:
 
             if (shouldBeFullScreen)
                 r = usingNativeTitleBar ? XWindowSystem::getInstance()->getWindowBounds (windowH, parentWindow)
-                                        : Desktop::getInstance().getDisplays().getDisplayForRect (bounds)->userArea;
+                                        : Desktop::getInstance().getDisplays().getDisplayForRect (physicalBounds, true)->userBounds.getSmallestIntegerContainer();
 
             if (! r.isEmpty())
                 setBounds (detail::ScalingHelpers::scaledScreenPosToUnscaled (component, r), shouldBeFullScreen);
@@ -226,7 +261,7 @@ public:
 
     bool contains (Point<int> localPos, bool trueIfInAChildWindow) const override
     {
-        if (! bounds.withZeroOrigin().contains (localPos))
+        if (! getBounds().withZeroOrigin().contains (localPos))
             return false;
 
         for (int i = Desktop::getInstance().getNumComponents(); --i >= 0;)
@@ -250,7 +285,7 @@ public:
         if (trueIfInAChildWindow)
             return true;
 
-        return XWindowSystem::getInstance()->contains (windowH, localPos * currentScaleFactor);
+        return XWindowSystem::getInstance()->contains (windowH, localPos * getPlatformScaleFactor());
     }
 
     void toFront (bool makeActive) override
@@ -296,7 +331,7 @@ public:
     void repaint (const Rectangle<int>& area) override
     {
         if (repainter != nullptr)
-            repainter->repaint (area.getIntersection (bounds.withZeroOrigin()));
+            repainter->repaint (area.getIntersection (getBounds().withZeroOrigin()));
     }
 
     void performAnyPendingRepaintsNow() override
@@ -312,7 +347,24 @@ public:
 
     double getPlatformScaleFactor() const noexcept override
     {
-        return currentScaleFactor;
+        return scaleFactorOverride.value_or (currentScaleFactor);
+    }
+
+    void setCustomPlatformScaleFactor (std::optional<double> scaleIn) override
+    {
+        const auto prev = getPlatformScaleFactor();
+        scaleFactorOverride = scaleIn;
+        const auto next = getPlatformScaleFactor();
+
+        if (approximatelyEqual (prev, next))
+            return;
+
+        scaleFactorListeners.call ([&] (ScaleFactorListener& l) { l.nativeScaleFactorChanged (next); });
+    }
+
+    std::optional<double> getCustomPlatformScaleFactor() const override
+    {
+        return scaleFactorOverride;
     }
 
     void setAlpha (float) override                                  {}
@@ -361,12 +413,8 @@ public:
         if (isConstrainedNativeWindow())
             XWindowSystem::getInstance()->updateConstraints (windowH);
 
-        auto physicalBounds = XWindowSystem::getInstance()->getWindowBounds (windowH, parentWindow);
-
+        physicalBounds = XWindowSystem::getInstance()->getWindowBounds (windowH, parentWindow);
         updateScaleFactorFromNewBounds (physicalBounds, true);
-
-        bounds = parentWindow == 0 ? Desktop::getInstance().getDisplays().physicalToLogical (physicalBounds)
-                                   : physicalBounds / currentScaleFactor;
 
         updateVBlankTimer();
     }
@@ -375,18 +423,18 @@ public:
     {
         if ((styleFlags & windowHasTitleBar) == 0)
         {
-            windowBorder = ComponentPeer::OptionalBorderSize { BorderSize<int>() };
+            windowBorder = OptionalBorderSize { BorderSize<int>() };
         }
         else if (! windowBorder
                  || ((*windowBorder).getTopAndBottom() == 0 && (*windowBorder).getLeftAndRight() == 0))
         {
-            windowBorder = [&]()
+            windowBorder = std::invoke ([&]
             {
                 if (auto unscaledBorderSize = XWindowSystem::getInstance()->getBorderSize (windowH))
-                    return OptionalBorderSize { (*unscaledBorderSize).multipliedBy (1.0 / currentScaleFactor) };
+                    return OptionalBorderSize { (*unscaledBorderSize).multipliedBy (1.0 / getPlatformScaleFactor()) };
 
-                return OptionalBorderSize {};
-            }();
+                return OptionalBorderSize{};
+            });
         }
     }
 
@@ -407,6 +455,12 @@ public:
     //==============================================================================
     static bool isActiveApplication;
     bool focused = false;
+    bool inConfigureNotifyHandler = false;
+
+    unsigned long getMoveResizeSerial() const
+    {
+        return moveResizeSerial;
+    }
 
 private:
     //==============================================================================
@@ -434,7 +488,7 @@ private:
 
         void repaint (Rectangle<int> area)
         {
-            regionsNeedingRepaint.add (area * peer.currentScaleFactor);
+            regionsNeedingRepaint.add (area * peer.getPlatformScaleFactor());
         }
 
         void performAnyPendingRepaintsNow()
@@ -469,8 +523,10 @@ private:
                         // This issue only occurs right after peer creation, when the image is
                         // null. Updating when only the width or height is changed would lead to
                         // incorrect behaviour.
-                        peer.forceSetBounds (detail::ScalingHelpers::scaledScreenPosToUnscaled (peer.component, peer.component.getBoundsInParent()),
-                                             peer.isFullScreen());
+                        using SH = detail::ScalingHelpers;
+                        const auto unscaled = SH::scaledScreenPosToUnscaled (peer.component,
+                                                                             peer.component.getBoundsInParent());
+                        peer.forceSetBounds (unscaled, peer.isFullScreen());
                     }
                 }
 
@@ -485,7 +541,7 @@ private:
                     auto context = peer.getComponent().getLookAndFeel()
                                      .createGraphicsContext (image, -totalArea.getPosition(), adjustedList);
 
-                    context->addTransform (AffineTransform::scale ((float) peer.currentScaleFactor));
+                    context->addTransform (AffineTransform::scale ((float) peer.getPlatformScaleFactor()));
                     peer.handlePaint (*context);
                 }
 
@@ -508,17 +564,39 @@ private:
         JUCE_DECLARE_NON_COPYABLE (LinuxRepaintManager)
     };
 
-    //==============================================================================
+    template <typename This>
+    static Point<float> localToMultimonitor (This& t, Point<float> x)
+    {
+        const auto localPhysical = x * t.getPlatformScaleFactor();
+        const auto multimonitor = localPhysical + t.getPhysicalScreenPosition().toFloat();
+        return multimonitor;
+    }
+
+    template <typename This>
+    static Point<float> multimonitorToLocal (This& t, Point<float> x)
+    {
+        const auto localPhysical = x - t.getPhysicalScreenPosition().toFloat();
+        const auto local = localPhysical / t.getPlatformScaleFactor();
+        return local;
+    }
+
     template <typename This>
     static Point<float> localToGlobal (This& t, Point<float> relativePosition)
     {
-        return relativePosition + t.getScreenPosition (false).toFloat();
+        return detail::ScalingHelpers::convertPhysicalScreenPointToLogical (localToMultimonitor (t, relativePosition));
     }
 
     template <typename This>
     static Point<float> globalToLocal (This& t, Point<float> screenPosition)
     {
-        return screenPosition - t.getScreenPosition (false).toFloat();
+        return multimonitorToLocal (t, detail::ScalingHelpers::convertLogicalScreenPointToPhysical (screenPosition));
+    }
+
+    Point<int> getPhysicalScreenPosition() const
+    {
+        const auto physicalParentPosition = XWindowSystem::getInstance()->getPhysicalParentScreenPosition();
+        return parentWindow == 0 ? physicalBounds.getTopLeft()
+                                 : physicalBounds.getTopLeft().translated (physicalParentPosition.x, physicalParentPosition.y);
     }
 
     //==============================================================================
@@ -534,25 +612,30 @@ private:
 
     void updateScaleFactorFromNewBounds (const Rectangle<int>& newBounds, bool isPhysical)
     {
-        Point<int> translation = (parentWindow != 0 ? getScreenPosition (isPhysical) : Point<int>());
+        const auto translationScale = isPhysical ? 1.0f : getPlatformScaleFactor();
+        const auto translation = (parentWindow != 0 ? (getPhysicalScreenPosition().toFloat() / translationScale).roundToInt() : Point<int>());
         const auto& desktop = Desktop::getInstance();
+
+        const auto prev = getPlatformScaleFactor();
 
         if (auto* display = desktop.getDisplays().getDisplayForRect (newBounds.translated (translation.x, translation.y),
                                                                      isPhysical))
         {
-            auto newScaleFactor = display->scale / desktop.getGlobalScaleFactor();
-
-            if (! approximatelyEqual (newScaleFactor, currentScaleFactor))
-            {
-                currentScaleFactor = newScaleFactor;
-                scaleFactorListeners.call ([&] (ScaleFactorListener& l) { l.nativeScaleFactorChanged (currentScaleFactor); });
-            }
+            currentScaleFactor = display->scale / desktop.getGlobalScaleFactor();
         }
+
+        const auto next = getPlatformScaleFactor();
+
+        if (approximatelyEqual (prev, next))
+            return;
+
+        scaleFactorListeners.call ([&] (ScaleFactorListener& l) { l.nativeScaleFactorChanged (next); });
     }
 
     void onVBlank()
     {
-        vBlankListeners.call ([] (auto& l) { l.onVBlank(); });
+        const auto timestampSec = Time::getMillisecondCounterHiRes() / 1000.0;
+        callVBlankListeners (timestampSec);
 
         if (repainter != nullptr)
             repainter->dispatchDeferredRepaints();
@@ -560,7 +643,7 @@ private:
 
     void updateVBlankTimer()
     {
-        if (auto* display = Desktop::getInstance().getDisplays().getDisplayForRect (bounds))
+        if (auto* display = Desktop::getInstance().getDisplays().getDisplayForRect (physicalBounds, true))
         {
             // Some systems fail to set an explicit refresh rate, or ask for a refresh rate of 0
             // (observed on Raspbian Bullseye over VNC). In these situations, use a fallback value.
@@ -577,12 +660,14 @@ private:
     TimedCallback vBlankManager { [this]() { onVBlank(); } };
 
     ::Window windowH = {}, parentWindow = {};
-    Rectangle<int> bounds;
+    Rectangle<int> physicalBounds;
     ComponentPeer::OptionalBorderSize windowBorder;
     bool fullScreen = false, isAlwaysOnTop = false;
+    std::optional<double> scaleFactorOverride;
     double currentScaleFactor = 1.0;
     Array<Component*> glRepaintListeners;
     ScopedWindowAssociation association;
+    unsigned long moveResizeSerial = 0;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LinuxComponentPeer)
@@ -606,14 +691,14 @@ JUCE_API void JUCE_CALLTYPE Process::hide()                   {}
 void Desktop::setKioskComponent (Component* comp, bool enableOrDisable, bool)
 {
     if (enableOrDisable)
-        comp->setBounds (getDisplays().getDisplayForRect (comp->getScreenBounds())->totalArea);
+        comp->setBounds (getDisplays().getDisplayForRect (comp->getScreenBounds())->logicalBounds.getSmallestIntegerContainer());
 }
 
-void Displays::findDisplays (float masterScale)
+void Displays::findDisplays (const Desktop& desktop)
 {
     if (XWindowSystem::getInstance()->getDisplay() != nullptr)
     {
-        displays = XWindowSystem::getInstance()->findDisplays (masterScale);
+        displays = XWindowSystem::getInstance()->findDisplays (desktop.getGlobalScaleFactor());
 
         if (! displays.isEmpty())
             updateToLogical();
@@ -714,12 +799,12 @@ bool detail::MouseInputSourceList::canUseTouch() const
 
 Point<float> MouseInputSource::getCurrentRawMousePosition()
 {
-    return Desktop::getInstance().getDisplays().physicalToLogical (XWindowSystem::getInstance()->getCurrentMousePosition());
+    return detail::ScalingHelpers::convertPhysicalScreenPointToLogical (XWindowSystem::getInstance()->getCurrentMousePosition());
 }
 
 void MouseInputSource::setRawMousePosition (Point<float> newPosition)
 {
-    XWindowSystem::getInstance()->setMousePosition (Desktop::getInstance().getDisplays().logicalToPhysical (newPosition));
+    XWindowSystem::getInstance()->setMousePosition (detail::ScalingHelpers::convertLogicalScreenPointToPhysical (newPosition));
 }
 
 //==============================================================================

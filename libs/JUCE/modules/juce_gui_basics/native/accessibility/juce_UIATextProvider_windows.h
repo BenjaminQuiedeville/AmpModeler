@@ -1,24 +1,33 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE library.
-   Copyright (c) 2022 - Raw Material Software Limited
+   This file is part of the JUCE framework.
+   Copyright (c) Raw Material Software Limited
 
-   JUCE is an open source library subject to commercial or open-source
+   JUCE is an open source framework subject to commercial or open source
    licensing.
 
-   By using JUCE, you agree to the terms of both the JUCE 7 End-User License
-   Agreement and JUCE Privacy Policy.
+   By downloading, installing, or using the JUCE framework, or combining the
+   JUCE framework with any other source code, object code, content or any other
+   copyrightable work, you agree to the terms of the JUCE End User Licence
+   Agreement, and all incorporated terms including the JUCE Privacy Policy and
+   the JUCE Website Terms of Service, as applicable, which will bind you. If you
+   do not agree to the terms of these agreements, we will not license the JUCE
+   framework to you, and you must discontinue the installation or download
+   process and cease use of the JUCE framework.
 
-   End User License Agreement: www.juce.com/juce-7-licence
-   Privacy Policy: www.juce.com/juce-privacy-policy
+   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
+   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
+   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
 
-   Or: You may also use this code under the terms of the GPL v3 (see
-   www.gnu.org/licenses).
+   Or:
 
-   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
-   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
-   DISCLAIMED.
+   You may also use this code under the terms of the AGPLv3:
+   https://www.gnu.org/licenses/agpl-3.0.en.html
+
+   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
+   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
+   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
 
   ==============================================================================
 */
@@ -28,7 +37,7 @@ namespace juce
 
 //==============================================================================
 class UIATextProvider  : public UIAProviderBase,
-                         public ComBaseClassHelper<ComTypes::ITextProvider2>
+                         public ComBaseClassHelper<ITextProvider2>
 {
 public:
     using UIAProviderBase::UIAProviderBase;
@@ -38,11 +47,11 @@ public:
     {
         JUCE_BEGIN_IGNORE_WARNINGS_GCC_LIKE ("-Wlanguage-extension-token")
 
-        if (iid == __uuidof (IUnknown) || iid == __uuidof (ComTypes::ITextProvider))
-            return castToType<ComTypes::ITextProvider> (result);
+        if (iid == __uuidof (IUnknown) || iid == __uuidof (ITextProvider))
+            return castToType<ITextProvider> (result);
 
-        if (iid == __uuidof (ComTypes::ITextProvider2))
-            return castToType<ComTypes::ITextProvider2> (result);
+        if (iid == __uuidof (ITextProvider2))
+            return castToType<ITextProvider2> (result);
 
         *result = nullptr;
         return E_NOINTERFACE;
@@ -51,7 +60,7 @@ public:
     }
 
     //==============================================================================
-    JUCE_COMRESULT get_DocumentRange (ComTypes::ITextRangeProvider** pRetVal) override
+    JUCE_COMRESULT get_DocumentRange (ITextRangeProvider** pRetVal) override
     {
         return withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
         {
@@ -60,11 +69,11 @@ public:
         });
     }
 
-    JUCE_COMRESULT get_SupportedTextSelection (ComTypes::SupportedTextSelection* pRetVal) override
+    JUCE_COMRESULT get_SupportedTextSelection (SupportedTextSelection* pRetVal) override
     {
         return withCheckedComArgs (pRetVal, *this, [&]
         {
-            *pRetVal = ComTypes::SupportedTextSelection_Single;
+            *pRetVal = SupportedTextSelection_Single;
             return S_OK;
         });
     }
@@ -73,27 +82,24 @@ public:
     {
         return withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
         {
-            *pRetVal = SafeArrayCreateVector (VT_UNKNOWN, 0, 1);
+            SafeArrayHandle result { SafeArrayCreateVector (VT_UNKNOWN, 0, 1) };
 
-            if (pRetVal != nullptr)
-            {
-                auto selection = textInterface.getSelection();
-                auto hasSelection = ! selection.isEmpty();
-                auto cursorPos = textInterface.getTextInsertionOffset();
+            if (result == nullptr)
+                return E_FAIL;
 
-                auto* rangeProvider = new UIATextRangeProvider (*this,
-                                                                { hasSelection ? selection.getStart() : cursorPos,
-                                                                  hasSelection ? selection.getEnd()   : cursorPos });
+            auto selection = textInterface.getSelection();
+            auto hasSelection = ! selection.isEmpty();
+            auto cursorPos = textInterface.getTextInsertionOffset();
 
-                LONG pos = 0;
-                auto hr = SafeArrayPutElement (*pRetVal, &pos, static_cast<IUnknown*> (rangeProvider));
+            ComSmartPtr rangeProvider { new UIATextRangeProvider (*this,
+                                                                  { hasSelection ? selection.getStart() : cursorPos,
+                                                                  hasSelection ? selection.getEnd()   : cursorPos }),
+                                        IncrementRef::no };
 
-                if (FAILED (hr))
-                    return E_FAIL;
+            if (LONG pos = 0; FAILED (SafeArrayPutElement (result.get(), &pos, static_cast<IUnknown*> (rangeProvider))))
+                return E_FAIL;
 
-                rangeProvider->Release();
-            }
-
+            *pRetVal = result.release();
             return S_OK;
         });
     }
@@ -102,26 +108,23 @@ public:
     {
         return withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
         {
-            *pRetVal = SafeArrayCreateVector (VT_UNKNOWN, 0, 1);
+            SafeArrayHandle result { SafeArrayCreateVector (VT_UNKNOWN, 0, 1) };
 
-            if (pRetVal != nullptr)
-            {
-                auto* rangeProvider = new UIATextRangeProvider (*this, { 0, textInterface.getTotalNumCharacters() });
+            if (result == nullptr)
+                return E_FAIL;
 
-                LONG pos = 0;
-                auto hr = SafeArrayPutElement (*pRetVal, &pos, static_cast<IUnknown*> (rangeProvider));
+            ComSmartPtr rangeProvider { new UIATextRangeProvider (*this, { 0, textInterface.getTotalNumCharacters() }),
+                                        IncrementRef::no };
 
-                if (FAILED (hr))
-                    return E_FAIL;
+            if (LONG pos = 0; FAILED (SafeArrayPutElement (result.get(), &pos, static_cast<IUnknown*> (rangeProvider))))
+                return E_FAIL;
 
-                rangeProvider->Release();
-            }
-
+            *pRetVal = result.release();
             return S_OK;
         });
     }
 
-    JUCE_COMRESULT RangeFromChild (IRawElementProviderSimple*, ComTypes::ITextRangeProvider** pRetVal) override
+    JUCE_COMRESULT RangeFromChild (IRawElementProviderSimple*, ITextRangeProvider** pRetVal) override
     {
         return withCheckedComArgs (pRetVal, *this, []
         {
@@ -129,7 +132,7 @@ public:
         });
     }
 
-    JUCE_COMRESULT RangeFromPoint (ComTypes::UiaPoint point, ComTypes::ITextRangeProvider** pRetVal) override
+    JUCE_COMRESULT RangeFromPoint (UiaPoint point, ITextRangeProvider** pRetVal) override
     {
         return withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
         {
@@ -143,7 +146,7 @@ public:
     }
 
     //==============================================================================
-    JUCE_COMRESULT GetCaretRange (BOOL* isActive, ComTypes::ITextRangeProvider** pRetVal) override
+    JUCE_COMRESULT GetCaretRange (BOOL* isActive, ITextRangeProvider** pRetVal) override
     {
         return withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
         {
@@ -156,7 +159,7 @@ public:
         });
     }
 
-    JUCE_COMRESULT RangeFromAnnotation (IRawElementProviderSimple*, ComTypes::ITextRangeProvider** pRetVal) override
+    JUCE_COMRESULT RangeFromAnnotation (IRawElementProviderSimple*, ITextRangeProvider** pRetVal) override
     {
         return withCheckedComArgs (pRetVal, *this, []
         {
@@ -180,12 +183,12 @@ private:
 
     //==============================================================================
     class UIATextRangeProvider  : public UIAProviderBase,
-                                  public ComBaseClassHelper<ComTypes::ITextRangeProvider>
+                                  public ComBaseClassHelper<ITextRangeProvider>
     {
     public:
         UIATextRangeProvider (UIATextProvider& textProvider, Range<int> range)
             : UIAProviderBase (textProvider.getHandler().getNativeImplementation()),
-              owner (&textProvider),
+              owner (&textProvider, IncrementRef::yes),
               selectionRange (range)
         {
         }
@@ -199,7 +202,7 @@ private:
             return Select();
         }
 
-        JUCE_COMRESULT Clone (ComTypes::ITextRangeProvider** pRetVal) override
+        JUCE_COMRESULT Clone (ITextRangeProvider** pRetVal) override
         {
             return withCheckedComArgs (pRetVal, *this, [&]
             {
@@ -208,7 +211,7 @@ private:
             });
         }
 
-        JUCE_COMRESULT Compare (ComTypes::ITextRangeProvider* range, BOOL* pRetVal) override
+        JUCE_COMRESULT Compare (ITextRangeProvider* range, BOOL* pRetVal) override
         {
             return withCheckedComArgs (pRetVal, *this, [&]
             {
@@ -217,9 +220,9 @@ private:
             });
         }
 
-        JUCE_COMRESULT CompareEndpoints (ComTypes::TextPatternRangeEndpoint endpoint,
-                                         ComTypes::ITextRangeProvider* targetRange,
-                                         ComTypes::TextPatternRangeEndpoint targetEndpoint,
+        JUCE_COMRESULT CompareEndpoints (TextPatternRangeEndpoint endpoint,
+                                         ITextRangeProvider* targetRange,
+                                         TextPatternRangeEndpoint targetEndpoint,
                                          int* pRetVal) override
         {
             if (targetRange == nullptr)
@@ -227,19 +230,19 @@ private:
 
             return withCheckedComArgs (pRetVal, *this, [&]
             {
-                auto offset = (endpoint == ComTypes::TextPatternRangeEndpoint_Start ? selectionRange.getStart()
-                                                                                    : selectionRange.getEnd());
+                auto offset = (endpoint == TextPatternRangeEndpoint_Start ? selectionRange.getStart()
+                                                                          : selectionRange.getEnd());
 
                 auto otherRange = static_cast<UIATextRangeProvider*> (targetRange)->getSelectionRange();
-                auto otherOffset = (targetEndpoint == ComTypes::TextPatternRangeEndpoint_Start ? otherRange.getStart()
-                                                                                               : otherRange.getEnd());
+                auto otherOffset = (targetEndpoint == TextPatternRangeEndpoint_Start ? otherRange.getStart()
+                                                                                     : otherRange.getEnd());
 
                 *pRetVal = offset - otherOffset;
                 return S_OK;
             });
         }
 
-        JUCE_COMRESULT ExpandToEnclosingUnit (ComTypes::TextUnit unit) override
+        JUCE_COMRESULT ExpandToEnclosingUnit (TextUnit unit) override
         {
             if (! isElementValid())
                 return (HRESULT) UIA_E_ELEMENTNOTAVAILABLE;
@@ -271,7 +274,7 @@ private:
             return (HRESULT) UIA_E_NOTSUPPORTED;
         }
 
-        JUCE_COMRESULT FindAttribute (TEXTATTRIBUTEID, VARIANT, BOOL, ComTypes::ITextRangeProvider** pRetVal) override
+        JUCE_COMRESULT FindAttribute (TEXTATTRIBUTEID, VARIANT, BOOL, ITextRangeProvider** pRetVal) override
         {
             return withCheckedComArgs (pRetVal, *this, []
             {
@@ -280,7 +283,7 @@ private:
         }
 
         JUCE_COMRESULT FindText (BSTR text, BOOL backward, BOOL ignoreCase,
-                                 ComTypes::ITextRangeProvider** pRetVal) override
+                                 ITextRangeProvider** pRetVal) override
         {
             return owner->withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
             {
@@ -303,8 +306,6 @@ private:
             {
                 VariantHelpers::clear (pRetVal);
 
-                using namespace ComTypes::Constants;
-
                 switch (attributeId)
                 {
                     case UIA_IsReadOnlyAttributeId:
@@ -320,12 +321,12 @@ private:
                         auto caretPos = [&]
                         {
                             if (cursorPos == 0)
-                                return ComTypes::CaretPosition_BeginningOfLine;
+                                return CaretPosition_BeginningOfLine;
 
                             if (cursorPos == textInterface.getTotalNumCharacters())
-                                return ComTypes::CaretPosition_EndOfLine;
+                                return CaretPosition_EndOfLine;
 
-                            return ComTypes::CaretPosition_Unknown;
+                            return CaretPosition_Unknown;
                         }();
 
                         VariantHelpers::setInt (caretPos, pRetVal);
@@ -344,20 +345,17 @@ private:
                 auto rectangleList = textInterface.getTextBounds (selectionRange);
                 auto numRectangles = rectangleList.getNumRectangles();
 
-                *pRetVal = SafeArrayCreateVector (VT_R8, 0, 4 * (ULONG) numRectangles);
+                SafeArrayHandle result { SafeArrayCreateVector (VT_R8, 0, 4 * (ULONG) numRectangles) };
 
-                if (*pRetVal == nullptr)
+                if (result == nullptr)
                     return E_FAIL;
 
                 if (numRectangles > 0)
                 {
                     double* doubleArr = nullptr;
 
-                    if (FAILED (SafeArrayAccessData (*pRetVal, reinterpret_cast<void**> (&doubleArr))))
-                    {
-                        SafeArrayDestroy (*pRetVal);
+                    if (FAILED (SafeArrayAccessData (result.get(), reinterpret_cast<void**> (&doubleArr))))
                         return E_FAIL;
-                    }
 
                     for (int i = 0; i < numRectangles; ++i)
                     {
@@ -369,13 +367,11 @@ private:
                         doubleArr[i * 4 + 3] = r.getHeight();
                     }
 
-                    if (FAILED (SafeArrayUnaccessData (*pRetVal)))
-                    {
-                        SafeArrayDestroy (*pRetVal);
+                    if (FAILED (SafeArrayUnaccessData (result.get())))
                         return E_FAIL;
-                    }
                 }
 
+                *pRetVal = result.release();
                 return S_OK;
             });
         }
@@ -384,7 +380,12 @@ private:
         {
             return withCheckedComArgs (pRetVal, *this, [&]
             {
-                *pRetVal = SafeArrayCreateVector (VT_UNKNOWN, 0, 0);
+                SafeArrayHandle result { SafeArrayCreateVector (VT_UNKNOWN, 0, 0) };
+
+                if (result == nullptr)
+                    return E_FAIL;
+
+                *pRetVal = result.release();
                 return S_OK;
             });
         }
@@ -416,7 +417,7 @@ private:
             });
         }
 
-        JUCE_COMRESULT Move (ComTypes::TextUnit unit, int count, int* pRetVal) override
+        JUCE_COMRESULT Move (TextUnit unit, int count, int* pRetVal) override
         {
             return owner->withTextInterface (pRetVal, [&] (const AccessibilityTextInterface& textInterface)
             {
@@ -455,9 +456,9 @@ private:
             });
         }
 
-        JUCE_COMRESULT MoveEndpointByRange (ComTypes::TextPatternRangeEndpoint endpoint,
-                                            ComTypes::ITextRangeProvider* targetRange,
-                                            ComTypes::TextPatternRangeEndpoint targetEndpoint) override
+        JUCE_COMRESULT MoveEndpointByRange (TextPatternRangeEndpoint endpoint,
+                                            ITextRangeProvider* targetRange,
+                                            TextPatternRangeEndpoint targetEndpoint) override
         {
             if (targetRange == nullptr)
                 return E_INVALIDARG;
@@ -468,8 +469,8 @@ private:
             if (owner->getHandler().getTextInterface() != nullptr)
             {
                 auto otherRange = static_cast<UIATextRangeProvider*> (targetRange)->getSelectionRange();
-                auto targetPoint = (targetEndpoint == ComTypes::TextPatternRangeEndpoint_Start ? otherRange.getStart()
-                                                                                               : otherRange.getEnd());
+                auto targetPoint = (targetEndpoint == TextPatternRangeEndpoint_Start ? otherRange.getStart()
+                                                                                     : otherRange.getEnd());
 
                 setEndpointChecked (endpoint, targetPoint);
                 return S_OK;
@@ -478,8 +479,8 @@ private:
             return (HRESULT) UIA_E_NOTSUPPORTED;
         }
 
-        JUCE_COMRESULT MoveEndpointByUnit (ComTypes::TextPatternRangeEndpoint endpoint,
-                                           ComTypes::TextUnit unit,
+        JUCE_COMRESULT MoveEndpointByUnit (TextPatternRangeEndpoint endpoint,
+                                           TextUnit unit,
                                            int count,
                                            int* pRetVal) override
         {
@@ -488,8 +489,8 @@ private:
                 if (count == 0 || textInterface.getTotalNumCharacters() == 0)
                     return S_OK;
 
-                const auto endpointToMove = (endpoint == ComTypes::TextPatternRangeEndpoint_Start ? selectionRange.getStart()
-                                                                                                  : selectionRange.getEnd());
+                const auto endpointToMove = (endpoint == TextPatternRangeEndpoint_Start ? selectionRange.getStart()
+                                                                                        : selectionRange.getEnd());
 
                 using ATH = AccessibilityTextHelpers;
 
@@ -563,23 +564,23 @@ private:
         }
 
     private:
-        static AccessibilityTextHelpers::BoundaryType getBoundaryType (ComTypes::TextUnit unit)
+        static AccessibilityTextHelpers::BoundaryType getBoundaryType (TextUnit unit)
         {
             switch (unit)
             {
-                case ComTypes::TextUnit_Character:
+                case TextUnit_Character:
                     return AccessibilityTextHelpers::BoundaryType::character;
 
-                case ComTypes::TextUnit_Format:
-                case ComTypes::TextUnit_Word:
+                case TextUnit_Format:
+                case TextUnit_Word:
                     return AccessibilityTextHelpers::BoundaryType::word;
 
-                case ComTypes::TextUnit_Line:
+                case TextUnit_Line:
                     return AccessibilityTextHelpers::BoundaryType::line;
 
-                case ComTypes::TextUnit_Paragraph:
-                case ComTypes::TextUnit_Page:
-                case ComTypes::TextUnit_Document:
+                case TextUnit_Paragraph:
+                case TextUnit_Page:
+                case TextUnit_Document:
                     return AccessibilityTextHelpers::BoundaryType::document;
             };
 
@@ -587,9 +588,9 @@ private:
             return AccessibilityTextHelpers::BoundaryType::character;
         }
 
-        void setEndpointChecked (ComTypes::TextPatternRangeEndpoint endpoint, int newEndpoint)
+        void setEndpointChecked (TextPatternRangeEndpoint endpoint, int newEndpoint)
         {
-            if (endpoint == ComTypes::TextPatternRangeEndpoint_Start)
+            if (endpoint == TextPatternRangeEndpoint_Start)
             {
                 if (selectionRange.getEnd() < newEndpoint)
                     selectionRange.setEnd (newEndpoint);
