@@ -568,9 +568,9 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         auto paramRange = apvts.getParameter(paramInfos[GAIN1].id)->getNormalisableRange();
         preamp.stage1Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
                                   SMOOTH_PARAM_TIME, preampSamplerate);
-        preamp.brightCapFilter.makeLowShelf(
+        preamp.brightCapFilter.makeHighShelf(
             550.0,
-            scale_linear(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, -15.0f, 0.0f),
+            scale_linear(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, 15.0f, 0.0f),
             preampSamplerate
         );
 
