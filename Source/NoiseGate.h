@@ -27,7 +27,7 @@ struct NoiseGate {
 
         reallocMonoBuffer(&rms.buffer, (u32)(samplerate * gateBufferLengthMs * 0.001f));
         
-        rms.inv_length = 1.0f/(float)rms.buffer.size;
+        rms.inv_length = 1.0/(double)rms.buffer.size;
         rms.index = 0;
 
         reallocMonoBuffer(&gainBuffer, bufferSize);
@@ -61,7 +61,7 @@ struct NoiseGate {
             
             rms.buffer.dataL[rms.index] = sideChain.dataL[sampleIndex] * sideChain.dataL[sampleIndex];
             runningSum += rms.buffer.dataL[rms.index];
-            if (runningSum < 0.0f) { runningSum = 0.0f; };            
+            if (runningSum < 0.0f) { runningSum = 0.0f; };
 
             rms.index++;
             if (rms.index == rms.buffer.size) { rms.index = 0; }
@@ -71,7 +71,7 @@ struct NoiseGate {
             // if open && > thresh - hyst -> open 
             // if open && < thresh -hyst -> close
             
-            float rmsValue = sqrtf(runningSum * rms.inv_length);
+            double rmsValue = sqrt(runningSum * rms.inv_length);
             
             bool shouldOpen = false;
             if (rmsValue > threshold) { 
@@ -133,10 +133,10 @@ struct NoiseGate {
     Slice gainBuffer = {};
     Slice sideChain = {};
 
-    float runningSum = 0.0f;
+    double runningSum = 0.0;
     struct {
         Slice buffer = {};
         u32 index = 0;
-        float inv_length = 0.0f;
+        double inv_length = 0.0;
     } rms;
 };
