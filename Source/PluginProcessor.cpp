@@ -566,7 +566,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE1_BIAS].id), 0);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN1].id)->getNormalisableRange();
-        preamp.stage1Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.stage1Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN1].id), paramRange.start, paramRange.end, 1.0f/tube_gain, 1.0f, 3.0f),
                                   SMOOTH_PARAM_TIME, preampSamplerate);
         preamp.brightCapFilter.makeHighShelf(
             550.0,
@@ -593,7 +593,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE2_BIAS].id), 1);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN2].id)->getNormalisableRange();
-        preamp.stage2Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN2].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.stage2Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN2].id), paramRange.start, paramRange.end, 1.0f/tube_gain, 1.0f, 3.0f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
@@ -615,7 +615,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE3_BIAS].id), 2);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN3].id)->getNormalisableRange();
-        preamp.stage3Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN3].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.stage3Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN3].id), paramRange.start, paramRange.end, 1.0f/tube_gain, 1.0f, 3.0f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;
@@ -637,7 +637,7 @@ void Processor::parameterChanged(const juce::String &parameterId, float newValue
         preamp.setBias(*apvts.getRawParameterValue(paramInfos[STAGE4_BIAS].id), 3);
 
         auto paramRange = apvts.getParameter(paramInfos[GAIN4].id)->getNormalisableRange();
-        preamp.stage4Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN4].id), paramRange.start, paramRange.end, 0.0f, 1.0f, 3.0f),
+        preamp.stage4Gain.newTarget(tube_gain * scale(*apvts.getRawParameterValue(paramInfos[GAIN4].id), paramRange.start, paramRange.end, 1.0f/tube_gain, 1.0f, 3.0f),
                                     SMOOTH_PARAM_TIME, preampSamplerate);
 
         return;

@@ -10,6 +10,9 @@
 
 #include "PluginProcessor.h"
 
+// to draw a flow chart of the amp, take inspiration from 
+// https://github.com/essej/paulxstretch/blob/main/Source/PluginEditor.cpp#L1936 (SpectralChainEditor::paint)
+
 global_const juce::Colour backgroundColor {0xFF0F0F0F}; // noir sombre
 global_const juce::Colour widgetColor     {0xFF232D3F}; // gris bleuté
 global_const juce::Colour accentColor1    {0XFF005B41}; // vert bouteille
