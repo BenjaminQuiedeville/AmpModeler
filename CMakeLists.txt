@@ -11,7 +11,7 @@ set(JUCE_SOURCE_DIR ${LIB_DIR}/juce)
  
 add_subdirectory(${JUCE_SOURCE_DIR})
 
-# juce_set_aax_sdk_path()
+juce_set_aax_sdk_path(../libs/aax-sdk-2-9-0/)
 
 juce_add_plugin(${PROJECT_NAME}
     COMPANY_NAME                "FDNSeeker"
@@ -20,7 +20,7 @@ juce_add_plugin(${PROJECT_NAME}
     NEEDS_MIDI_OUTPUT           FALSE 
     PLUGIN_MANUFACTURER_CODE    FDNS 
     PLUGIN_CODE                 AMPM 
-    FORMATS                     VST3 Standalone
+    FORMATS                     VST3 # Standalone AAX
     PRODUCT_NAME                "AmpModeler"
     
     VST3_AUTO_MANIFEST          TRUE

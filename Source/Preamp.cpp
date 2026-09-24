@@ -69,7 +69,7 @@ void Preamp::setBias(float bias, int tube_index) {
         default: { assert(false && "setBias: wrong tube_index"); }
     }
 
-    local_const float positiveLinRange = 0.2f;
+    local_const float positiveLinRange = 0.5f;
 
     selected_stage_bias[0] = bias;
 
