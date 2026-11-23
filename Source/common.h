@@ -12,10 +12,11 @@
 // #define _USE_MATH_DEFINES
 #include <cmath>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef TRACY_ENABLE
     #include <tracy/Tracy.hpp>
-#else 
+#else
     #define ZoneScoped
     #define FrameMark
     #define ZoneScopedN(text)
@@ -35,8 +36,8 @@ typedef int32_t  s32;
 typedef uint64_t u64;
 typedef int64_t  s64;
 
-#define min(x, y) (x) < (y) ? (x) : (y)
-#define max(x, y) (x) > (y) ? (x) : (y)
+// #define min(x, y) (x) < (y) ? (x) : (y)
+// #define max(x, y) (x) > (y) ? (x) : (y)
 
 #define isEven(x) !((x) & 1)
 
@@ -75,8 +76,8 @@ static inline u64 nextPowTwo(u64 n) {
 }
 
 enum ChannelConfig : u8 {
-    Mono, 
-    FakeStereo, 
+    Mono,
+    FakeStereo,
     Stereo
 };
 
